@@ -11,6 +11,7 @@
 | 🧠 **讨论** | `plan-discussion` | 多轮方案讨论，自动落盘记录，生成待执行方案 |
 | 🔧 **执行** | `plan-execution` | 按方案逐阶段实施开发，产出执行结果文档 |
 | 🔒 **锁定** | `plan-lock` | 确认完成后锁定归档，防止误改 |
+| 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
 
 ## 工作流概览
 
@@ -48,6 +49,12 @@ agent-skills/
 │   └── SKILL.md          # 方案执行技能（~260 行）
 ├── plan-lock/
 │   └── SKILL.md          # 方案锁定技能（~115 行）
+├── generate-commit/
+│   └── SKILL.md          # 生成 commit 技能
+├── record-change-log/
+│   └── SKILL.md          # 改动日志记录技能
+├── record-development-blog/
+│   └── SKILL.md          # 开发博客记录技能
 └── README.md
 ```
 
@@ -96,6 +103,13 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 - "执行完成"、"确认完成"、"本主题完成"
 - "锁定主题"、"开发完成"、"任务完成"
 - "可以锁定了"、"没问题了"、"就这样"
+
+#### 4. 生成 Commit（generate-commit）
+
+说出以下任一关键词即可触发：
+
+- "生成 commit"、"生成提交"、"创建 commit"
+- "写 commit"、"帮我 commit"、"commit 一下"
 
 ### 文档输出位置
 
