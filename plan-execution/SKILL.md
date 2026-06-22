@@ -236,8 +236,8 @@ description: "当用户说\"开始执行\"、\"执行方案\"、\"开始开发\"
                           │ COMPLETED.md │  ← 草稿，未锁定
                           │ UNEXECUTED.md│  ← 草稿，未锁定
                           └──────┬──────┘
-                                 │ ⚠️ 等待用户触发 plan-lock skill
-                                 │ "执行完成" / "确认完成" / "锁定主题"
+                                 │ ⚠️ 等待用户明确触发 plan-lock skill
+                                 │ "锁定主题"
                                  ▼
                           ┌─────────────┐  ← plan-lock skill
                           │ STATUS.md    │     已执行 · 锁定
