@@ -55,6 +55,10 @@ agent-skills/
 │   └── SKILL.md          # 改动日志记录技能
 ├── record-development-blog/
 │   └── SKILL.md          # 开发博客记录技能
+├── development-guardrails/
+│   └── SKILL.md          # 开发中规范（注释守卫 + 反复修复埋点）
+├── change-advice/
+│   └── SKILL.md          # 修改建议模式技能
 └── README.md
 ```
 
@@ -111,6 +115,15 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 - "生成 commit"、"生成提交"、"创建 commit"
 - "写 commit"、"帮我 commit"、"commit 一下"
+
+#### 5. 开发中规范（development-guardrails）
+
+无需关键词，**自动触发**。改代码时的附加约束，包含两部分：
+
+- **Part A 代码注释守卫**：任何代码修改时，按必要性补充注释、清理失效注释、避免过度注释
+- **Part B 反复修复控制台埋点**：同一 bug 第 3 次起修复时，复现全程静默采集，完成后统一输出一份诊断报告；用户复制一次交给 AI 即可判断
+
+两部分触发条件独立，第 3 次修 bug 时可同时适用。
 
 ### 文档输出位置
 
