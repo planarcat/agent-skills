@@ -1,6 +1,6 @@
 ---
 name: development-guardrails
-description: "Enforces development guardrails whenever the agent edits, adds, refactors, or fixes source code. Use on every code change task including bug fixes, feature implementation, refactors, and TODO/HACK updates — read this skill before writing or modifying code. Part A: comment necessity rules (avoid over-commenting, maintain stale comments). Part B: after two failed fix attempts on the same bug, add a repro session collector and flush one diagnostic report. Triggers: 修改代码, 修复bug, 重构, 新增功能, 开发中规范, code change, fix bug, refactor."
+description: "Enforces development guardrails whenever the agent edits, adds, refactors, or fixes source code. Use on every code change task including bug fixes, feature implementation, refactors, and TODO/HACK updates — read this skill before writing or modifying code. Part A: comment necessity rules (avoid over-commenting, maintain stale comments). Part B: after one failed fix attempt on the same bug, add a repro session collector and flush one diagnostic report. Triggers: 修改代码, 修复bug, 重构, 新增功能, 开发中规范, code change, fix bug, refactor."
 ---
 
 # 开发中规范
@@ -14,7 +14,7 @@ description: "Enforces development guardrails whenever the agent edits, adds, re
   ├─ 是 → Part A「代码注释守卫」必查
   └─ 否 → 本 skill 的 Part A 不执行
 
-同一 bug 已修复 ≥2 次仍无效，且本轮是第 3 次及以上尝试？
+同一 bug 已修复 ≥1 次仍无效，且本轮是第 2 次及以上尝试？
   ├─ 是 → Part B「反复修复控制台埋点」必做
   └─ 否 → Part B 不触发
 ```
@@ -22,11 +22,11 @@ description: "Enforces development guardrails whenever the agent edits, adds, re
 | 部分 | 名称 | 触发条件 | 产出 |
 |---|---|---|---|
 | Part A | 代码注释守卫 | **任何**代码新增/修改/重构 | 适量、持久的业务注释 |
-| Part B | 反复修复控制台埋点 | 同一 bug **第 3 次起**修复 | 临时埋点 → 一份诊断报告 → 修复后清理 |
+| Part B | 反复修复控制台埋点 | 同一 bug **第 2 次起**修复（前 1 次已失败） | 临时埋点 → 一份诊断报告 → 修复后清理 |
 
 ### 两部分同时适用时
 
-第 3 次修 bug 时，Part A 与 Part B **同时生效**：
+第 2 次修 bug 时，Part A 与 Part B **同时生效**：
 
 - Part B 的 collector / `dbg()` / `flushDebugReport` 是**临时调试代码**，修复后必须删除
 - Part A 的业务注释是**持久代码**，按必要性保留
@@ -141,14 +141,14 @@ let count = 0
 
 # Part B：反复修复失败的控制台埋点
 
-当针对**同一个问题**已经尝试修复两次及以上仍无成效时，从**第三次修复尝试**起，必须先通过控制台埋点收集运行时证据，再基于观测结果做更精确的修复，而不是继续凭猜测改代码。
+当针对**同一个问题**已经尝试修复一次仍无成效时，从**第二次修复尝试**起，必须先通过控制台埋点收集运行时证据，再基于观测结果做更精确的修复，而不是继续凭猜测改代码。
 
 ## B.1 核心规则
 
 | | 使用 Part B | 不使用 Part B |
 |---|---|---|
-| 第 1～2 次修复 | 可先做常规分析与修改 | — |
-| 第 3 次起仍针对同一问题 | ✅ 必须先加控制台埋点 | ❌ 容易盲改 |
+| 第 1 次修复 | 可先做常规分析与修改 | — |
+| 第 2 次起仍针对同一问题 | ✅ 必须先加控制台埋点 | ❌ 容易盲改 |
 | 埋点输出方式 | ✅ 复现完成后统一 flush 一份报告 | ❌ 复现中途散落 log |
 | 用户交付物 | ✅ 复制一次日志给 AI | ❌ 多次贴零散输出 |
 | 问题确认后清理埋点 | ✅ 必做 | ❌ 容易遗留调试代码 |
@@ -160,7 +160,7 @@ let count = 0
 - ✅ 明确告知用户复制 `REPORT START`～`REPORT END` 之间内容
 - ❌ **绝对不能** 复现中途向控制台打印调试 log
 - ❌ **绝对不能** 要求用户分多次贴不同片段
-- ❌ **绝对不能** 第三次仍只改逻辑、不加运行时观测
+- ❌ **绝对不能** 第二次仍只改逻辑、不加运行时观测
 - ❌ **绝对不能** 把埋点永久留在生产代码中
 
 ## B.2 设计原则：复现全程采集，完成后一份输出
@@ -184,7 +184,7 @@ let count = 0
 满足以下**全部**条件时，必须执行 Part B：
 
 1. 当前任务是在修复某个**具体问题**（bug、异常、行为不符、报错、回归等）
-2. 针对该问题，已经做过 **2 次及以上**修复尝试
+2. 针对该问题，已经做过 **1 次及以上**修复尝试
 3. 这些尝试**均未确认生效**
 
 **同一问题**累计计数：报错/现象未变、根因怀疑点未变、用户说“还是不行”。
@@ -194,7 +194,7 @@ let count = 0
 ## B.4 工作流程
 
 ```
-1. 确认同一问题已失败 ≥2 次
+1. 确认同一问题已失败 ≥1 次
   → 2. 梳理完整复现路径
   → 3. 沿路径布静默采集点 + 确定 flush 时机
   → 4. 代理优先自行跑复现；否则请用户走一遍流程
@@ -304,7 +304,7 @@ function flushDebugReport(reason) {
 - 用户明确禁止 log / print
 - 问题已确认修复
 - 当前是功能开发而非 bug 排查
-- 第 1～2 次尝试且尚未确认失败
+- 第 1 次尝试且尚未确认失败
 
 ---
 
@@ -313,7 +313,7 @@ function flushDebugReport(reason) {
 | skill | 关系 |
 |---|---|
 | `change-advice` | 用户要求“先别改”时，Part A/B 的改代码流程均不进入 |
-| `paste-replacement-fallback` | 文件改不进去 → paste 回退；逻辑修了两次仍无效 → Part B |
+| `paste-replacement-fallback` | 文件改不进去 → paste 回退；逻辑修了一次仍无效 → Part B |
 
 ## 质量检查
 
@@ -323,7 +323,7 @@ function flushDebugReport(reason) {
 - 复杂逻辑是否补注释，简单代码是否克制
 - 失效注释是否已清理
 
-**Part B（第 3 次起修 bug）：**
+**Part B（第 2 次起修 bug，前 1 次已失败）：**
 
 - 是否采用复现会话收集器（全程静默、完成时 flush 一次）
 - 是否严格保证一次复现只输出一份报告

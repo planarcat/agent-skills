@@ -94,7 +94,7 @@ Cursor **没有**全局 `.mdc` rule 目录（`~/.cursor/rules/` 不生效）。�
 改代码前必遵守 development-guardrails：
 
 Part A（任何修改）：必要处补注释，自解释代码不注释，清理失效注释。
-Part B（同一 bug 第 3 次修）：先加静默埋点，复现结束只输出一份 [DEBUG:slug] REPORT，修完删除埋点。
+Part B（同一 bug 第 2 次修，前 1 次已失败）：先加静默埋点，复现结束只输出一份 [DEBUG:slug] REPORT，修完删除埋点。
 ```
 
 User Rules 是纯文本、**始终注入每次对话**，不依赖 Agent 主动 Read skill。这是全局约束的唯一可靠方式。
@@ -168,7 +168,7 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 | **Skill** | 完整规范（注释规则、collector 示例） | Agent 需主动 Read |
 
 - **Part A 代码注释守卫**：任何代码修改
-- **Part B 反复修复控制台埋点**：同一 bug 第 3 次起，复现完成后统一输出一份诊断报告
+- **Part B 反复修复控制台埋点**：同一 bug 第 1 次修复失败后，从第 2 次起复现全程静默采集，完成后统一输出一份诊断报告
 
 ### 文档输出位置
 
