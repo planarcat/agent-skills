@@ -1,6 +1,6 @@
 ---
 name: development-guardrails
-description: "在 AI 修改代码时自动触发的开发中规范。包含两部分：① 任何代码修改时按必要性补充注释并避免过度注释；② 同一 bug 已修复两次及以上仍无效时，从第三次起沿复现路径布会话收集器，复现完成后统一输出一份诊断日志供 AI 判断。两部分可同时适用，但触发条件独立。"
+description: "Enforces development guardrails whenever the agent edits, adds, refactors, or fixes source code. Use on every code change task including bug fixes, feature implementation, refactors, and TODO/HACK updates — read this skill before writing or modifying code. Part A: comment necessity rules (avoid over-commenting, maintain stale comments). Part B: after two failed fix attempts on the same bug, add a repro session collector and flush one diagnostic report. Triggers: 修改代码, 修复bug, 重构, 新增功能, 开发中规范, code change, fix bug, refactor."
 ---
 
 # 开发中规范

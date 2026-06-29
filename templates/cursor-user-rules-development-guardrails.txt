@@ -1,0 +1,4 @@
+改代码前必遵守 development-guardrails：
+
+Part A（任何修改）：必要处补注释，自解释代码不注释，清理失效注释。
+Part B（同一 bug 第 3 次修）：先加静默埋点，复现结束只输出一份 [DEBUG:slug] REPORT，修完删除埋点。

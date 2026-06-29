@@ -72,13 +72,48 @@ agent-skills/
 
 ### 安装
 
-将本仓库克隆到你的 Claude Code 技能目录或项目路径下：
+#### Claude Code
+
+将本仓库克隆到 Claude Code 技能目录：
 
 ```bash
-git clone https://github.com/planarcat/agent-skills.git
+git clone https://github.com/planarcat/agent-skills.git ~/.claude/skills/agent-skills
+# 或将各 skill 文件夹单独复制到 ~/.claude/skills/
 ```
 
-Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技能由 YAML frontmatter 中的 `description` 字段中的中文关键词触发。
+#### Cursor（全局约束 — 推荐）
+
+Cursor **没有**全局 `.mdc` rule 目录（`~/.cursor/rules/` 不生效）。要让开发中规范在**所有项目**里始终生效，用 **User Rules**：
+
+**1. 添加全局 User Rule（核心，必做）**
+
+1. 打开 **Cursor Settings → Rules → User Rules**
+2. 将 `templates/cursor-user-rules-development-guardrails.txt` 的内容粘贴进去并保存
+
+User Rules 是纯文本、**始终注入每次对话**，不依赖 Agent 主动 Read skill。这是全局约束的唯一可靠方式。
+
+**2. 安装全局 skill（可选，供 Read 时查细节）**
+
+```powershell
+# Windows — 任选或两个都装
+Copy-Item -Recurse development-guardrails $env:USERPROFILE\.agents\skills\development-guardrails
+Copy-Item -Recurse development-guardrails $env:USERPROFILE\.cursor\skills\development-guardrails
+```
+
+```bash
+# macOS / Linux
+cp -r development-guardrails ~/.agents/skills/development-guardrails
+cp -r development-guardrails ~/.cursor/skills/development-guardrails
+```
+
+| 层级 | 位置 | 作用域 | 可靠性 |
+|---|---|---|---|
+| **User Rules** | Settings → Rules | 全局 | 最高，始终注入 |
+| **Skill** | `~/.agents/skills/` 或 `~/.cursor/skills/` | 全局 | 需 Agent 主动 Read |
+
+> **Skill vs User Rules**：Skill 是参考文档；User Rules 是强制约束。
+
+Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技能由 YAML frontmatter 中的 `description` 字段触发。
 
 ### 触发方式
 
@@ -118,12 +153,15 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 #### 5. 开发中规范（development-guardrails）
 
-无需关键词，**自动触发**。改代码时的附加约束，包含两部分：
+改代码时的附加约束。**全局使用请配置 Cursor User Rules**（见上文安装说明），不要只依赖 skill 列表。
 
-- **Part A 代码注释守卫**：任何代码修改时，按必要性补充注释、清理失效注释、避免过度注释
-- **Part B 反复修复控制台埋点**：同一 bug 第 3 次起修复时，复现全程静默采集，完成后统一输出一份诊断报告；用户复制一次交给 AI 即可判断
+| 机制 | 作用 | 局限 |
+|---|---|---|
+| **User Rules**（全局） | 核心约束注入每次对话 | 需在 Settings → Rules 粘贴 |
+| **Skill** | 完整规范（注释规则、collector 示例） | Agent 需主动 Read |
 
-两部分触发条件独立，第 3 次修 bug 时可同时适用。
+- **Part A 代码注释守卫**：任何代码修改
+- **Part B 反复修复控制台埋点**：同一 bug 第 3 次起，复现完成后统一输出一份诊断报告
 
 ### 文档输出位置
 
