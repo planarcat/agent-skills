@@ -91,10 +91,10 @@ Cursor **没有**全局 `.mdc` rule 目录（`~/.cursor/rules/` 不生效）。�
 2. 名称填 `开发中规范`，内容粘贴：
 
 ```
-改代码前必遵守 development-guardrails：
+改代码前：若本对话尚未 Read development-guardrails，必须先 Read 该 skill 再动手。
 
 Part A（任何修改）：必要处补注释，自解释代码不注释，清理失效注释。
-Part B（同一 bug 第 2 次修，前 1 次已失败）：先加静默埋点，复现结束只输出一份 [DEBUG:slug] REPORT，修完删除埋点。
+Part B（问题仍在 / 改完未修好 / 缺运行证据需调试）：先加静默埋点，复现结束只输出一份 [DEBUG:slug] REPORT，修完删除埋点。
 ```
 
 User Rules 是纯文本、**始终注入每次对话**，不依赖 Agent 主动 Read skill。这是全局约束的唯一可靠方式。
@@ -115,10 +115,10 @@ cp -r development-guardrails ~/.cursor/skills/development-guardrails
 
 | 层级 | 位置 | 作用域 | 可靠性 |
 |---|---|---|---|
-| **User Rules** | Settings → Rules | 全局 | 最高，始终注入 |
-| **Skill** | `~/.agents/skills/` 或 `~/.cursor/skills/` | 全局 | 需 Agent 主动 Read |
+| **User Rules** | Settings → Rules | 全局 | 最高；要求改代码前 **Read skill** |
+| **Skill** | `~/.agents/skills/` 或 `~/.cursor/skills/` | 全局 | description 匹配 + **必须 Read 全文** 才生效 |
 
-> **Skill vs User Rules**：Skill 是参考文档；User Rules 是强制约束。
+> **Skill vs User Rules**：User Rules 强制「先 Read skill」；skill 正文规定 Part A/B 具体做法。二者叠加，不能互相替代。
 
 Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技能由 YAML frontmatter 中的 `description` 字段触发。
 
@@ -160,15 +160,16 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 #### 5. 开发中规范（development-guardrails）
 
-改代码时的附加约束。**全局使用请配置 Cursor User Rules**（见上文安装说明），不要只依赖 skill 列表。
+改代码时的附加约束。**全局使用请配置 Cursor User Rules**（见上文），并要求改代码前 **Read 本 skill 全文**。
 
-| 机制 | 作用 | 局限 |
-|---|---|---|
-| **User Rules**（全局） | 核心约束注入每次对话 | 需在 Settings → Rules 粘贴 |
-| **Skill** | 完整规范（注释规则、collector 示例） | Agent 需主动 Read |
+| 机制 | 作用 |
+|---|---|
+| **User Rules** | 强制「先 Read development-guardrails」 |
+| **Skill description** | 匹配改代码/调试/修复等任务，提示必须 Read |
+| **Skill 正文** | Part A 注释 + Part B 调试埋点细则 |
 
 - **Part A 代码注释守卫**：任何代码修改
-- **Part B 反复修复控制台埋点**：同一 bug 第 1 次修复失败后，从第 2 次起复现全程静默采集，完成后统一输出一份诊断报告
+- **Part B 问题调试控制台埋点**：问题未完整解决或缺少运行时证据时，复现全程静默采集，完成后统一输出一份诊断报告
 
 ### 文档输出位置
 

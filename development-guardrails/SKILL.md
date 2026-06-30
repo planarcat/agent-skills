@@ -1,11 +1,33 @@
 ---
 name: development-guardrails
-description: "Enforces development guardrails whenever the agent edits, adds, refactors, or fixes source code. Use on every code change task including bug fixes, feature implementation, refactors, and TODO/HACK updates — read this skill before writing or modifying code. Part A: comment necessity rules (avoid over-commenting, maintain stale comments). Part B: after one failed fix attempt on the same bug, add a repro session collector and flush one diagnostic report. Triggers: 修改代码, 修复bug, 重构, 新增功能, 开发中规范, code change, fix bug, refactor."
+description: "Mandatory guardrails before editing source code. ALWAYS read this entire SKILL.md before the first Write/Edit/StrReplace on application source in the conversation if not already loaded. Part A applies to every code change (comments). Part B applies when debugging is needed: bug unresolved, fix incomplete, missing runtime evidence, user says still broken, or investigating errors. Use for 修改代码, 写代码, 实现, 修复, bug, 报错, 调试, 埋点, 重构, refactor, fix, patch, implement, 开发中规范, development-guardrails, @development-guardrails. Listing in available_skills does not count as compliance; must Read file."
 ---
 
 # 开发中规范
 
 当 AI 参与代码修改时，本 skill 提供**附加约束**（非独立开发模式）。包含两个部分，**触发条件独立**，按实际情况分别或同时适用。
+
+## 强制响应（被发现时必须执行）
+
+Skill 出现在 `available_skills` **不等于**已遵守。必须按下列顺序响应：
+
+1. **Read 本文件**：在本对话中**第一次**即将修改源码（Write / Edit / StrReplace 等）前，若尚未 Read 过本 `SKILL.md`，**必须先 Read 全文**，再动手。
+2. **过适用判断**：Read 后立即按下方决策树判断 Part A / Part B。
+3. **Part B 优先于盲改**：若 B.3 命中，本轮**不得**只改逻辑不埋点；应先布 collector 或先取得 REPORT。
+4. **用户 @ 或点名**：用户 `@development-guardrails`、说「开发中规范」「按 Part B」时，视为强制 Read + 执行，无需用户二次提醒。
+
+**禁止**：跳过 Read 直接改代码；认为 User Rules 已足够而不打开本 skill。
+
+## 触发清单（满足任一 → 必须 Read 并遵守）
+
+| 场景 | Part A | Part B |
+|---|---|---|
+| 任何新增/修改/重构源码 | ✅ | 视 B.3 |
+| 修复 bug、报错、异常、行为不对 | ✅ | 通常 ✅ |
+| 改完用户说仍不对 / 没修好 | ✅ | ✅ |
+| 缺运行日志、堆栈、测试输出，却要继续改 | ✅ | ✅ |
+| 纯读代码、只解释、不改文件 | — | — |
+| 用户明确「先别改」 | — | — |
 
 ## 适用判断（动手前先过一遍）
 
@@ -14,19 +36,19 @@ description: "Enforces development guardrails whenever the agent edits, adds, re
   ├─ 是 → Part A「代码注释守卫」必查
   └─ 否 → 本 skill 的 Part A 不执行
 
-同一 bug 已修复 ≥1 次仍无效，且本轮是第 2 次及以上尝试？
-  ├─ 是 → Part B「反复修复控制台埋点」必做
+当前是否在排查/修复问题，且缺少足够运行时证据，或已有改动但未完整解决问题？
+  ├─ 是 → Part B「问题调试控制台埋点」必做
   └─ 否 → Part B 不触发
 ```
 
 | 部分 | 名称 | 触发条件 | 产出 |
 |---|---|---|---|
 | Part A | 代码注释守卫 | **任何**代码新增/修改/重构 | 适量、持久的业务注释 |
-| Part B | 反复修复控制台埋点 | 同一 bug **第 2 次起**修复（前 1 次已失败） | 临时埋点 → 一份诊断报告 → 修复后清理 |
+| Part B | 问题调试控制台埋点 | **需要调试**时（见 B.3） | 临时埋点 → 一份诊断报告 → 修复后清理 |
 
 ### 两部分同时适用时
 
-第 2 次修 bug 时，Part A 与 Part B **同时生效**：
+排查 bug 且需要改代码时，Part A 与 Part B **同时生效**：
 
 - Part B 的 collector / `dbg()` / `flushDebugReport` 是**临时调试代码**，修复后必须删除
 - Part A 的业务注释是**持久代码**，按必要性保留
@@ -139,16 +161,16 @@ let count = 0
 
 ---
 
-# Part B：反复修复失败的控制台埋点
+# Part B：问题调试控制台埋点
 
-当针对**同一个问题**已经尝试修复一次仍无成效时，从**第二次修复尝试**起，必须先通过控制台埋点收集运行时证据，再基于观测结果做更精确的修复，而不是继续凭猜测改代码。
+当存在**待解决的 bug / 异常 / 行为不符**，且继续改代码前**缺少可靠运行时证据**，或**已有修改但未完整修复**时，必须先通过复现会话收集器采集运行时信息，再基于观测结果修复。**禁止**在无证据情况下反复猜测性改逻辑。
 
 ## B.1 核心规则
 
 | | 使用 Part B | 不使用 Part B |
 |---|---|---|
-| 第 1 次修复 | 可先做常规分析与修改 | — |
-| 第 2 次起仍针对同一问题 | ✅ 必须先加控制台埋点 | ❌ 容易盲改 |
+| 问题存在且需运行时证据 | ✅ 先埋点（或本轮改动含 collector） | ❌ 盲改 |
+| 改代码后问题仍在 / 只部分修好 | ✅ 必须先埋点再下一轮修复 | ❌ 继续猜 |
 | 埋点输出方式 | ✅ 复现完成后统一 flush 一份报告 | ❌ 复现中途散落 log |
 | 用户交付物 | ✅ 复制一次日志给 AI | ❌ 多次贴零散输出 |
 | 问题确认后清理埋点 | ✅ 必做 | ❌ 容易遗留调试代码 |
@@ -158,9 +180,9 @@ let count = 0
 - ✅ 复现全程静默采集，结束时**只输出 1 份**完整日志
 - ✅ 代理能自行跑的测试/脚本优先代理自己跑
 - ✅ 明确告知用户复制 `REPORT START`～`REPORT END` 之间内容
+- ❌ **绝对不能** 在「需要调试」时仍只改逻辑、不加运行时观测
 - ❌ **绝对不能** 复现中途向控制台打印调试 log
 - ❌ **绝对不能** 要求用户分多次贴不同片段
-- ❌ **绝对不能** 第二次仍只改逻辑、不加运行时观测
 - ❌ **绝对不能** 把埋点永久留在生产代码中
 
 ## B.2 设计原则：复现全程采集，完成后一份输出
@@ -181,20 +203,53 @@ let count = 0
 
 ## B.3 触发时机
 
-满足以下**全部**条件时，必须执行 Part B：
+**默认原则：只要「需要调试」就触发 Part B，不按修复次数计数。**
 
-1. 当前任务是在修复某个**具体问题**（bug、异常、行为不符、报错、回归等）
-2. 针对该问题，已经做过 **1 次及以上**修复尝试
-3. 这些尝试**均未确认生效**
+### B.3.1 必须触发（满足任一即可）
 
-**同一问题**累计计数：报错/现象未变、根因怀疑点未变、用户说“还是不行”。
+1. **问题仍在**：bug、异常、报错、行为与预期不符、回归、测试失败等**尚未确认解决**
+2. **改代码未完整修好**：已做过修改，但用户反馈仍有问题、现象依旧、只部分改善、或无法确认已修复
+3. **缺少运行时证据**：静态阅读/推测不足以定位根因，且当前没有可用的复现日志、测试输出、网络 trace 等**能支撑下一步修改**的证据
+4. **同一问题继续改**：针对同一现象准备再次改代码，但上一轮改动**未用运行观测验证**就继续猜
+5. **用户明确在排查**：描述报错、贴堆栈、要求查原因、说「还是不行」「没修好」「跟改之前一样」等
 
-**新问题**计数归零：用户切换 bug、原问题已确认修复、排查范围完全转移。
+### B.3.2 典型流程
+
+| 情况 | Part B |
+|---|---|
+| 第一次接手该 bug，无运行证据 | ✅ 先布 collector，再修或先拿报告再修 |
+| 刚改完，用户说仍不对 | ✅ 必须埋点，禁止直接再改一版 |
+| 已有完整诊断报告且根因明确 | 可先最小修复；**若修复后仍不对**，立即回到 Part B |
+| 纯功能开发，无异常现象 | ❌ 不触发 |
+
+### B.3.3 同一问题的认定
+
+以下视为**同一问题**（继续适用 Part B）：
+
+- 报错/现象/复现步骤未变
+- 仍在同一链路、接口、组件上排查
+- 仅换了改法，但未确认问题已消失
+
+以下视为**新问题**或 Part B 可退出：
+
+- 用户明确切换另一个 bug 或需求
+- 原问题已用测试或用户确认修复完成
+- 排查范围完全转移
+
+### B.3.4 决策（动手前）
+
+```
+在修 bug / 查异常？
+  ├─ 否 → Part B 不触发
+  └─ 是 → 是否已有足够运行时证据，且能解释当前现象？
+        ├─ 是 → 可基于证据修改；改完若未验证通过，下一轮必触发 Part B
+        └─ 否 → Part B 必做：本轮优先加 collector 或先取得一份 REPORT
+```
 
 ## B.4 工作流程
 
 ```
-1. 确认同一问题已失败 ≥1 次
+1. 确认「需要调试」且证据不足 / 问题未完整解决
   → 2. 梳理完整复现路径
   → 3. 沿路径布静默采集点 + 确定 flush 时机
   → 4. 代理优先自行跑复现；否则请用户走一遍流程
@@ -300,11 +355,11 @@ function flushDebugReport(reason) {
 
 ## B.10 Part B 不适用场景
 
-- 纯静态问题且编译器已明确定位
+- 纯静态问题（语法/类型/lint）且编译器或工具已给出**可直接修复**的明确定位，且无需运行态验证
 - 用户明确禁止 log / print
-- 问题已确认修复
-- 当前是功能开发而非 bug 排查
-- 第 1 次尝试且尚未确认失败
+- 问题已用测试或用户**确认修复完成**
+- 当前是纯功能开发，无异常、无「行为不对」类问题
+- 已有完整 `REPORT` 且证据足以支撑本次修改，且修改范围与报告结论一致（修改后若仍失败，立即重新适用 Part B）
 
 ---
 
@@ -313,7 +368,7 @@ function flushDebugReport(reason) {
 | skill | 关系 |
 |---|---|
 | `change-advice` | 用户要求“先别改”时，Part A/B 的改代码流程均不进入 |
-| `paste-replacement-fallback` | 文件改不进去 → paste 回退；逻辑修了一次仍无效 → Part B |
+| `paste-replacement-fallback` | 文件改不进去 → paste 回退；需调试且缺运行证据 → Part B |
 
 ## 质量检查
 
@@ -323,8 +378,9 @@ function flushDebugReport(reason) {
 - 复杂逻辑是否补注释，简单代码是否克制
 - 失效注释是否已清理
 
-**Part B（第 2 次起修 bug，前 1 次已失败）：**
+**Part B（需要调试时）：**
 
+- 是否在问题未完整解决或缺少运行证据时仍避免了盲改
 - 是否采用复现会话收集器（全程静默、完成时 flush 一次）
 - 是否严格保证一次复现只输出一份报告
 - 修复后是否已清理所有临时埋点
