@@ -21,7 +21,7 @@ description: "当用户说\"开始执行\"、\"执行方案\"、\"开始开发\"
 
 ### 1.1 查找最新主题
 
-在 `Plans/` 目录下查找所有主题文件夹，按日期排序，定位**最新的、含有 `execution-plan.md` 且尚未锁定**的主题。
+在 `Plans/` 目录下查找所有**普通主题文件夹**（排除 `Plans/_backlog/`），按日期排序，定位**最新的、含有 `execution-plan.md` 且尚未锁定**的主题。
 
 主题是否已锁定的判断：
 - 文件夹中存在 `STATUS.md` → 已锁定，跳过
@@ -60,7 +60,7 @@ description: "当用户说\"开始执行\"、\"执行方案\"、\"开始开发\"
 | Phase 4: 打磨与发布 | Phase 4 | 当前方案 subsequent phase |
 ```
 
-这样下一个主题继承时，这些 Phase 自然出现在待讨论清单中。
+这样后续锁定主题时，这些 Phase 会进入 `UNEXECUTED.md`，并由 `plan-lock` 写入 `Plans/_backlog/` 精简摘要。
 
 ---
 
@@ -137,9 +137,9 @@ description: "当用户说\"开始执行\"、\"执行方案\"、\"开始开发\"
 
 ### 3.2 未执行文档（产出 / 更新）
 
-`UNEXECUTED.md` 只记录**当前主题执行结束后仍未处理完的事项**，供后续讨论或执行时参考。
+`UNEXECUTED.md` 只记录**当前主题执行结束后仍未处理完的事项**，供锁定前核对；锁定后完整版留存在主题文件夹，精简版由 `plan-lock` 写入 `Plans/_backlog/`。
 
-执行 skill 不负责说明“新主题如何继承 `UNEXECUTED.md`”。继承机制属于 `plan-discussion` 的职责；本 skill 只负责在当前主题内产出或更新 `UNEXECUTED.md`。
+执行 skill 不负责跨主题传递遗留事项。**不做继承**；新主题如需参考历史遗留，由用户主动查阅 `Plans/_backlog/`。
 
 #### 生成 / 更新 UNEXECUTED.md 的处理流程
 
@@ -240,14 +240,13 @@ description: "当用户说\"开始执行\"、\"执行方案\"、\"开始开发\"
                                  │ "锁定主题"
                                  ▼
                           ┌─────────────┐  ← plan-lock skill
-                          │ STATUS.md    │     已执行 · 锁定
+                          │ STATUS.md    │     已锁定
+                          │ _backlog/    │     精简摘要归档
                           └──────┬──────┘
                                  │ 用户说"讨论方案"
                                  ▼
                           ┌─────────────┐
-                          │ 新主题文件夹   │
-                          │ 继承           │
-                          │ UNEXECUTED.md  │
+                          │ 新主题文件夹   │  （不继承遗留）
                           └─────────────┘
 ```
 
@@ -257,6 +256,7 @@ description: "当用户说\"开始执行\"、\"执行方案\"、\"开始开发\"
 
 ### 与 plan-discussion skill 的协作
 
-- plan-discussion 发现当前主题已锁定 → 自动创建新主题并将 `UNEXECUTED.md` 纳入上下文
+- plan-discussion 发现当前主题已锁定 → 自动创建新主题（不继承遗留清单）
 - plan-discussion 发现当前主题未锁定且已有 `execution-plan.md` → 视为延续讨论，可修改方案
 - 本 skill 发现没有待执行方案 → 提示用户"当前没有待执行的方案，是否先讨论一个？"
+- 锁定后未完成事项 → 由 `plan-lock` 写入 `Plans/_backlog/`，不在主题间自动传递
