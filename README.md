@@ -32,7 +32,7 @@
        ▼
   ┌──────────┐
   │ 锁定归档  │  ← plan-lock
-  │ 不可修改  │     核对三份清单 → 精简摘要写入 _backlog/
+  │ 不可修改  │     核对三份清单 → 精简摘要写入 未完成池/
   └────┬─────┘
        │ 下次讨论 → 新主题（不继承）
        ▼
@@ -151,6 +151,8 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 - "现在锁吧"
 - "确认锁定当前主题"
 
+锁定后会将主题文件夹 **移入 `Plans/归档/`**（保持原名，不创建 `STATUS.md`），并将 `UNEXECUTED.md` 精简写入 `Plans/未完成池/`。
+
 #### 4. 生成 Commit（generate-commit）
 
 说出以下任一关键词即可触发：
@@ -177,41 +179,43 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 ```
 Plans/
-├── _backlog/                           # 未完成池（锁定主题时写入精简摘要）
-│   └── 2026-06-09-clipboard-sync.md
-├── 2026-06-09-clipboard-sync/          # 未锁定主题
-│   ├── 01-cross-platform-selection.md   # 第 1 轮讨论
-│   ├── 02-performance-strategy.md       # 第 2 轮讨论
-│   ├── execution-plan.md                # 待执行方案
+├── 归档/                               # 已锁定主题（只读）
+│   └── 2026-06-01-P2P传输/
+│       ├── 01-架构设计.md
+│       ├── execution-plan.md
+│       ├── COMPLETED.md
+│       └── UNEXECUTED.md
+├── 未完成池/                           # 锁定主题时写入精简摘要
+│   └── 2026-06-09-剪贴板同步.md
+├── 2026-06-09-剪贴板同步/              # 进行中主题
+│   ├── 01-跨平台选型.md                 # 第 1 轮讨论
+│   ├── 02-性能策略.md                   # 第 2 轮讨论
+│   ├── execution-plan.md                # 待执行方案（三技能固定文件名）
 │   ├── COMPLETED.md                     # 执行结果确认
 │   └── UNEXECUTED.md                    # 未执行/遗留事项
-├── 2026-06-01-[LOCKED]-p2p-transfer/    # 已锁定主题
-│   ├── 01-architecture-design.md
-│   ├── execution-plan.md
-│   ├── COMPLETED.md
-│   ├── UNEXECUTED.md
-│   └── STATUS.md                        # 锁定标志
-└── 2026-06-09-quick-note-about-security.md  # 独立讨论文件
+└── 2026-06-09-登录安全随手记.md         # 独立讨论文件
 ```
+
+主题文件夹、各轮讨论、独立笔记、`Plans/未完成池/` 摘要名等 **优先中文**；`Plans/` 下固定子目录为 **`归档/`、`未完成池/`**，主题内附件目录为 **`附件/`**；`execution-plan.md` / `COMPLETED.md` / `UNEXECUTED.md` 为三技能固定清单文件名。细则见 `plan-discussion` skill §命名与语言规范。遗留 `Plans/_backlog/`、`assets/` 只读兼容。
 
 ## 核心设计原则
 
 ### 锁定机制
 
-- **唯一入口**：只有 `plan-lock` 可以创建 `STATUS.md` 并锁定主题，其他技能均不得越权
+- **唯一入口**：只有 `plan-lock` 可以将主题移入 `Plans/归档/`，其他技能均不得越权
 - **明确授权**：只有用户明确表达“锁定主题”或同等直接锁定意图时，才允许进入锁定流程
 - **锁定前校验**：必须先核对 `execution-plan.md`、`COMPLETED.md`、`UNEXECUTED.md` 是否形成闭环，发现遗漏不得锁定
-- **未完成归档**：锁定后将 `UNEXECUTED.md` 精简写入 `Plans/_backlog/`
-- **权限判断**：锁定状态仅以 `STATUS.md` 是否存在为准（文件夹名中的 `[LOCKED]` 前缀仅用于直观显示）
-- **不可修改**：锁定后文件夹内所有文件不可再编辑
+- **未完成归档**：锁定后将 `UNEXECUTED.md` 精简写入 `Plans/未完成池/`
+- **权限判断**：主题位于 `Plans/归档/` 下即已锁定（不再使用 `STATUS.md` 或 `[LOCKED]` 前缀）
+- **不可修改**：归档后文件夹内所有文件不可再编辑
 
-### 未完成池（Plans/_backlog/）
+### 未完成池（Plans/未完成池/）
 
-- `Plans/_backlog/` 是专用文件夹，**不是普通主题**，不参与主题扫描与延续判断
+- `Plans/未完成池/` 是专用文件夹，**不是普通主题**，不参与主题扫描与延续判断（遗留 `Plans/_backlog/` 同等排除）
 - 每个主题执行后，未完成事项记录在主题内 `UNEXECUTED.md`
-- 锁定主题时，`plan-lock` 将其精简整合，写入 `Plans/_backlog/{主题名}.md`
+- 锁定主题时，`plan-lock` 将其精简整合，写入 `Plans/未完成池/{与主题文件夹同名的中文名}.md`
 - **不做链式继承**：新主题不会自动复制上一主题的遗留清单
-- 如需参考历史遗留，用户主动查阅 `Plans/_backlog/`，自行决定是否纳入新方案
+- 如需参考历史遗留，用户主动查阅 `Plans/未完成池/`，自行决定是否纳入新方案
 
 ### 方案讨论模式 ≠ Claude Code Plan Mode
 
@@ -234,7 +238,7 @@ Plans/
 
 **Q: 锁定后还能修改吗？**
 
-不能。锁定后该主题文件夹内的所有文件不可再修改。如需延续，请说"讨论方案"创建新主题；历史遗留可查阅 `Plans/_backlog/`。
+不能。锁定后该主题文件夹内的所有文件不可再修改。如需延续，请说"讨论方案"创建新主题；历史遗留可查阅 `Plans/未完成池/`。
 
 ## 作者
 
