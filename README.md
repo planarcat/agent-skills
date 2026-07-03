@@ -56,7 +56,9 @@ agent-skills/
 ├── record-development-blog/
 │   └── SKILL.md          # 开发博客记录技能
 ├── development-guardrails/
-│   └── SKILL.md          # 开发中规范（注释守卫 + 反复修复埋点）
+│   └── SKILL.md          # 开发中规范（注释守卫 + 调试埋点）
+├── change-impact-regression/
+│   └── SKILL.md          # 改后影响面清单与回归测试方法
 ├── change-advice/
 │   └── SKILL.md          # 修改建议模式技能
 └── README.md
@@ -172,6 +174,26 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 - **Part A 代码注释守卫**：任何代码修改
 - **Part B 问题调试控制台埋点**：问题未完整解决或缺少运行时证据时，复现全程静默采集，完成后统一输出一份诊断报告
+
+#### 6. 改动影响面与回归（change-impact-regression）
+
+**改完代码、向用户说「好了」之前**，列出受影响的功能/组件/模块，并给出必测与建议测的回归方法。影响面检索**优先调用 GitNexus MCP**（`detect_changes`、`impact`、`api_impact`）。与 guardrails **分工**：guardrails 管改中与调试；本 skill 管改后防间接漂移。
+
+- 可与 `development-guardrails` 同轮使用：先 Read guardrails 再改代码，收尾 Read 本 skill 或按其模板交付
+- 触发词示例：「影响面」「回归测试」「改动涉及哪些模块」
+
+安装（与 guardrails 相同目录策略）：
+
+```powershell
+Copy-Item -Recurse change-impact-regression $env:USERPROFILE\.agents\skills\change-impact-regression
+Copy-Item -Recurse change-impact-regression $env:USERPROFILE\.cursor\skills\change-impact-regression
+```
+
+可选 User Rules 补充一行：
+
+```text
+非 trivial 源码改动完成后：Read change-impact-regression，交付影响面清单与回归测试方法。
+```
 
 ### 文档输出位置
 

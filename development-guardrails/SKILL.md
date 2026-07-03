@@ -369,6 +369,7 @@ function flushDebugReport(reason) {
 |---|---|
 | `change-advice` | 用户要求“先别改”时，Part A/B 的改代码流程均不进入 |
 | `paste-replacement-fallback` | 文件改不进去 → paste 回退；需调试且缺运行证据 → Part B |
+| `change-impact-regression` | **任意非 trivial 源码改动完成后**，在同一轮收尾产出影响面清单与回归测试方法（见该 skill；不必合并进本文） |
 
 ## 质量检查
 
@@ -389,3 +390,7 @@ function flushDebugReport(reason) {
 
 - 持久注释与临时埋点是否区分清楚
 - 埋点修复后是否已全部删除，注释是否按 Part A 合理保留
+
+**源码改动收尾（与 `change-impact-regression`）：**
+
+- 非 trivial 改动完成后，是否已交付影响面清单与必测/建议测回归项
