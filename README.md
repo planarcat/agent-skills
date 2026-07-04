@@ -61,6 +61,8 @@ agent-skills/
 │   └── SKILL.md          # 改后影响面清单与回归测试方法
 ├── change-advice/
 │   └── SKILL.md          # 修改建议模式技能
+├── e2e-console-monitoring/
+│   └── SKILL.md          # E2E 控制台监控与按需诊断输出
 └── README.md
 ```
 
@@ -193,6 +195,26 @@ Copy-Item -Recurse change-impact-regression $env:USERPROFILE\.cursor\skills\chan
 
 ```text
 非 trivial 源码改动完成后：Read change-impact-regression，交付影响面清单与回归测试方法。
+```
+
+#### 7. E2E 控制台监控（e2e-console-monitoring）
+
+**新增或优化 E2E / 端到端用例**时：监听浏览器 `console` 与 `pageerror`，失败时输出控制台报告；仅在 trace/断言不足时按需加 `[E2E-DIAG]` 等可开关诊断输出。
+
+- 触发词示例：「加 E2E」「优化端到端」「Playwright 用例」「抓控制台报错」
+- 与 `development-guardrails` Part B 分工：Part B 管手工复现 REPORT；本 skill 管测试 harness 内控制台采集
+
+安装（目录策略同上）：
+
+```powershell
+Copy-Item -Recurse e2e-console-monitoring $env:USERPROFILE\.agents\skills\e2e-console-monitoring
+Copy-Item -Recurse e2e-console-monitoring $env:USERPROFILE\.cursor\skills\e2e-console-monitoring
+```
+
+可选 User Rules 补充一行：
+
+```text
+新增或修改 E2E 用例时：Read e2e-console-monitoring，接入控制台监控并在失败时输出报告。
 ```
 
 ### 文档输出位置
