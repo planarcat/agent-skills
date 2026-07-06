@@ -63,6 +63,8 @@ agent-skills/
 │   └── SKILL.md          # 修改建议模式技能
 ├── e2e-console-monitoring/
 │   └── SKILL.md          # E2E 控制台监控与按需诊断输出
+├── test-case-authoring/
+│   └── SKILL.md          # 测试用例编写（红灯验收，写完不修产品）
 └── README.md
 ```
 
@@ -215,6 +217,26 @@ Copy-Item -Recurse e2e-console-monitoring $env:USERPROFILE\.cursor\skills\e2e-co
 
 ```text
 新增或修改 E2E 用例时：Read e2e-console-monitoring，接入控制台监控并在失败时输出报告。
+```
+
+#### 8. 测试用例编写（test-case-authoring）
+
+用户说**编写 / 增加 / 补充测试或测试用例**时：默认用例应对**当前代码**跑**红**以钉住问题；**跑绿**则优先返工用例（除非用户明确「只编写、不考虑红绿」）。**编写完成后不要自动修业务代码**消红。
+
+- 触发词示例：「写测试」「加测试用例」「写 spec 复现」
+- 与 `e2e-console-monitoring`：E2E 用例叠加控制台监控；红灯验收与禁止修产品仍按本 skill
+
+安装：
+
+```powershell
+Copy-Item -Recurse test-case-authoring $env:USERPROFILE\.agents\skills\test-case-authoring
+Copy-Item -Recurse test-case-authoring $env:USERPROFILE\.cursor\skills\test-case-authoring
+```
+
+可选 User Rules：
+
+```text
+编写/增加测试用例时：Read test-case-authoring；跑测预期为红，绿了只改测试；交付后不要自动修产品代码。
 ```
 
 ### 文档输出位置

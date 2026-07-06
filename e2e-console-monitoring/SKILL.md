@@ -14,6 +14,7 @@ description: "When adding or improving E2E tests, monitor browser/page console e
 | `development-guardrails` Part B | 手工复现、修 bug | 复现会话 collector + 单次 REPORT；**不替代** E2E 内的持续控制台监听 |
 | **本 skill** | 编写/改 E2E | 用例级控制台采集、失败时输出报告、按需 E2E 诊断 log |
 | `change-impact-regression` | 改源码后收尾 | 影响面清单里可把相关 E2E 标为必测；本 skill 不负责列影响面 |
+| `test-case-authoring` | 用户要求**编写** E2E/测试 | 默认红灯验收、写完不修产品；控制台采集仍按**本文** |
 
 **协作约定：** 同一轮若既改 E2E 又改业务源码，改 E2E 时适用本 skill；若还适用 `development-guardrails`，应用内临时埋点仍按 Part B（修完删除），E2E 侧持久化的 `page.on('console')` 等**保留在测试代码**中。
 
