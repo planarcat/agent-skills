@@ -185,7 +185,7 @@ description: "After modifying application source code, produce an impact surface
 |:---|:---|
 | `gitnexus-impact-analysis` | GitNexus 工具用法与 d=1/d=2 风险语义；本 skill 在**改后交付**场景下调用 MCP |
 | `development-guardrails` | Part A/B 管改中与调试；本 skill 在改后收尾配合 |
-| `test-case-authoring` | 用户「写测试」或 E2E 回归：红灯验收、控制台断言；改后影响面清单仍用本文 |
+| `test-case-authoring` | Part A 写测试 / Part C 测驱动调试修产品后，收尾影响面仍用本文 |
 
 ## 与 Part B 调试的关系
 

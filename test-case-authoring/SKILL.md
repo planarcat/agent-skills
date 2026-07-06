@@ -1,16 +1,26 @@
 ---
 name: test-case-authoring
-description: "When the user asks to add, write, improve, or create tests or test cases (编写测试, 增加测试, 测试用例, E2E, 端到端, Playwright, Cypress, spec, unit/integration test), assume they expose a known or suspected defect: run tests after authoring and treat green as likely bad test design unless the user explicitly ignores pass/fail. Do not fix production code after authoring to make tests pass. For browser E2E, monitor console/pageerror, allowlist noise, add [E2E-DIAG] only when needed. Aliases: e2e-console-monitoring (merged). Read entire SKILL.md before writing tests."
+description: "Tests workflow in three parts—pick by user intent. Part A: add/write test cases (编写测试, 增加测试, 测试用例)—expect red on current code, do not fix product after authoring unless user asks. Part B: E2E console/pageerror monitoring when writing or improving browser tests. Part C: test-driven debugging (测试驱动调试, 用测试查, 跑 spec 调试, 测试失败排查, debug with test, failing spec)—Agent runs tests, adds harness diagnostics and console capture as needed, reads [TEST-DEBUG-REPORT] from terminal/attach before fixing product. Read entire SKILL.md. Aliases: e2e-console-monitoring (merged into Part B)."
 ---
 
-# 测试用例编写（红灯验收 + E2E 控制台）
+# 测试用例（Part A 编写 + Part B E2E 控制台 + Part C 测试驱动调试）
 
-当用户说**增加 / 编写 / 优化 / 补充测试或测试用例**（含 E2E）时：
+先判意图，再选 Part（**不可混用默认约束**）：
 
-1. **Part A — 红灯验收**：默认用测试钉住当前认为有问题（或待修）的行为；跑绿优先怀疑用例写错；**写完不要自动修产品**消红。  
-2. **Part B — E2E 控制台**（仅浏览器 E2E）：监听 console / pageerror，失败时输出报告；按需、可开关地加 `[E2E-DIAG]`。
+```
+用户要测试相关？
+  ├─ 编写/增加/优化用例（钉 bug、补覆盖）→ Part A（+ E2E 时 Part B）
+  ├─ 用测试/spec 查原因、跑失败用例、测试驱动调试 → Part C（E2E 叠加 Part B 采集）
+  └─ 仅优化 E2E 控制台基建、抓 console → Part B
+```
 
-> 原独立 skill `e2e-console-monitoring` 已并入本文 Part B。
+| Part | 典型触发 | 跑测后能否修产品 |
+|:---|:---|:---|
+| **A 红灯验收** | 写测试、加用例、写 spec 复现 | **否**（默认交付失败用例） |
+| **B E2E 控制台** | 编写/改 E2E、监控 console | 随 A 或 C |
+| **C 测试驱动调试** | 用测试查 bug、跑 failing spec、测试失败帮我查 | **是**（有 REPORT 后再最小修复） |
+
+> 原 `e2e-console-monitoring` 已并入 Part B。
 
 ---
 
@@ -31,7 +41,7 @@ description: "When the user asks to add, write, improve, or create tests or test
 |:---|:---|
 | `change-advice` | 用户说「先别改」时，同样**不改产品代码**；本 skill 额外约束「写完测试也不修产品」 |
 | `development-guardrails` Part A | 改测试代码时按需补注释 |
-| `development-guardrails` Part B | 用例**本身**跑不通（环境、语法）且缺证据时，可先 Part B；**不等于**去修被测业务。Part B 的 `[DEBUG:slug] REPORT` 与 Part B 本文 `[E2E-DIAG]` 分工不同（见 §E2E 诊断） |
+| `development-guardrails` Part B | **手工复现**且无 spec 时用手动 collector + `[DEBUG:slug] REPORT`；**已有/可写 spec 时优先 Part C**。与 `[E2E-DIAG]` / `[TEST-DIAG]` 勿混 slug |
 | `change-impact-regression` | 本 skill 管「写测试这一轮」；改产品后的影响面清单仍用 change-impact-regression |
 
 ## 何时必须 Part A
@@ -103,6 +113,7 @@ description: "When the user asks to add, write, improve, or create tests or test
 | 「只写测试，不考虑红绿」 | 可绿即停 |
 | 「写完并修到绿」 / 「修 bug」 | 新任务，用户明确授权修产品 |
 | 「优化 E2E / 抓 console」 | Part A（若在写用例）+ Part B |
+| 「跑这个 spec 查原因」「测试失败排查」 | **Part C**（+ E2E 时 Part B） |
 
 ---
 
@@ -201,6 +212,115 @@ function e2eDiag(step: string, data: Record<string, unknown>) {
 [E2E-CONSOLE-REPORT] END
 ```
 
+**Part C 调试 E2E 时：** 默认在 fixture 启用 Part B 采集；失败时将 console 段落并入 `[TEST-DEBUG-REPORT]`（见 Part C §报告格式）。
+
+---
+
+# Part C：测试驱动调试
+
+用**测试 runner** 复现 bug 时：Agent **自行运行**用例，在 **harness / 可开关诊断** 中**按需**加采集点，从终端或 attach 读取 **一份** `[TEST-DEBUG-REPORT]`，**再**做根因判断与修复（可改产品代码）。与 Part A「写完不修产品」**相反**，仅在有 Part C 触发时使用。
+
+## 何时必须 Part C
+
+- 用户要用测试查因：跑 failing spec、测试驱动调试、测试失败帮我查、debug with test  
+- 已有失败用例，静态 diff 不足以定位  
+- `development-guardrails` Part B 触发，且路径**已有或可写最小 repro spec**（**优先 Part C**，勿先要求用户手工复现）
+
+**不进入 Part C（仍用 Part A）：** 用户明确「只写测试 / 写完别修」；用户只要新增钉住问题的用例并交付红灯。
+
+## Part C 核心规则
+
+| 必须 | 禁止 |
+|:---|:---|
+| **Agent 自己 Shell 跑**最小范围测试命令 | 只改代码不跑、让用户贴一行断言 diff |
+| 证据不足时**先加采集**（fixture console、mock 调用摘要、`TEST_DEBUG` / `[TEST-DIAG]`）再跑第二轮 | 无 REPORT 盲改 `src/` |
+| 失败/结束时输出 **一份** `[TEST-DEBUG-REPORT]`（含断言、console、关键 step） | 复现中途散落 log、多次让用户贴片段 |
+| 根因结论与修复**仅基于** REPORT + 代码 | 忽略 console / mock 证据猜修 |
+| 验证通过（重跑 spec）后**删除**临时 `[TEST-DIAG]` 与应用内临时 log | 永久留调试 log |
+| E2E：**复用 Part B** fixture；调试轮次失败报告合并进 TEST-DEBUG-REPORT | 用例绿但 console 有未解释 error 就宣布修好 |
+
+## Part C 工作流程
+
+```
+1. 确认 spec 路径或写最小 repro（可临时 test.only / 单文件）
+  → 2. 查项目是否已有 extended test / setup（优先复用）
+  → 3. 跑一轮 → 读终端输出
+  → 4. 证据够？否 → 加 harness 采集（Part B 若 E2E）或 [TEST-DIAG] / network 摘要 hook
+  → 5. 再跑 → 生成 [TEST-DEBUG-REPORT]（Agent 从终端/attach 自行读取，勿要求用户复制）
+  → 6. 据 REPORT 最小修复（产品或测试）
+  → 7. 重跑 spec 验证；清理临时 DIAG；改产品后适用 change-impact-regression
+```
+
+## 主动加哪些调试信息（按需）
+
+| 层级 | 何时加 | 方式 |
+|:---|:---|:---|
+| **Harness** | 默认 E2E / 首次跑失败 | Part B `attachConsoleMonitor`；Vitest/Jest `afterEach` 打印 mock.calls 摘要 |
+| **测试步骤** | 不知停在哪一步 | `test.step` / 软断言前 `diag('after-submit', { url, status })` 写入 report 数组 |
+| **应用** | trace + harness 仍不够 | `[TEST-DIAG]` 或 `[E2E-DIAG]`，`process.env.TEST_DEBUG` / `VITE_E2E_DIAG`，默认关 |
+| **Network** | 怀疑 API | Playwright `page.on('response')` 只记失败 URL/status；勿全量 HAR 刷屏 |
+
+加点位原则：**少而准**；每轮调试只 flush **一份** REPORT。
+
+## `[TEST-DEBUG-REPORT]` 格式
+
+测试失败或 `afterEach` / 全局 teardown 时**打印一次**（Playwright 可 `test.info().attach('test-debug-report.txt', …)`）：
+
+```text
+[TEST-DEBUG-REPORT] START
+{
+  "slug": "login-role-undefined",
+  "spec": "auth/login.spec.ts",
+  "case": "shows dashboard for admin",
+  "command": "pnpm exec playwright test auth/login.spec.ts --reporter=line",
+  "assertionError": "Expected …",
+  "steps": [
+    { "step": "goto-login", "t": 120 },
+    { "step": "submit", "t": 890, "status": 401 }
+  ],
+  "console": [
+    { "type": "pageerror", "text": "Cannot read properties of undefined (reading 'role')" }
+  ],
+  "notes": "optional: mock call summary, last response url"
+}
+[TEST-DEBUG-REPORT] END
+```
+
+Agent **必须**在改产品前从本轮 Shell 输出或 attach 中取得上述区间内容；若缺失字段，补采集后**再跑一轮**，仍只交付一份新 REPORT。
+
+### Playwright：失败时 flush 示例
+
+```typescript
+// 临时调试结构，问题关闭后可保留 harness、删 test 内 __report 若仅调试用
+test.afterEach(async ({}, testInfo) => {
+  if (testInfo.status !== testInfo.expectedStatus) {
+    const body =
+      '[TEST-DEBUG-REPORT] START\n' +
+      JSON.stringify({ slug: '…', console: consoleBucket, steps: stepLog }, null, 2) +
+      '\n[TEST-DEBUG-REPORT] END';
+    console.log(body);
+    await testInfo.attach('test-debug-report.txt', { body, contentType: 'text/plain' });
+  }
+});
+```
+
+## Part C 与 Part A / guardrails Part B
+
+| | Part A | Part C | guardrails Part B |
+|:---|:---|:---|:---|
+| 目的 | 交付失败用例 | 查因并修复 | 手工复现无 spec |
+| 修产品 | 禁止（默认） | 允许（有 REPORT 后） | 允许（有 REPORT 后） |
+| 采集 | 可选 Part B | harness + REPORT 必选 | 应用内 collector |
+| 谁跑 | Agent 跑测 | **Agent 跑测并读 REPORT** | Agent 或用户复现 |
+
+## Part C 交付（修复轮次结束时）
+
+- 使用的命令与 spec  
+- 引用的 `[TEST-DEBUG-REPORT]` 要点（或确认已从终端读取）  
+- 根因一句话 + 改动文件  
+- 重跑 spec 结果  
+- 已删临时 `[TEST-DIAG]` / 临时 collector（保留 fixture 控制台监听若项目需要）
+
 ---
 
 ## 质量检查（全文）
@@ -216,3 +336,10 @@ function e2eDiag(step: string, data: Record<string, unknown>) {
 - [ ] 已采集 console / pageerror；allowlist 合理  
 - [ ] 失败可见 `[E2E-CONSOLE-REPORT]` 或 attach  
 - [ ] `[E2E-DIAG]` 默认关、无生产泄漏  
+
+**Part C（测试驱动调试）**
+
+- [ ] Agent 已自行跑 spec，未要求用户零散贴 log  
+- [ ] 改产品前已有 `[TEST-DEBUG-REPORT]`（E2E 含 console）  
+- [ ] 未与 Part A 混淆（写用例轮次未擅自修产品）  
+- [ ] 验证后已清理临时 DIAG；修产品后按需 change-impact-regression  

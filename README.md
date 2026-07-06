@@ -62,7 +62,7 @@ agent-skills/
 ├── change-advice/
 │   └── SKILL.md          # 修改建议模式技能
 ├── test-case-authoring/
-│   └── SKILL.md          # 测试编写（红灯验收 + E2E 控制台，含原 e2e-console-monitoring）
+│   └── SKILL.md          # 测试 Part A/B/C（编写、E2E 控制台、测试驱动调试）
 └── README.md
 ```
 
@@ -201,10 +201,11 @@ Copy-Item -Recurse change-impact-regression $env:USERPROFILE\.cursor\skills\chan
 
 用户说**编写 / 增加 / 优化 / 补充测试或测试用例**（含 E2E）时：
 
-- **Part A 红灯验收**：对当前代码跑测**预期为红**；**跑绿**优先返工用例（除非「只编写、不考虑红绿」）；**写完不要自动修业务代码**消红  
-- **Part B E2E 控制台**：监听 `console` / `pageerror`、allowlist、`[E2E-DIAG]`、失败时 `[E2E-CONSOLE-REPORT]`（原 `e2e-console-monitoring` 已并入）
+- **Part A 红灯验收**：编写用例时对当前代码**预期为红**；绿了返工用例；**写完不要自动修业务代码**  
+- **Part B E2E 控制台**：`console` / `pageerror`、allowlist、`[E2E-DIAG]`、`[E2E-CONSOLE-REPORT]`  
+- **Part C 测试驱动调试**：用 spec 查 bug 时 Agent **自跑测试**、按需加采集、读 `[TEST-DEBUG-REPORT]` 后再修产品（与 Part A 区分）
 
-触发词示例：「写测试」「加测试用例」「Playwright/E2E」「抓控制台报错」
+触发词示例：「写测试」「Playwright/E2E」「用测试查原因」「跑 spec 调试」「测试失败排查」
 
 安装：
 
@@ -218,7 +219,7 @@ Copy-Item -Recurse test-case-authoring $env:USERPROFILE\.cursor\skills\test-case
 可选 User Rules：
 
 ```text
-编写/增加/优化测试或 E2E 用例时：Read test-case-authoring；红灯验收（绿了只改测试、不修产品）；E2E 接入控制台监控。
+编写/增加测试：Read test-case-authoring Part A+B。用测试/spec 查 bug：Read Part C，自跑测试并读 [TEST-DEBUG-REPORT] 再改代码。勿与「只写用例不修产品」混用。
 ```
 
 ### 文档输出位置

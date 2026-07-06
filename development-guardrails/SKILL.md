@@ -251,12 +251,23 @@ let count = 0
 ```
 1. 确认「需要调试」且证据不足 / 问题未完整解决
   → 2. 梳理完整复现路径
-  → 3. 沿路径布静默采集点 + 确定 flush 时机
-  → 4. 代理优先自行跑复现；否则请用户走一遍流程
-  → 5. 复现结束后取得唯一一份诊断报告
+  → 2a. 【优先】路径已有或可写最小 spec？→ Read test-case-authoring Part C：Agent 跑测 + [TEST-DEBUG-REPORT]（E2E 叠加 Part B 控制台）
+  → 3. 否则：沿路径布静默采集点 + 确定 flush 时机（§B.6 手动 collector）
+  → 4. 代理优先自行跑复现（测或手工）；勿在 spec 能复现时仍要求用户手工点流程
+  → 5. 复现结束后取得唯一一份诊断报告（[TEST-DEBUG-REPORT] 或 [DEBUG:slug] REPORT）
   → 6. AI 仅凭该报告判断并修复
-  → 7. 验证后清理埋点
+  → 7. 验证后清理埋点（含临时 [TEST-DIAG] / [E2E-DIAG]）
 ```
+
+### B.4.1 测试通道（与 test-case-authoring Part C）
+
+| 条件 | 做法 |
+|:---|:---|
+| 已有 failing spec，或 bug 可写单文件 repro | **Part C 优先**：harness 采集 + Agent 自跑 + 一份 `[TEST-DEBUG-REPORT]` |
+| 纯 UI 流程、无测试基建、spec 写不出 | 用手动 §B.6 collector + `[DEBUG:slug] REPORT` |
+| 用户同时「写测试」且「查 bug」 | 先澄清：Part A 只交付红灯 vs Part C 查因修产品 |
+
+禁止：测试已能稳定失败，仍让用户手工复现并分多次贴 log。
 
 ## B.5 沿完整复现路径布采集点
 
@@ -370,7 +381,7 @@ function flushDebugReport(reason) {
 | `change-advice` | 用户要求“先别改”时，Part A/B 的改代码流程均不进入 |
 | `paste-replacement-fallback` | 文件改不进去 → paste 回退；需调试且缺运行证据 → Part B |
 | `change-impact-regression` | **任意非 trivial 源码改动完成后**，在同一轮收尾产出影响面清单与回归测试方法（见该 skill；不必合并进本文） |
-| `test-case-authoring` | **编写/优化测试或 E2E**：Part A 红灯验收、写完不修产品；Part B 控制台采集与 `[E2E-DIAG]`（与 Part B `[DEBUG:slug]` 分工不同） |
+| `test-case-authoring` | Part A 写用例不修产品；Part B E2E 控制台；Part C 测试驱动调试（**有 spec 时 guardrails Part B 优先 Part C**，REPORT 为 `[TEST-DEBUG-REPORT]`） |
 
 ## 质量检查
 
