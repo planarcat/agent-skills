@@ -370,8 +370,7 @@ function flushDebugReport(reason) {
 | `change-advice` | 用户要求“先别改”时，Part A/B 的改代码流程均不进入 |
 | `paste-replacement-fallback` | 文件改不进去 → paste 回退；需调试且缺运行证据 → Part B |
 | `change-impact-regression` | **任意非 trivial 源码改动完成后**，在同一轮收尾产出影响面清单与回归测试方法（见该 skill；不必合并进本文） |
-| `e2e-console-monitoring` | **新增/优化 E2E 用例**时：测试内控制台采集与失败报告；应用内按需 `[E2E-DIAG]` 与 Part B 的 `[DEBUG:slug] REPORT` 分工不同 |
-| `test-case-authoring` | 用户要求**编写**测试时：默认预期跑红、绿则返工用例、交付后禁止自动修产品 |
+| `test-case-authoring` | **编写/优化测试或 E2E**：Part A 红灯验收、写完不修产品；Part B 控制台采集与 `[E2E-DIAG]`（与 Part B `[DEBUG:slug]` 分工不同） |
 
 ## 质量检查
 

@@ -61,10 +61,8 @@ agent-skills/
 │   └── SKILL.md          # 改后影响面清单与回归测试方法
 ├── change-advice/
 │   └── SKILL.md          # 修改建议模式技能
-├── e2e-console-monitoring/
-│   └── SKILL.md          # E2E 控制台监控与按需诊断输出
 ├── test-case-authoring/
-│   └── SKILL.md          # 测试用例编写（红灯验收，写完不修产品）
+│   └── SKILL.md          # 测试编写（红灯验收 + E2E 控制台，含原 e2e-console-monitoring）
 └── README.md
 ```
 
@@ -199,32 +197,14 @@ Copy-Item -Recurse change-impact-regression $env:USERPROFILE\.cursor\skills\chan
 非 trivial 源码改动完成后：Read change-impact-regression，交付影响面清单与回归测试方法。
 ```
 
-#### 7. E2E 控制台监控（e2e-console-monitoring）
+#### 7. 测试用例编写（test-case-authoring）
 
-**新增或优化 E2E / 端到端用例**时：监听浏览器 `console` 与 `pageerror`，失败时输出控制台报告；仅在 trace/断言不足时按需加 `[E2E-DIAG]` 等可开关诊断输出。
+用户说**编写 / 增加 / 优化 / 补充测试或测试用例**（含 E2E）时：
 
-- 触发词示例：「加 E2E」「优化端到端」「Playwright 用例」「抓控制台报错」
-- 与 `development-guardrails` Part B 分工：Part B 管手工复现 REPORT；本 skill 管测试 harness 内控制台采集
+- **Part A 红灯验收**：对当前代码跑测**预期为红**；**跑绿**优先返工用例（除非「只编写、不考虑红绿」）；**写完不要自动修业务代码**消红  
+- **Part B E2E 控制台**：监听 `console` / `pageerror`、allowlist、`[E2E-DIAG]`、失败时 `[E2E-CONSOLE-REPORT]`（原 `e2e-console-monitoring` 已并入）
 
-安装（目录策略同上）：
-
-```powershell
-Copy-Item -Recurse e2e-console-monitoring $env:USERPROFILE\.agents\skills\e2e-console-monitoring
-Copy-Item -Recurse e2e-console-monitoring $env:USERPROFILE\.cursor\skills\e2e-console-monitoring
-```
-
-可选 User Rules 补充一行：
-
-```text
-新增或修改 E2E 用例时：Read e2e-console-monitoring，接入控制台监控并在失败时输出报告。
-```
-
-#### 8. 测试用例编写（test-case-authoring）
-
-用户说**编写 / 增加 / 补充测试或测试用例**时：默认用例应对**当前代码**跑**红**以钉住问题；**跑绿**则优先返工用例（除非用户明确「只编写、不考虑红绿」）。**编写完成后不要自动修业务代码**消红。
-
-- 触发词示例：「写测试」「加测试用例」「写 spec 复现」
-- 与 `e2e-console-monitoring`：E2E 用例叠加控制台监控；红灯验收与禁止修产品仍按本 skill
+触发词示例：「写测试」「加测试用例」「Playwright/E2E」「抓控制台报错」
 
 安装：
 
@@ -233,10 +213,12 @@ Copy-Item -Recurse test-case-authoring $env:USERPROFILE\.agents\skills\test-case
 Copy-Item -Recurse test-case-authoring $env:USERPROFILE\.cursor\skills\test-case-authoring
 ```
 
+若曾安装独立 `e2e-console-monitoring`，可删除旧目录，统一使用本 skill。
+
 可选 User Rules：
 
 ```text
-编写/增加测试用例时：Read test-case-authoring；跑测预期为红，绿了只改测试；交付后不要自动修产品代码。
+编写/增加/优化测试或 E2E 用例时：Read test-case-authoring；红灯验收（绿了只改测试、不修产品）；E2E 接入控制台监控。
 ```
 
 ### 文档输出位置
