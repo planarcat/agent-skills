@@ -1,10 +1,10 @@
 # Agent Skills
 
-> 面向 AI 辅助软件开发的结构化方案讨论—执行—锁定工作流
+> 面向 AI 辅助软件开发与产品协作的 Skills 集合：方案讨论—执行—锁定，以及 PM 需求/发版等工作流
 
 ## 简介
 
-本项目为 **Claude Code** 提供一套完整的三阶段 AI 协作技能（Skills），覆盖从方案设计到开发落地再到归档锁定的全生命周期：
+本项目为 **Claude Code / Cursor** 提供一套 AI 协作技能（Skills），覆盖研发方案生命周期，并包含产品经理常用技能：
 
 | 阶段 | 技能 | 功能 |
 |:---|:---|:---|
@@ -12,6 +12,13 @@
 | 🔧 **执行** | `plan-execution` | 按方案逐阶段实施开发，产出执行结果文档 |
 | 🔒 **锁定** | `plan-lock` | 锁定前核对方案/结果/遗留清单，确认闭环后归档 |
 | 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
+| 🌿 **分支** | `create-requirement-branch` | 从远程主分支拉最新代码，创建 `dev/hcb/{id}_{标题}`，上游设为自己 |
+| 📋 **PRD** | `prd-authoring` | 按固定结构写 PRD，落盘 Docs/ 或 Plans/ |
+| ❓ **澄清** | `requirement-clarification` | 模糊需求先澄清；已确认 / 待确认 / 假设 |
+| ✅ **故事** | `user-story-acceptance` | 用户故事 + Given/When/Then 验收与测试提纲 |
+| ⚖️ **取舍** | `competitive-or-feature-brief` | 竞品/功能取舍简报：推荐与不做代价 |
+| 📣 **发版** | `release-note-pm` | 对用户 / 对运营 / 对研发三套发版说明 |
+| 🗓️ **纪要** | `meeting-to-action` | 会纪要 → 决策、待办（负责人+截止）、开放问题 |
 
 ## 工作流概览
 
@@ -43,30 +50,28 @@
 
 ```
 agent-skills/
-├── plan-discussion/
-│   └── SKILL.md          # 方案讨论技能（~420 行）
-├── plan-execution/
-│   └── SKILL.md          # 方案执行技能（~260 行）
-├── plan-lock/
-│   └── SKILL.md          # 方案锁定技能（~115 行）
-├── generate-commit/
-│   └── SKILL.md          # 生成 commit 技能
-├── record-change-log/
-│   └── SKILL.md          # 改动日志记录技能
-├── record-development-blog/
-│   └── SKILL.md          # 开发博客记录技能
-├── development-guardrails/
-│   └── SKILL.md          # 开发中规范（注释守卫 + 调试埋点）
-├── change-impact-regression/
-│   └── SKILL.md          # 改后影响面清单与回归测试方法
-├── change-advice/
-│   └── SKILL.md          # 修改建议模式技能
-├── test-case-authoring/
-│   └── SKILL.md          # 测试 Part A/B/C（编写、E2E 控制台、测试驱动调试）
+├── plan-discussion/              # 方案讨论
+├── plan-execution/               # 方案执行
+├── plan-lock/                    # 方案锁定
+├── generate-commit/              # 生成 commit
+├── create-requirement-branch/    # 创建需求分支
+├── record-change-log/            # 改动短日志
+├── record-development-blog/      # 开发博客
+├── development-guardrails/       # 开发中规范
+├── change-impact-regression/     # 影响面与回归
+├── change-advice/                # 修改建议（不改代码）
+├── test-case-authoring/          # 测试 Part A/B/C
+├── impact-surface-audit/         # 最终影响面审计（强触发词）
+├── prd-authoring/                # PM：写 PRD
+├── requirement-clarification/    # PM：需求澄清
+├── user-story-acceptance/        # PM：用户故事 + AC
+├── competitive-or-feature-brief/ # PM：功能/竞品简报
+├── release-note-pm/              # PM：发版说明（三套语气）
+├── meeting-to-action/            # PM：会纪要 → 行动项
 └── README.md
 ```
 
-项目的全部内容就是这三个 SKILL.md 文件，零依赖，纯 Markdown 规范。
+各技能为独立目录下的 `SKILL.md`，零依赖，纯 Markdown 规范。
 
 ## 安装与使用
 
@@ -164,7 +169,16 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 - "生成 commit"、"生成提交"、"创建 commit"
 - "写 commit"、"帮我 commit"、"commit 一下"
 
-#### 5. 开发中规范（development-guardrails）
+#### 5. 创建需求分支（create-requirement-branch）
+
+说出以下任一关键词即可触发：
+
+- "创建新需求分支"、"开需求分支"、"新建需求分支"
+- "从主分支拉个需求分支"
+
+会从远程主分支（主分支名可从工作区根目录 `AGENT.md` / `CLAUDE.md` 读取）拉取最新代码，本地创建 `dev/hcb/{需求id}_{需求标题}`。**上游必须是该分支自己**，绝不能跟踪主分支。
+
+#### 6. 开发中规范（development-guardrails）
 
 改代码时的附加约束。**全局使用请配置 Cursor User Rules**（见上文），并要求改代码前 **Read 本 skill 全文**。
 
@@ -177,7 +191,7 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 - **Part A 代码注释守卫**：任何代码修改
 - **Part B 问题调试控制台埋点**：问题未完整解决或缺少运行时证据时，复现全程静默采集，完成后统一输出一份诊断报告
 
-#### 6. 改动影响面与回归（change-impact-regression）
+#### 7. 改动影响面与回归（change-impact-regression）
 
 **改完代码、向用户说「好了」之前**，列出受影响的功能/组件/模块，并给出必测与建议测的回归方法。影响面检索**优先调用 GitNexus MCP**（`detect_changes`、`impact`、`api_impact`）。与 guardrails **分工**：guardrails 管改中与调试；本 skill 管改后防间接漂移。
 
@@ -197,7 +211,7 @@ Copy-Item -Recurse change-impact-regression $env:USERPROFILE\.cursor\skills\chan
 非 trivial 源码改动完成后：Read change-impact-regression，交付影响面清单与回归测试方法。
 ```
 
-#### 7. 测试用例编写（test-case-authoring）
+#### 8. 测试用例编写（test-case-authoring）
 
 用户说**编写 / 增加 / 优化 / 补充测试或测试用例**（含 E2E）时：
 
@@ -221,6 +235,33 @@ Copy-Item -Recurse test-case-authoring $env:USERPROFILE\.cursor\skills\test-case
 ```text
 编写/增加测试：Read test-case-authoring Part A+B。用测试/spec 查 bug：Read Part C，自跑测试并读 [TEST-DEBUG-REPORT] 再改代码。勿与「只写用例不修产品」混用。
 ```
+
+#### 9. 产品经理技能（P0 / P1）
+
+| 技能 | 触发示例 | 默认落盘 |
+|:---|:---|:---|
+| `prd-authoring` | 「写 PRD」「出需求说明」 | `Docs/PRD/` 或 `Plans/{主题}/` |
+| `requirement-clarification` | 「需求澄清」「口头需求」 | `Docs/需求澄清/` |
+| `user-story-acceptance` | 「拆故事」「写 AC」 | `Docs/用户故事/` |
+| `competitive-or-feature-brief` | 「竞品对比」「要不要做」 | `Docs/功能简报/` |
+| `release-note-pm` | 「写发版说明」「changelog」 | `Docs/发版说明/` |
+| `meeting-to-action` | 「会纪要」「纪要转待办」 | `Docs/会纪要/` |
+
+安装示例（PowerShell，可按需复制单个目录）：
+
+```powershell
+$dst = "$env:USERPROFILE\.claude\skills"
+@(
+  'prd-authoring',
+  'requirement-clarification',
+  'user-story-acceptance',
+  'competitive-or-feature-brief',
+  'release-note-pm',
+  'meeting-to-action'
+) | ForEach-Object { Copy-Item -Recurse $_ "$dst\$_" -Force }
+```
+
+PM 推荐顺序：模糊需求 → `requirement-clarification` → `prd-authoring` 或 `user-story-acceptance`；取舍用 `competitive-or-feature-brief`；技术方案仍用 `plan-discussion`。
 
 ### 文档输出位置
 
