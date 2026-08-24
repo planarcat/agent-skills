@@ -13,6 +13,7 @@
 | 🔒 **锁定** | `plan-lock` | 锁定前核对方案/结果/遗留清单，确认闭环后归档 |
 | 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
 | 🌿 **分支** | `create-requirement-branch` | 建 `dev/hcb/{id}_{标题}`；并行 worktree 默认起本地服务；本仓普通建分支一般不起服务 |
+| 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止用远程整树覆盖本地 |
 | 📋 **PRD** | `prd-authoring` | 按固定结构写 PRD，落盘 Docs/ 或 Plans/ |
 | ❓ **澄清** | `requirement-clarification` | 模糊需求先澄清；已确认 / 待确认 / 假设 |
 | ✅ **故事** | `user-story-acceptance` | 用户故事 + Given/When/Then 验收与测试提纲 |
@@ -55,6 +56,7 @@ agent-skills/
 ├── plan-lock/                    # 方案锁定
 ├── generate-commit/              # 生成 commit
 ├── create-requirement-branch/    # 创建需求分支
+├── resolve-merge-conflict/       # 手动解决合并冲突（禁止覆盖）
 ├── record-change-log/            # 改动短日志
 ├── record-development-blog/      # 开发博客
 ├── development-guardrails/       # 开发中规范
@@ -183,7 +185,16 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 **本地服务：** 仅 **worktree 并行**时默认在新目录自动启动（装依赖、换端口避开原窗口，不杀 A 的服务；可说「不起服务」跳过）。本仓**普通新建分支**一般**不**起服务，沿用原窗口已在跑的 dev 即可。
 
-#### 6. 开发中规范（development-guardrails）
+#### 6. 手动解决合并冲突（resolve-merge-conflict）
+
+本地修改分支与远程/其他分支冲突时触发，例如：
+
+- "解决冲突"、"处理合并冲突"、"同步远程有冲突"
+- "pull 冲突了"、"别覆盖本地"
+
+**必须** fetch 后比对差异，只在本地修改分支上手改文件。**禁止** `reset --hard`、整树 `checkout` 对方分支、无脑 `--theirs` 等覆盖式解决。
+
+#### 7. 开发中规范（development-guardrails）
 
 改代码时的附加约束。**全局使用请配置 Cursor User Rules**（见上文），并要求改代码前 **Read 本 skill 全文**。
 
@@ -196,7 +207,7 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 - **Part A 代码注释守卫**：任何代码修改
 - **Part B 问题调试控制台埋点**：问题未完整解决或缺少运行时证据时，复现全程静默采集，完成后统一输出一份诊断报告
 
-#### 7. 改动影响面与回归（change-impact-regression）
+#### 8. 改动影响面与回归（change-impact-regression）
 
 **改完代码、向用户说「好了」之前**，列出受影响的功能/组件/模块，并给出必测与建议测的回归方法。影响面检索**优先调用 GitNexus MCP**（`detect_changes`、`impact`、`api_impact`）。与 guardrails **分工**：guardrails 管改中与调试；本 skill 管改后防间接漂移。
 
@@ -216,7 +227,7 @@ Copy-Item -Recurse change-impact-regression $env:USERPROFILE\.cursor\skills\chan
 非 trivial 源码改动完成后：Read change-impact-regression，交付影响面清单与回归测试方法。
 ```
 
-#### 8. 测试用例编写（test-case-authoring）
+#### 9. 测试用例编写（test-case-authoring）
 
 用户说**编写 / 增加 / 优化 / 补充测试或测试用例**（含 E2E）时：
 
@@ -241,7 +252,7 @@ Copy-Item -Recurse test-case-authoring $env:USERPROFILE\.cursor\skills\test-case
 编写/增加测试：Read test-case-authoring Part A+B。用测试/spec 查 bug：Read Part C，自跑测试并读 [TEST-DEBUG-REPORT] 再改代码。勿与「只写用例不修产品」混用。
 ```
 
-#### 9. 产品经理技能（P0 / P1）
+#### 10. 产品经理技能（P0 / P1）
 
 | 技能 | 触发示例 | 默认落盘 |
 |:---|:---|:---|
