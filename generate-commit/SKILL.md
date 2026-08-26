@@ -184,7 +184,7 @@ git commit -m "<commit message>"
 
 - 告知用户："检测到仓库处于合并冲突状态，请先解决冲突再生成 commit。"
 - 不做任何操作
-- 若用户接着要求解决冲突：改走 `resolve-merge-conflict`（fetch 对照 + 在修改分支手改；禁止用远程整树覆盖）
+- 若用户接着要求解决冲突：改走 `resolve-merge-conflict`（fetch 对照 + 在修改分支手改；禁止合入对方/测试分支，禁止整树覆盖）
 
 ### 用户说"生成 commit 并推送"
 

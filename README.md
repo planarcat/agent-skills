@@ -13,7 +13,7 @@
 | 🔒 **锁定** | `plan-lock` | 锁定前核对方案/结果/遗留清单，确认闭环后归档 |
 | 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
 | 🌿 **分支** | `create-requirement-branch` | 建 `dev/hcb/{id}_{标题}`；并行 worktree 默认起本地服务；本仓普通建分支一般不起服务 |
-| 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止用远程整树覆盖本地 |
+| 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
 | 📋 **PRD** | `prd-authoring` | 按固定结构写 PRD，落盘 Docs/ 或 Plans/ |
 | ❓ **澄清** | `requirement-clarification` | 模糊需求先澄清；已确认 / 待确认 / 假设 |
 | ✅ **故事** | `user-story-acceptance` | 用户故事 + Given/When/Then 验收与测试提纲 |
@@ -192,7 +192,7 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 - "解决冲突"、"处理合并冲突"、"同步远程有冲突"
 - "pull 冲突了"、"别覆盖本地"
 
-**必须** fetch 后比对差异，只在本地修改分支上手改文件。**禁止** `reset --hard`、整树 `checkout` 对方分支、无脑 `--theirs` 等覆盖式解决。
+**必须** fetch 后比对差异，只在本地修改分支上手改文件。**禁止**主动 `merge`/`pull` 把对方（含测试分支）合入本地；**禁止** `reset --hard`、整树 `checkout` 对方分支、无脑 `--theirs` 等覆盖式解决。
 
 #### 7. 开发中规范（development-guardrails）
 
