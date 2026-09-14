@@ -121,6 +121,7 @@ git push -u origin HEAD
 
 ```bash
 git worktree remove <worktree路径>
+# 同时停掉该 worktree 的 dev 服务，释放端口
 ```
 
 ---
@@ -164,16 +165,28 @@ git push -u origin HEAD
 
 记录为 `<dev-cmd>`，例如 `pnpm dev`。
 
-### 2. 依赖安装（Worktree 尤其要做）
+### 2. 依赖安装与健康检查（Worktree 尤其要做）
 
 新 worktree **通常没有**可用的 `node_modules`（或与工具链不完整）。在启动前：
 
 ```bash
 # 在新需求工作目录内
-# 有 pnpm-lock → pnpm install；yarn.lock → yarn；否则 npm install
+# 有 pnpm-lock → 优先 pnpm install --prefer-offline（本地 store 提速）
+#               链接层损坏时 → pnpm install --force（重建）
+# yarn.lock → yarn；否则 npm install
 ```
 
-已有完整 `node_modules` 且安装不明显过期 → 可跳过 install，直接起服务。install 失败 → 汇报错误，**不要假装服务已起**。
+**启动前健康检查**：
+
+- `node_modules` 目录存在 **≠** 可用：抽查 `node_modules/.bin` 是否非空；为空时起服务必报命令找不到（如 `'vite' 不是内部或外部命令`）
+- 出现该症状 → 先 `pnpm install --prefer-offline`；仍失败 → `pnpm install --force`
+- ⚠️ pnpm 隐式依赖检查（`verify-deps-before-run`）若已按提速配置关闭，则**不会自动补装**——依赖变化（pull / 切分支）后必须手动 install
+
+**耗时参考（暖 store）**：install 约 1 分钟（`--force` 约 1.5 分钟）；修好后 `vite` dev 约 15 秒 ready；依赖预构建缓存为空时首次启动会明显更久。
+
+**复用优先**：同一需求已有 worktree（目录名含需求 id）时，优先复用该目录（依赖与缓存现成），避免重复新建/安装。
+
+已有完整 `node_modules`（`.bin` 非空、lockfile 未变）→ 可跳过 install，直接起服务。install 失败 → 汇报错误，**不要假装服务已起**。
 
 若项目文档要求复制 `.env` / `.env.local`：从原仓根复制到 worktree（只复制被 gitignore 的本地环境文件，不提交）。没有则按文档提示用户，不编造密钥。
 
@@ -199,6 +212,7 @@ Worktree 与原窗口常会**抢同一默认端口**。
 - `block_until_ms` 设小或 `0`，避免一直卡在启动日志上；再读终端输出，确认出现 Local / Network URL 或 “ready”
 - 把 **URL（含端口）** 写进最终汇报
 - 启动失败（依赖、编译、端口）→ 说明原因与已尝试命令；分支创建结果仍然保留，不回滚分支
+- 启动成功后**保持常驻**：同一需求周期内的后续任务直接复用该 worktree 与 dev 服务（靠 HMR 热更新，不要每任务重启）；仅依赖变化、端口冲突或进程异常时才重启
 
 ### 5. 禁止
 
