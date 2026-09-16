@@ -70,9 +70,9 @@ agent-skills/
 ├── competitive-or-feature-brief/ # PM：功能/竞品简报
 ├── release-note-pm/              # PM：发版说明（三套语气）
 ├── meeting-to-action/            # PM：会纪要 → 行动项
-├── report-pipeline/              # 报告：素材采集与归并（日报/周评）
-├── report-draft-filter/          # 报告：工作小结 → 日报草稿
-├── report-writer/                # 报告：日报/周评成型（内附规范原文）
+├── report-pipeline/              # 日报：素材采集与归并
+├── report-draft-filter/          # 日报：工作小结 → 日报草稿
+├── report-writer/                # 日报：成型（内附规范源文档）
 ├── install.sh                    # 一键安装：把各技能装到工具的技能目录
 └── README.md
 ```
@@ -316,19 +316,19 @@ $dst = "$env:USERPROFILE\.claude\skills"
 
 PM 推荐顺序：模糊需求 → `requirement-clarification` → `prd-authoring` 或 `user-story-acceptance`；取舍用 `competitive-or-feature-brief`；技术方案仍用 `plan-discussion`。
 
-#### 11. 报告编写（日报 / 周评）
+#### 11. 日报编写
 
-三个技能各管一段，按 **采集 → 分拣 → 成型** 的顺序配合。适用范围：**日报 + 周评，不写月报**。
+三个技能各管一段，按 **采集 → 分拣 → 成型** 的顺序配合。适用范围：**只写日报**（周报 / 周评 / 月报都不写）。
 
 | 技能 | 管什么 | 触发示例 | 默认落盘 |
 |:---|:---|:---|:---|
-| `report-pipeline` | 采集：什么时候记、记什么、谁提供。阶段完成即追加素材卡，日末归并，周六汇总周评 | 「记一下」「出日报」「整理今天的工作」 | `.workbuddy/reports/cards/YYYY-MM-DD.md` |
+| `report-pipeline` | 采集：什么时候记、记什么、谁提供。阶段完成即追加素材卡，日末归并成稿 | 「记一下」「出日报」「整理今天的工作」 | `report-pipeline/data/cards/YYYY-MM-DD.md` |
 | `report-draft-filter` | 分拣：去噪（旁白/术语/git 细节/编号/未做项）、归类、同类合并 | 「这些哪些该写」「把这段小结整理成日报」 | — |
-| `report-writer` | 成型：套七模块、责任内联、红线自查（内附规范原文） | 「按规范写日报」「检查这份汇报合不合规」 | `日报_YYYY-MM-DD.md` |
+| `report-writer` | 成型：套七模块、责任内联、红线自查（内附规范原文） | 「按规范写日报」「检查这份汇报合不合规」 | `report-pipeline/data/daily/日报_YYYY-MM-DD.md` |
 
-提交时限（规范 §4）：日报每日 21:00 前，周评每周六 21:00 前。周评以《周评绩效考核表》第一部分形式提交，该表第二~五部分由主管/HR 填写。
+提交时限（规范 §4）：日报每日 21:00 前。
 
-**日常怎么用（三拍）：**
+**日常怎么用（两拍）：**
 
 ```
 ① 做完一件事  → 说「记一下」，或直接把工作小结 / 语音转写稿丢过来
@@ -336,13 +336,10 @@ PM 推荐顺序：模糊需求 → `requirement-clarification` → `prd-authorin
 
 ② 当天收工前  → 说「出日报」
      → 从当天素材卡归并出七模块日报 → report-pipeline/data/daily/日报_YYYY-MM-DD.md
-
-③ 周六        → 说「出周评」
-     → 汇总本周日报 + 素材卡 → 周评绩效考核表第一部分 → data/weekly/
 ```
 
 - 不用刻意说「记一下」——发一段工作小结、贴个语音稿，技能都会按采集规则处理。
-- 忘了记也能补，只是**精确数字（测试数、耗时、前后对比）当天不记就容易失真**，这是三拍节奏存在的唯一理由。
+- 忘了记也能补，只是**精确数字（测试数、耗时、前后对比）当天不记就容易失真**，这是两拍节奏存在的唯一理由。
 - 所有文件都在技能目录的 `data/` 下，随时可以直接打开看、手动改。
 
 安装示例：
@@ -351,11 +348,11 @@ PM 推荐顺序：模糊需求 → `requirement-clarification` → `prd-authorin
 cp -R report-pipeline report-draft-filter report-writer ~/.claude/skills/
 ```
 
-要点：`report-writer/references/spec.md` 是规范原文，**冲突一律以它为准**；`report-pipeline/scripts/export-portable.py` 可把整套导出成单文件规则（或幂等合并进已有的 `AGENTS.md`），供不支持 Skill 机制的工具使用。
+要点：`report-writer/references/spec.md` 是规范**源文档**（逐字收录、不得改写），**冲突一律以它为准**；其中周报（§6）、月报（§7）两节保留存档，本套技能不触发。`report-pipeline/scripts/export-portable.py` 可把整套导出成单文件规则（或幂等合并进已有的 `AGENTS.md`），供不支持 Skill 机制的工具使用。
 
 **装完即用，零配置**：
 
-- **数据跟技能走** — 素材卡 / 日报 / 周评都写在技能目录内的 `report-pipeline/data/{cards,daily,weekly}/`，路径由技能自身位置推导，换机器、换工具都不用改。该目录已被 `.gitignore` 忽略，不入库。
+- **数据跟技能走** — 素材卡 / 日报都写在技能目录内的 `report-pipeline/data/{cards,daily}/`，路径由技能自身位置推导，换机器、换工具都不用改。该目录已被 `.gitignore` 忽略，不入库。
 - **项目名不写死** — 技能里不含项目清单，项目名一律取自当天素材，换业务、换项目都不用改技能。
 - **删技能前注意** — `data/` 里存着你的素材卡和日报，别连它一起删；用 `install.sh` 重装会自动保留 `data/`。
 - 唯一写死的是报告作者本人姓名（何成标）。

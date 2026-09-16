@@ -49,7 +49,7 @@ SECTIONS = [
     ("第三部分 · 分拣层 report-draft-filter（哪些写、哪些剔除）", "report-draft-filter", "SKILL.md"),
     ("第三部分附 · 工作小结 → 日报草稿 指导文档", "report-draft-filter", "references/gather-to-draft.md"),
     ("第四部分 · 成型层 report-writer（日报长什么样）", "report-writer", "SKILL.md"),
-    ("第四部分附 · 日报/周评填写模板", "report-writer", "references/templates.md"),
+    ("第四部分附 · 日报填写模板", "report-writer", "references/templates.md"),
 ]
 
 FRONTMATTER = re.compile(r"^---\n.*?\n---\n", re.S)
@@ -57,10 +57,10 @@ FRONTMATTER = re.compile(r"^---\n.*?\n---\n", re.S)
 # 精简版：只保底线（规范红线 + 填写模板），塞得进自定义指令输入框
 LITE_SECTIONS = [
     ("规范原文（最高标准，冲突以本部分为准）", "report-writer", "references/spec.md"),
-    ("日报 / 周评填写模板与合规自检清单", "report-writer", "references/templates.md"),
+    ("日报填写模板与合规自检清单", "report-writer", "references/templates.md"),
 ]
 
-LITE_HEADER = """# 报告编写规则 · 精简版（日报 + 周评）
+LITE_HEADER = """# 日报编写规则 · 精简版
 
 > 脚本自动生成，勿手工编辑。完整版见同目录 `AGENTS.md`。
 > 本版只含**规范原文 + 填写模板**，体积约为完整版的四分之一。
@@ -68,7 +68,7 @@ LITE_HEADER = """# 报告编写规则 · 精简版（日报 + 周评）
 
 ## 三条必须先知道的
 
-1. **只写日报 + 周评，不写月报。** 周报以《周评绩效考核表》第一部分提交，截止周六 21:00；日报截止每日 21:00。
+1. **只写日报**，不写周报/周评/月报；日报截止每日 21:00。
 2. **规范 > 用户口径 > 工具建议**，一切冲突回下方规范原文裁定。
 3. **日报七模块顺序**：产出 → 进行中 → 卡点 → 失误 → 明日计划 → 异常与协调 → 复盘。
    产出与明日计划每条必带「标准:可验收结果」，每条必带责任内联。
@@ -105,7 +105,7 @@ def read(path: Path) -> str:
 
 def build_agents_md(out: Path) -> tuple[Path, list[str], int]:
     parts: list[str] = [
-        "# 报告编写规则（日报 + 周评）· 通用版\n",
+        "# 日报编写规则 · 通用版\n",
         "\n",
         "> 本文件由脚本自动生成，**请勿手工编辑**——改了会在下次导出时丢失。\n",
         f"> 来源：`{SKILLS_ROOT}/{{report-pipeline, report-draft-filter, report-writer}}`\n",
@@ -113,8 +113,7 @@ def build_agents_md(out: Path) -> tuple[Path, list[str], int]:
         "\n",
         "## 生效范围\n",
         "\n",
-        "- **只写日报 + 周评，不写月报。** 周报以《周评绩效考核表》第一部分形式提交，截止每周六 21:00；日报截止每日 21:00。\n",
-        "- 周评第二~五部分由主管/HR 填，AI 不碰。\n",
+        "- **只写日报**，不写周报/周评/月报；日报截止每日 21:00。\n",
         "\n",
         "## 最高原则\n",
         "\n",
@@ -128,7 +127,7 @@ def build_agents_md(out: Path) -> tuple[Path, list[str], int]:
         "## 三层结构\n",
         "\n",
         "```\n",
-        "采集 report-pipeline      阶段落卡 → 日末归并 → 周六汇总成周评\n",
+        "采集 report-pipeline      阶段落卡 → 日末归并成日报\n",
         "分拣 report-draft-filter  去噪 / 归类 / 合并\n",
         "成型 report-writer        套七模块 + 责任内联 + 红线自查（附规范原文）\n",
         "```\n",
@@ -206,8 +205,8 @@ README = f"""# 报告编写技能 · 移植说明
 
 **零配置**：技能装好即可用，不需要改任何路径。
 
-- **数据跟技能走**：素材卡、日报、周评都写在技能目录内的
-  `report-pipeline/data/{{cards,daily,weekly}}/`，路径由技能自身位置推导，换机器/换工具自动跟着走。
+- **数据跟技能走**：素材卡、日报都写在技能目录内的
+  `report-pipeline/data/{{cards,daily}}/`，路径由技能自身位置推导，换机器/换工具自动跟着走。
 - **项目名从素材取**：技能里不含项目清单，项目名一律取当天素材里的称呼，所以换业务、换项目都不用改技能。
 - 唯一写死的是报告作者本人姓名（何成标）。
 
@@ -275,7 +274,7 @@ python3 export-portable.py --merge /path/to/你的项目/AGENTS.md --lite
 ```
 
 **替代做法（不想让 82 KB 常驻）**：把生成的 `AGENTS.md` 改名叫 `docs/报告编写规则.md`
-放进项目，再在项目 AGENTS.md 里加一行「生成日报/周评前先读 `docs/报告编写规则.md`」。
+放进项目，再在项目 AGENTS.md 里加一行「生成日报前先读 `docs/报告编写规则.md`」。
 代价是只有提到报告类需求时才可能被读到，不像合并版那样常驻，更省上下文。
 
 ## 路线 C：手工转述（不推荐，但最省事）
@@ -287,7 +286,7 @@ python3 export-portable.py --merge /path/to/你的项目/AGENTS.md --lite
 
 **不用改路径，不用配项目**：
 
-1. **数据路径**——素材卡 / 日报 / 周评都写在技能目录内的 `report-pipeline/data/`，
+1. **数据路径**——素材卡 / 日报都写在技能目录内的 `report-pipeline/data/`，
    路径由技能位置推导。技能装到哪，数据就在哪；换机器、换工具都不用管。
 2. **项目名**——技能里不含项目清单，项目名一律取自当天素材，换业务不用改技能。
 3. 唯一写死的是报告作者本人姓名（何成标）；给别人用改这一处即可。
