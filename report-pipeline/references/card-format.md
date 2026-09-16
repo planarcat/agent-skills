@@ -6,8 +6,9 @@
 
 ## 一、当日文档骨架
 
-路径（**跟技能走，不用配置**）：`<技能目录>/report-pipeline/data/cards/YYYY-MM-DD.md`
-目录不存在就创建；只动 `data/` 下的内容。
+路径（**跟着工作区走，技能目录只读**）：`<当前工作区>/.workbuddy/reports/cards/YYYY-MM-DD.md`
+
+工作区里若有自己的规范指定了位置（`AGENTS.md` / `CLAUDE.md` / `README`），或已有 `.workbuddy/reports/`、`docs/reports/` 这类目录，按那个来；都没有才用上面的默认落点。目录不存在就创建。
 
 ```markdown
 # 素材 · 2026-09-15（周二）
@@ -29,7 +30,7 @@
 （归并后的七模块日报，或留空）
 ```
 
-**成稿定稿后归档**：把成稿区内容另存为 `data/daily/日报_YYYY-MM-DD.md`，**不迟于当日 21:00**。素材文档留在 `data/cards/` 不动，供事后回查。
+**成稿定稿后归档**：把成稿区内容另存为 `<工作区>/.workbuddy/reports/daily/日报_YYYY-MM-DD.md`（该工作区若有自己的落点则按它的），**不迟于当日 21:00**。素材文档留在 `cards/` 不动，供事后回查。
 
 ---
 
@@ -199,7 +200,7 @@
 5. 产出项补齐：责任内联 + 交付物 + 交互结果 + 标准
 6. 跑 report-pipeline 第六节机械自检（10 条，对齐五大红线）
 7. 交 report-draft-filter 去噪 → report-writer 套模板
-8. 写入成稿区 → 用户确认 → 另存为 `data/daily/日报_YYYY-MM-DD.md`（不迟于 21:00）
+8. 写入成稿区 → 用户确认 → 另存为 `<工作区>/.workbuddy/reports/daily/日报_YYYY-MM-DD.md`（不迟于 21:00）
 ```
 
 第 2 步是唯一需要判断的一步，其余都是机械映射。**判断只在"这两张卡是不是同一件事"上发生**，不在"该不该写"上发生——该不该写由 `report-draft-filter` 决定。

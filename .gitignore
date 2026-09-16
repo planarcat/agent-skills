@@ -1,6 +1,3 @@
-# 技能运行时数据（素材卡 / 日报）——属于个人工作数据，不入库
-report-pipeline/data/
-
 # 导出产物
 report-skill-portable/
 *.bak-*

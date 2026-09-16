@@ -370,9 +370,9 @@ PM 推荐顺序：模糊需求 → `requirement-clarification` → `prd-authorin
 
 | 技能 | 管什么 | 触发示例 | 默认落盘 |
 |:---|:---|:---|:---|
-| `report-pipeline` | 采集：什么时候记、记什么、谁提供。阶段完成即追加素材卡，日末归并成稿 | 「记一下」「出日报」「整理今天的工作」 | `report-pipeline/data/cards/YYYY-MM-DD.md` |
+| `report-pipeline` | 采集：什么时候记、记什么、谁提供。阶段完成即追加素材卡，日末归并成稿 | 「记一下」「出日报」「整理今天的工作」 | `<工作区>/.workbuddy/reports/cards/YYYY-MM-DD.md` |
 | `report-draft-filter` | 分拣：去噪（旁白/术语/git 细节/编号/未做项）、归类、同类合并 | 「这些哪些该写」「把这段小结整理成日报」 | — |
-| `report-writer` | 成型：套七模块、责任内联、红线自查（内附规范原文） | 「按规范写日报」「检查这份汇报合不合规」 | `report-pipeline/data/daily/日报_YYYY-MM-DD.md` |
+| `report-writer` | 成型：套七模块、责任内联、红线自查（内附规范原文） | 「按规范写日报」「检查这份汇报合不合规」 | `<工作区>/.workbuddy/reports/daily/日报_YYYY-MM-DD.md` |
 
 提交时限（规范 §4）：日报每日 21:00 前。
 
@@ -380,15 +380,15 @@ PM 推荐顺序：模糊需求 → `requirement-clarification` → `prd-authorin
 
 ```
 ① 做完一件事  → 说「记一下」，或直接把工作小结 / 语音转写稿丢过来
-     → 素材卡写进 report-pipeline/data/cards/YYYY-MM-DD.md（只追加，不重写）
+     → 素材卡写进当前工作区的 .workbuddy/reports/cards/YYYY-MM-DD.md（只追加，不重写）
 
 ② 当天收工前  → 说「出日报」
-     → 从当天素材卡归并出七模块日报 → report-pipeline/data/daily/日报_YYYY-MM-DD.md
+     → 从当天素材卡归并出七模块日报 → .workbuddy/reports/daily/日报_YYYY-MM-DD.md
 ```
 
 - 不用刻意说「记一下」——发一段工作小结、贴个语音稿，技能都会按采集规则处理。
 - 忘了记也能补，只是**精确数字（测试数、耗时、前后对比）当天不记就容易失真**，这是两拍节奏存在的唯一理由。
-- 所有文件都在技能目录的 `data/` 下，随时可以直接打开看、手动改。
+- 所有文件都在**工作区**里（`<工作区>/.workbuddy/reports/`），不在技能目录下；随时可以直接打开看、手动改。
 
 安装示例：
 
@@ -400,9 +400,9 @@ cp -R report-pipeline report-draft-filter report-writer ~/.claude/skills/
 
 **装完即用，零配置**：
 
-- **数据跟技能走** — 素材卡 / 日报都写在技能目录内的 `report-pipeline/data/{cards,daily}/`，路径由技能自身位置推导，换机器、换工具都不用改。该目录已被 `.gitignore` 忽略，不入库。
+- **技能目录只读** — 素材卡 / 日报写在**各自工作区**内的 `.workbuddy/reports/{cards,daily}/`，不写进技能目录。哪份工作属于哪个工作区，数据就落在哪儿，换项目天然分开，技能目录永远干净。
 - **项目名不写死** — 技能里不含项目清单，项目名一律取自当天素材，换业务、换项目都不用改技能。
-- **删技能前注意** — `data/` 里存着你的素材卡和日报，别连它一起删；用 `install.sh` 重装会自动保留 `data/`。
+- **一天跨多个工作区** — 素材会分散在各自的工作区里（工作内容归位）；「出日报」时技能按顺序收齐，仍缺就问你在哪个目录。落点在 git 仓库里时，记得把 `.workbuddy/reports/` 加进该仓库的 `.gitignore`。
 - 唯一写死的是报告作者本人姓名（何成标）。
 
 ### 文档输出位置

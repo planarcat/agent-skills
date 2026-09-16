@@ -119,7 +119,8 @@ for name in "${SKILLS[@]}"; do
     ln -s "$src" "$dst"
     echo "  已链接 ${name}"
   else
-    # 技能运行时数据放在 <技能>/data/，重装时要保住，否则会连素材卡一起删掉
+    # 旧版曾把运行时数据放在 <技能>/data/（新版已改到各工作区内）。
+    # 若还存在就保住，避免误删历史素材卡。
     keep=""
     if [ -d "$dst/data" ]; then
       keep="$(mktemp -d)"
