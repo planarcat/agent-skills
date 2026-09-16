@@ -17,6 +17,27 @@ cd ~/agent-skills && ./install.sh
 
 **一条铁律**：别把仓库整个 clone 到技能目录里面。工具只往下扫一层，只认 `<技能目录>/<技能名>/SKILL.md`；多套一层就扫不到。`install.sh` 存在的唯一理由就是替你把这一层拆开。
 
+### 各工具的技能目录
+
+| 工具 | 目录 | 备注 |
+|:---|:---|:---|
+| Claude Code | `~/.claude/skills/<技能名>/SKILL.md` | 也支持项目级 `.claude/skills/`；**支持软链接**（目录里放快捷方式即可） |
+| Cursor | `~/.cursor/skills/`、`~/.agents/skills/` | 官方说明**兼容读** `~/.claude/skills/`、`~/.codex/skills/` |
+| Codex | `~/.codex/skills/` | — |
+| WorkBuddy | `~/.workbuddy/skills/` | — |
+
+**所以装一次就够**：装进 `~/.claude/skills/`，Claude Code / Cursor / Codex 三家都会读到（后两者会兼容扫描 Claude 目录）。不必给每个工具各装一份。
+
+**装完要重启那个工具**才生效——技能名和描述是启动时读入的，之后改描述也要重启；只改正文不用重启。Claude Code 里用 `/skills` 可以确认是否已加载。
+
+### 只想装一部分
+
+日报这套只用三个技能，可以点名安装，不用把仓库里的技能全铺开：
+
+```bash
+./install.sh --link ~/.claude/skills report-pipeline report-draft-filter report-writer
+```
+
 **工具不支持 Skill 机制时**：改用单文件规则。跑 `report-pipeline/scripts/export-portable.py`（报告类）生成 `AGENTS.md`，放进项目根目录。
 
 ## 简介
