@@ -32,10 +32,19 @@ cd ~/agent-skills && ./install.sh
 
 ### 只想装一部分
 
-日报这套只用三个技能，可以点名安装，不用把仓库里的技能全铺开：
+`./install.sh` 不带参数会装**全部 22 个技能**。只想要一组就点名分组，不用逐个列技能名：
 
 ```bash
-./install.sh --link ~/.claude/skills report-pipeline report-draft-filter report-writer
+./install.sh --group report ~/.claude/skills     # 日报三件套
+./install.sh --group plan   ~/.claude/skills     # 方案讨论→执行→锁定
+./install.sh --group pm     ~/.claude/skills     # 产品经理常用
+./install.sh --list                              # 看有哪些技能和分组，不安装
+```
+
+第 11 节的日报技能就属于 `report` 组。加 `--link` 可换成软链接安装：
+
+```bash
+./install.sh --link --group report ~/.claude/skills
 ```
 
 **工具不支持 Skill 机制时**：改用单文件规则。跑 `report-pipeline/scripts/export-portable.py`（报告类）生成 `AGENTS.md`，放进项目根目录。
@@ -138,10 +147,12 @@ cd ~/Documents/agent-skills
 #### 然后用安装脚本装进工具技能目录
 
 ```bash
-./install.sh                          # 自动探测技能目录（~/.claude/skills 优先），装全部
+./install.sh                          # 自动探测技能目录（~/.claude/skills 优先），装全部 22 个
 ./install.sh ~/.claude/skills         # 指定目录
+./install.sh --group report ~/.claude/skills   # 只装某一组（report / plan / pm）
 ./install.sh ~/.claude/skills report-pipeline report-writer   # 只装点名的那几个
 ./install.sh --link ~/.claude/skills  # 软链接安装：git pull 后自动生效，不用重装
+./install.sh --list                   # 列出所有技能与分组，不安装
 ./install.sh --list                   # 只列出仓库里有哪些技能
 ```
 

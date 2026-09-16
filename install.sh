@@ -4,10 +4,12 @@
 # 用法：
 #   ./install.sh                            装全部技能到自动探测到的技能目录
 #   ./install.sh ~/.claude/skills           装到指定目录
+#   ./install.sh --group report ~/.claude/skills
+#                                           只装某一组（report / plan / pm）
 #   ./install.sh ~/.claude/skills report-pipeline report-writer
 #                                           只装点名的那几个
 #   ./install.sh --link ~/.claude/skills    用软链接代替复制（git pull 后自动生效）
-#   ./install.sh --list                     只列出仓库里的技能，不安装
+#   ./install.sh --list                     只列出仓库里的技能与分组，不安装
 #
 # 为什么需要这一步：本仓库的技能都在**顶层目录**，而工具要求
 # <技能目录>/<技能名>/SKILL.md。直接把仓库整个 clone 进技能目录会多套一层，
@@ -19,13 +21,31 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LINK_MODE=0
 LIST_ONLY=0
 TARGET=""
+GROUP=""
 SKILLS=()
+
+# 分组：一条命令装一整套相关的技能。
+# 为什么用 case 而不是关联数组：macOS 自带 bash 3.2 不支持 declare -A。
+group_skills() {
+  case "$1" in
+    report|日报) echo "report-pipeline report-draft-filter report-writer" ;;
+    plan|方案)   echo "plan-discussion plan-execution plan-lock" ;;
+    pm|产品)     echo "prd-authoring requirement-clarification user-story-acceptance competitive-or-feature-brief release-note-pm meeting-to-action" ;;
+    *) return 1 ;;
+  esac
+}
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --link) LINK_MODE=1; shift ;;
     --list) LIST_ONLY=1; shift ;;
-    -h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --group)
+      if [ $# -lt 2 ]; then
+        echo "错误：--group 需要跟一个分组名（report / plan / pm）" >&2
+        exit 1
+      fi
+      GROUP="$2"; shift 2 ;;
+    -h|--help) sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) if [ -z "$TARGET" ]; then TARGET="$1"; else SKILLS+=("$1"); fi; shift ;;
   esac
 done
@@ -40,7 +60,21 @@ all_skills() {
 if [ "$LIST_ONLY" -eq 1 ]; then
   echo "仓库里的技能（${REPO_DIR}）："
   all_skills | sed 's/^/  /'
+  echo
+  echo "分组（--group <名>）："
+  echo "  report  日报三件套         $(group_skills report)"
+  echo "  plan    方案讨论→执行→锁定  $(group_skills plan)"
+  echo "  pm      产品经理常用        $(group_skills pm)"
   exit 0
+fi
+
+if [ -n "$GROUP" ]; then
+  if ! grp="$(group_skills "$GROUP")"; then
+    echo "错误：未知分组「${GROUP}」。可用分组：report / plan / pm" >&2
+    exit 1
+  fi
+  # shellcheck disable=SC2206
+  SKILLS=($grp)
 fi
 
 if [ ${#SKILLS[@]} -eq 0 ]; then
