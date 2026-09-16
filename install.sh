@@ -83,11 +83,24 @@ for name in "${SKILLS[@]}"; do
   if [ "$LINK_MODE" -eq 1 ]; then
     rm -rf "$dst"
     ln -s "$src" "$dst"
-    echo "  已链接 $name"
+    echo "  已链接 ${name}"
   else
+    # 技能运行时数据放在 <技能>/data/，重装时要保住，否则会连素材卡一起删掉
+    keep=""
+    if [ -d "$dst/data" ]; then
+      keep="$(mktemp -d)"
+      cp -R "$dst/data/." "$keep/"
+    fi
     rm -rf "$dst"
     cp -R "$src" "$dst"
-    echo "  已安装 $name"
+    if [ -n "$keep" ]; then
+      mkdir -p "$dst/data"
+      cp -R "$keep/." "$dst/data/"
+      rm -rf "$keep"
+      echo "  已安装 ${name}（保留了原有 data/ 数据）"
+    else
+      echo "  已安装 ${name}"
+    fi
   fi
   ok=$((ok + 1))
 done

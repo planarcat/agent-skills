@@ -336,11 +336,12 @@ cp -R report-pipeline report-draft-filter report-writer ~/.claude/skills/
 
 要点：`report-writer/references/spec.md` 是规范原文，**冲突一律以它为准**；`report-pipeline/scripts/export-portable.py` 可把整套导出成单文件规则（或幂等合并进已有的 `AGENTS.md`），供不支持 Skill 机制的工具使用。
 
-**移植前必改两处**（技能里带了个人环境约定，换机器/给别人用要替换）：
+**装完即用，零配置**：
 
-1. **存放路径约定** — 素材卡默认 `<工作区>/.workbuddy/reports/cards/YYYY-MM-DD.md`（WorkBuddy 惯例），日报默认 `<工作区>/日报_YYYY-MM-DD.md`。换到 Claude Code / Cursor 等环境时改成实际路径。
-   导出脚本 `export-portable.py` 已改成从自身位置推导技能目录、输出到当前目录，**无需改路径**。
-2. **写死的人名与项目名** — 规范里写死了何成标的项目名（灵创、虾皮 POD 等）与对接人姓名，给别人用必须替换，否则会写出别人的名字。
+- **数据跟技能走** — 素材卡 / 日报 / 周评都写在技能目录内的 `report-pipeline/data/{cards,daily,weekly}/`，路径由技能自身位置推导，换机器、换工具都不用改。该目录已被 `.gitignore` 忽略，不入库。
+- **项目名不写死** — 技能里不含项目清单，项目名一律取自当天素材，换业务、换项目都不用改技能。
+- **删技能前注意** — `data/` 里存着你的素材卡和日报，别连它一起删；用 `install.sh` 重装会自动保留 `data/`。
+- 唯一写死的是报告作者本人姓名（何成标）。
 
 ### 文档输出位置
 
