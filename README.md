@@ -70,6 +70,9 @@ agent-skills/
 ├── competitive-or-feature-brief/ # PM：功能/竞品简报
 ├── release-note-pm/              # PM：发版说明（三套语气）
 ├── meeting-to-action/            # PM：会纪要 → 行动项
+├── report-pipeline/              # 报告：素材采集与归并（日报/周评）
+├── report-draft-filter/          # 报告：工作小结 → 日报草稿
+├── report-writer/                # 报告：日报/周评成型（内附规范原文）
 └── README.md
 ```
 
@@ -278,6 +281,26 @@ $dst = "$env:USERPROFILE\.claude\skills"
 ```
 
 PM 推荐顺序：模糊需求 → `requirement-clarification` → `prd-authoring` 或 `user-story-acceptance`；取舍用 `competitive-or-feature-brief`；技术方案仍用 `plan-discussion`。
+
+#### 11. 报告编写（日报 / 周评）
+
+三个技能各管一段，按 **采集 → 分拣 → 成型** 的顺序配合。适用范围：**日报 + 周评，不写月报**。
+
+| 技能 | 管什么 | 触发示例 | 默认落盘 |
+|:---|:---|:---|:---|
+| `report-pipeline` | 采集：什么时候记、记什么、谁提供。阶段完成即追加素材卡，日末归并，周六汇总周评 | 「记一下」「出日报」「整理今天的工作」 | `.workbuddy/reports/cards/YYYY-MM-DD.md` |
+| `report-draft-filter` | 分拣：去噪（旁白/术语/git 细节/编号/未做项）、归类、同类合并 | 「这些哪些该写」「把这段小结整理成日报」 | — |
+| `report-writer` | 成型：套七模块、责任内联、红线自查（内附规范原文） | 「按规范写日报」「检查这份汇报合不合规」 | `日报_YYYY-MM-DD.md` |
+
+提交时限（规范 §4）：日报每日 21:00 前，周评每周六 21:00 前。周评以《周评绩效考核表》第一部分形式提交，该表第二~五部分由主管/HR 填写。
+
+安装示例：
+
+```bash
+cp -R report-pipeline report-draft-filter report-writer ~/.claude/skills/
+```
+
+要点：`report-writer/references/spec.md` 是规范原文，**冲突一律以它为准**；`report-pipeline/scripts/export-portable.py` 可把整套导出成单文件规则（或幂等合并进已有的 `AGENTS.md`），供不支持 Skill 机制的工具使用。
 
 ### 文档输出位置
 
