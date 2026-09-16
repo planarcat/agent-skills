@@ -153,7 +153,6 @@ cd ~/Documents/agent-skills
 ./install.sh ~/.claude/skills report-pipeline report-writer   # 只装点名的那几个
 ./install.sh --link ~/.claude/skills  # 软链接安装：git pull 后自动生效，不用重装
 ./install.sh --list                   # 列出所有技能与分组，不安装
-./install.sh --list                   # 只列出仓库里有哪些技能
 ```
 
 装完的技能目录长这样（每个技能一层）：
