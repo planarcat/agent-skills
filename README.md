@@ -2,6 +2,23 @@
 
 > 面向 AI 辅助软件开发与产品协作的 Skills 集合：方案讨论—执行—锁定，以及 PM 需求/发版等工作流
 
+## 最短路径（先看这个）
+
+**已经在用的机器**：什么都不用做。技能装好后工具会自己发现，直接说话触发即可。
+
+**换机器 / 换工具**：两行搞定，不用挑技能、不用指定目录。
+
+```bash
+git clone https://github.com/planarcat/agent-skills ~/agent-skills
+cd ~/agent-skills && ./install.sh
+```
+
+`install.sh` 会自动找到该工具的技能目录（Claude Code / WorkBuddy / Codex 等），把技能**文件夹**逐个放进去。仓库本身留在 `~/agent-skills`，更新只要 `git pull`。
+
+**一条铁律**：别把仓库整个 clone 到技能目录里面。工具只往下扫一层，只认 `<技能目录>/<技能名>/SKILL.md`；多套一层就扫不到。`install.sh` 存在的唯一理由就是替你把这一层拆开。
+
+**工具不支持 Skill 机制时**：改用单文件规则。跑 `report-pipeline/scripts/export-portable.py`（报告类）生成 `AGENTS.md`，放进项目根目录。
+
 ## 简介
 
 本项目为 **Claude Code / Cursor** 提供一套 AI 协作技能（Skills），覆盖研发方案生命周期，并包含产品经理常用技能：
