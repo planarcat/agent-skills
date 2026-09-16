@@ -2,10 +2,14 @@
 """把三层报告技能打包成"可移植版"，供其他 AI 工具使用。
 
 用法：
-    python3 export-portable.py                                  # 只导出，默认输出到工作区 dist/report-skill-portable/
-    python3 export-portable.py -o /自定义/输出目录               # 只导出，指定目录
-    python3 export-portable.py --merge /path/to/AGENTS.md        # 合并进已有的 AGENTS.md（幂等，可反复跑）
-    python3 export-portable.py --merge /path/AGENTS.md --lite    # 合并精简版（约 1/4 体积）
+    python3 export-portable.py                                   # 只导出，默认输出到当前目录 ./report-skill-portable/
+    python3 export-portable.py -o /自定义/输出目录                # 只导出，指定目录
+    python3 export-portable.py --merge /path/to/AGENTS.md         # 合并进已有的 AGENTS.md（幂等，可反复跑）
+    python3 export-portable.py --merge /path/AGENTS.md --lite     # 合并精简版（约 1/4 体积）
+
+技能源目录自动从脚本自身位置推导（脚本位于 <技能根>/report-pipeline/scripts/），
+所以仓库拷到哪台机器、哪个技能目录都能跑，无需改路径。
+技能不放在一起时用 `--skills-root /path/to/skills` 手动指定。
 
 --merge 的行为：
     · 目标文件不存在 → 直接创建
@@ -32,8 +36,8 @@ import zipfile
 from datetime import datetime
 from pathlib import Path
 
-SKILLS_ROOT = Path.home() / ".workbuddy" / "skills"
-DEFAULT_OUT = Path("/Users/planarcat/WorkBuddy/日报、周报、月报/dist/report-skill-portable")
+SKILLS_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_OUT = Path.cwd() / "report-skill-portable"
 
 SKILL_DIRS = ["report-pipeline", "report-draft-filter", "report-writer"]
 
@@ -181,13 +185,13 @@ def build_zip(out: Path) -> Path:
     return zip_path
 
 
-README = """# 报告编写技能 · 移植说明
+README = f"""# 报告编写技能 · 移植说明
 
-> 自动生成，勿手工编辑。来源：`~/.workbuddy/skills/` 下的三个技能目录。
+> 自动生成，勿手工编辑。来源：`{SKILLS_ROOT}` 下的三个技能目录。
 
 ## 这套技能包含什么
 
-三层结构，7 个文件：
+三层结构，8 个文件：
 
 | 层 | 技能 | 文件 |
 |---|---|---|
@@ -195,9 +199,17 @@ README = """# 报告编写技能 · 移植说明
 | 采集 | report-pipeline | `SKILL.md`、`references/card-format.md` |
 | 分拣 | report-draft-filter | `SKILL.md`、`references/gather-to-draft.md` |
 | 成型 | report-writer | `SKILL.md`、`references/templates.md` |
+| 工具（仅移植时需要） | report-pipeline | `scripts/export-portable.py` |
 
-依赖关系：**采集 → 分拣 → 成型**，全部只依赖纯 Markdown，无脚本、无外部服务、无网络。
-唯一的外部约定是素材卡和日报的存放路径（见 `SKILL.md` 里的路径约定），移植时按目标机器改一下即可。
+依赖关系：**采集 → 分拣 → 成型**，全部只依赖纯 Markdown，无外部服务、无网络。
+导出脚本零第三方依赖（Python 标准库），源目录从脚本位置自动推导，换机器不用改路径。
+
+**移植前必改两处**（脚本已处理，但写在 Markdown 里的约定要人工改）：
+
+1. **存放路径约定**：素材卡默认 `<工作区>/.workbuddy/reports/cards/YYYY-MM-DD.md`（WorkBuddy 惯例），
+   日报默认 `<工作区>/日报_YYYY-MM-DD.md`。换工具时改成目标环境的实际路径。
+2. **写死的人名与项目名**：规范里写死了何成标的项目名（灵创、虾皮 POD 等）与对接人姓名。
+   给别人用必须替换，否则会写出别人的名字。
 
 ## 路线 A：目标工具支持 Agent Skills（Claude Code / WorkBuddy 等）
 
@@ -323,6 +335,7 @@ def merge_into(target: Path, body: str) -> str:
 
 
 def main() -> int:
+    global SKILLS_ROOT
     out = DEFAULT_OUT
     merge_target: Path | None = None
     use_lite = False
@@ -337,6 +350,12 @@ def main() -> int:
                 print("--merge 后面要跟目标文件路径，例如 --merge ./AGENTS.md")
                 return 2
             merge_target = Path(args[i]).expanduser().resolve()
+        elif a == "--skills-root":
+            i += 1
+            if i >= len(args):
+                print("--skills-root 后面要跟技能根目录")
+                return 2
+            SKILLS_ROOT = Path(args[i]).expanduser().resolve()
         elif a == "--lite":
             use_lite = True
         elif a in ("-o", "--out"):
@@ -351,6 +370,14 @@ def main() -> int:
         else:
             out = Path(a).expanduser().resolve()
         i += 1
+
+    missing = [d for d in SKILL_DIRS if not (SKILLS_ROOT / d / "SKILL.md").is_file()]
+    if missing:
+        print(f"技能根目录：{SKILLS_ROOT}")
+        print(f"  找不到这些技能：{', '.join(missing)}")
+        print("  三个技能要在同一个父目录下（脚本所在目录往上两级即该父目录）。")
+        print("  技能不在一起时，用 --skills-root /path/to/skills 指定。")
+        return 3
 
     out.mkdir(parents=True, exist_ok=True)
 

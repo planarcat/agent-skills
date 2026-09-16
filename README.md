@@ -73,6 +73,7 @@ agent-skills/
 ├── report-pipeline/              # 报告：素材采集与归并（日报/周评）
 ├── report-draft-filter/          # 报告：工作小结 → 日报草稿
 ├── report-writer/                # 报告：日报/周评成型（内附规范原文）
+├── install.sh                    # 一键安装：把各技能装到工具的技能目录
 └── README.md
 ```
 
@@ -86,13 +87,46 @@ agent-skills/
 
 ### 安装
 
-#### Claude Code
-
-将本仓库克隆到 Claude Code 技能目录：
+#### 先克隆到任意目录（**不要直接克隆进技能目录**）
 
 ```bash
-git clone https://github.com/planarcat/agent-skills.git ~/.claude/skills/agent-skills
-# 或将各 skill 文件夹单独复制到 ~/.claude/skills/
+git clone https://github.com/planarcat/agent-skills.git ~/Documents/agent-skills
+cd ~/Documents/agent-skills
+```
+
+> ⚠️ 别用 `git clone ... ~/.claude/skills/agent-skills`。技能都在本仓库**顶层**，而工具要求
+> `<技能目录>/<技能名>/SKILL.md`——直接克隆进去会多套一层 `agent-skills/`，技能不会被发现。
+
+#### 然后用安装脚本装进工具技能目录
+
+```bash
+./install.sh                          # 自动探测技能目录（~/.claude/skills 优先），装全部
+./install.sh ~/.claude/skills         # 指定目录
+./install.sh ~/.claude/skills report-pipeline report-writer   # 只装点名的那几个
+./install.sh --link ~/.claude/skills  # 软链接安装：git pull 后自动生效，不用重装
+./install.sh --list                   # 只列出仓库里有哪些技能
+```
+
+装完的技能目录长这样（每个技能一层）：
+
+```
+~/.claude/skills/
+├── report-pipeline/SKILL.md
+├── report-draft-filter/SKILL.md
+├── report-writer/SKILL.md
+└── ...（其余技能）
+```
+
+#### 手动装（不用脚本）
+
+```bash
+cp -R report-pipeline report-draft-filter report-writer ~/.claude/skills/   # macOS / Linux
+```
+
+```powershell
+# Windows
+$dst = "$env:USERPROFILE\.claude\skills"
+'report-pipeline','report-draft-filter','report-writer' | ForEach-Object { Copy-Item -Recurse $_ "$dst\$_" -Force }
 ```
 
 #### Cursor（全局约束 — 推荐）
@@ -301,6 +335,12 @@ cp -R report-pipeline report-draft-filter report-writer ~/.claude/skills/
 ```
 
 要点：`report-writer/references/spec.md` 是规范原文，**冲突一律以它为准**；`report-pipeline/scripts/export-portable.py` 可把整套导出成单文件规则（或幂等合并进已有的 `AGENTS.md`），供不支持 Skill 机制的工具使用。
+
+**移植前必改两处**（技能里带了个人环境约定，换机器/给别人用要替换）：
+
+1. **存放路径约定** — 素材卡默认 `<工作区>/.workbuddy/reports/cards/YYYY-MM-DD.md`（WorkBuddy 惯例），日报默认 `<工作区>/日报_YYYY-MM-DD.md`。换到 Claude Code / Cursor 等环境时改成实际路径。
+   导出脚本 `export-portable.py` 已改成从自身位置推导技能目录、输出到当前目录，**无需改路径**。
+2. **写死的人名与项目名** — 规范里写死了何成标的项目名（灵创、虾皮 POD 等）与对接人姓名，给别人用必须替换，否则会写出别人的名字。
 
 ### 文档输出位置
 

@@ -258,7 +258,7 @@ description: 报告编写流水线的采集层（适用范围：日报 + 周评�
 ## Resources
 
 - `references/card-format.md` — 素材卡完整样例、正反例对照、字段填写细则、多 agent 场景示例、当日文档骨架、归并动作序列。
-- `scripts/export-portable.py` — **移植导出脚本**。把三层技能打包成可移植版（单文件通用版 + 技能压缩包 + 移植说明），重新运行即重新生成，不手写副本。用法：`python3 scripts/export-portable.py [输出目录]`，默认输出到工作区 `dist/report-skill-portable/`。
+- `scripts/export-portable.py` — **移植导出脚本**。把三层技能打包成可移植版（单文件通用版 + 技能压缩包 + 移植说明），重新运行即重新生成，不手写副本。用法：`python3 scripts/export-portable.py [-o 输出目录] [--merge AGENTS.md] [--lite]`。技能源目录从脚本自身位置推导（换机器不用改路径），默认输出到当前目录 `./report-skill-portable/`。
 
 ## 整套技能的文件清单（移植时按此核对）
 
