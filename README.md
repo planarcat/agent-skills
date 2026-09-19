@@ -6,6 +6,8 @@
 
 **已经在用的机器**：什么都不用做。技能装好后工具会自己发现，直接说话触发即可。
 
+**不知道该用哪个技能**：读入口技能 **`playbook`**。它是技能地图 + 流程路由——按你现在处在哪一步（需求/方案/执行/锁定/汇报），把你指到对应的执行技能。**它不替代任何执行技能，只负责带路。**
+
 **换机器 / 换工具**：两行搞定，不用挑技能、不用指定目录。
 
 ```bash
@@ -13,9 +15,11 @@ git clone https://github.com/planarcat/agent-skills ~/agent-skills
 cd ~/agent-skills && ./install.sh
 ```
 
-`install.sh` 会自动找到该工具的技能目录（Claude Code / WorkBuddy / Codex 等），把技能**文件夹**逐个放进去。仓库本身留在 `~/agent-skills`，更新只要 `git pull`。
+`install.sh` 会自动找到该工具的技能目录（Claude Code / WorkBuddy / Codex 等），**默认用软链接**把各技能挂进去——所以仓库 `git pull` 之后技能立即生效，**不必每次重装**。仓库本身留在 `~/agent-skills`。（不想用软链接：加 `--copy`。）
 
 **一条铁律**：别把仓库整个 clone 到技能目录里面。工具只往下扫一层，只认 `<技能目录>/<技能名>/SKILL.md`；多套一层就扫不到。`install.sh` 存在的唯一理由就是替你把这一层拆开。
+
+**一条稳定性铁律**：`playbook` 这个入口名**永不改**（改名 = agent 从原来的位置进不来）。技能可以随时增改内容，但改名/移动/删除要同步三处：`playbook` 的地图、`install.sh` 的分组、本 README。
 
 ### 各工具的技能目录
 
@@ -32,21 +36,31 @@ cd ~/agent-skills && ./install.sh
 
 ### 只想装一部分
 
-`./install.sh` 不带参数会装**全部 24 个技能**。只想要一组就点名分组，不用逐个列技能名：
+`./install.sh` 不带参数会装**全部 25 个技能**。只想要一组就点名分组，不用逐个列技能名：
 
 ```bash
-./install.sh --group report ~/.claude/skills     # 日报三件套
-./install.sh --group query  ~/.claude/skills     # 数据源核查（CNB 推送 / TAPD 待办）
-./install.sh --group plan   ~/.claude/skills     # 方案讨论→执行→锁定
-./install.sh --group pm     ~/.claude/skills     # 产品经理常用
+./install.sh --group report  ~/.claude/skills    # 日报三件套
+./install.sh --group query   ~/.claude/skills    # 数据源核查（CNB 推送 / TAPD 待办）
+./install.sh --group plan    ~/.claude/skills    # 方案讨论→执行→锁定
+./install.sh --group pm      ~/.claude/skills    # 产品经理常用
+./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/测试/分支/提交）
+./install.sh --group journal ~/.claude/skills    # 记录与沉淀（变更日志 / 开发博客）
 ./install.sh --list                              # 看有哪些技能和分组，不安装
 ```
 
-第 11 节的日报技能就属于 `report` 组（`query` 组是它的取数搭档：一个查代码推送、一个查 TAPD 待办）。加 `--link` 可换成软链接安装：
+**分组安装会自动带上入口 `playbook`**（它只有一个文件，不占地方，但能让 agent 找到北）。`report` 组的取数搭档是 `query` 组：一个查代码推送、一个查 TAPD 待办。
 
-```bash
-./install.sh --link --group report ~/.claude/skills
-```
+### 安装 / 更新
+
+| 命令 | 作用 |
+|:---|:---|
+| `./install.sh` | 全装，**默认软链接**（`git pull` 后立即生效） |
+| `./install.sh --update` | 重扫仓库：补齐漏装的技能、报告失效链接；已装好的不动 |
+| `./install.sh --copy` | 退回拷贝模式（不使用软链接时） |
+| `./install.sh --prune` | 顺手删掉指向本仓库但已失效的软链接 |
+| `./install.sh --list` | 只列技能与分组 |
+
+> 软链接模式下，**改内容不用重装**（`git pull` 即生效）；只有在仓库**新增/删除技能**时才需要跑一次 `--update`。
 
 **工具不支持 Skill 机制时**：改用单文件规则。跑 `report-pipeline/scripts/export-portable.py`（报告类）生成 `AGENTS.md`，放进项目根目录。
 
@@ -56,6 +70,7 @@ cd ~/agent-skills && ./install.sh
 
 | 阶段 | 技能 | 功能 |
 |:---|:---|:---|
+| 🧭 **入口** | `playbook` | **技能地图 + 流程路由**：按当前流程与状态把你指到执行技能；找不着北先读它 |
 | 🧠 **讨论** | `plan-discussion` | 多轮方案讨论，自动落盘记录，生成待执行方案 |
 | 🔧 **执行** | `plan-execution` | 按方案逐阶段实施开发，产出执行结果文档 |
 | 🔒 **锁定** | `plan-lock` | 锁定前核对方案/结果/遗留清单，确认闭环后归档 |
@@ -123,7 +138,8 @@ agent-skills/
 ├── report-writer/                # 日报：成型（内附规范源文档）
 ├── cnb-push-audit/               # 取数：CNB 仓库推送/提交核查
 ├── tapd-todo-query/              # 取数：TAPD 待办需求与状态核对
-├── install.sh                    # 一键安装：把各技能装到工具的技能目录
+├── playbook/                     # 入口：技能地图 + 流程路由（名字固定不改）
+├── install.sh                    # 安装/更新：默认软链接挂进技能目录
 └── README.md
 ```
 
@@ -150,23 +166,28 @@ cd ~/Documents/agent-skills
 #### 然后用安装脚本装进工具技能目录
 
 ```bash
-./install.sh                          # 自动探测技能目录（~/.claude/skills 优先），装全部 24 个
+./install.sh                          # 自动探测技能目录（~/.claude/skills 优先），装全部 25 个；默认软链接
 ./install.sh ~/.claude/skills         # 指定目录
-./install.sh --group report ~/.claude/skills   # 只装某一组（report / query / plan / pm）
+./install.sh --group report ~/.claude/skills   # 只装某一组（report / query / plan / pm / dev / journal，自动带上 playbook）
 ./install.sh ~/.claude/skills report-pipeline report-writer   # 只装点名的那几个
-./install.sh --link ~/.claude/skills  # 软链接安装：git pull 后自动生效，不用重装
+./install.sh --update                 # 仓库新增/删除了技能时：重扫一次，补齐漏装、报告失效链接
+./install.sh --copy ~/.claude/skills  # 不用软链接、退回拷贝模式
+./install.sh --prune                  # 清理指向本仓库但已失效的软链接
 ./install.sh --list                   # 列出所有技能与分组，不安装
 ```
 
-装完的技能目录长这样（每个技能一层）：
+装完的技能目录长这样（软链接模式：每个技能是指向仓库的快捷方式）：
 
 ```
 ~/.claude/skills/
-├── report-pipeline/SKILL.md
-├── report-draft-filter/SKILL.md
-├── report-writer/SKILL.md
+├── playbook -> ~/agent-skills/playbook            # 入口：技能地图 + 流程路由
+├── report-pipeline -> ~/agent-skills/report-pipeline
+├── report-draft-filter -> ~/agent-skills/report-draft-filter
+├── report-writer -> ~/agent-skills/report-writer
 └── ...（其余技能）
 ```
+
+> 软链接的好处：`git pull` 后技能**立刻**是新版，不必重跑安装。代价：仓库里**新增**技能时要跑一次 `--update` 才会挂上去。
 
 #### 手动装（不用脚本）
 
