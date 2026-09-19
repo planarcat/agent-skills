@@ -55,7 +55,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 | `dev` | `impact-surface-audit` | 最终复查：挖对**非本功能模块**的隐性辐射 | 明确说"最终复查/影响面检索"（强触发，慎用） |
 | `dev` | `resolve-merge-conflict` | 解合并冲突；禁止整树覆盖本地修改 | 有冲突/要同步远程时 |
 | `dev` | `test-case-authoring` | 测试三件套：写用例 / 补测试 / 让测试变绿 | 说"写测试/加用例" |
-| `dev` | `create-requirement-branch` | 建需求分支与 worktree 目录 `{id后4位}-{标题截取}（{id}）`，并行用 worktree | 说"开需求分支" |
+| `dev` | `create-requirement-branch` | 建需求分支与 worktree 目录 `{id后4位}-{标题截取}（{id}）`，产出**一行 `cd` 进入路径**（默认不起服务） | 说"开需求分支" |
 | `dev` | `generate-commit` | 生成通俗易懂的 commit message（默认不推送） | 说"生成 commit" |
 | `journal` | `record-change-log` | **沉淀改动/问题**：短记（`Logs/`，≤100 字）+ 长记（`Blogs/`，第一人称） | 说"编成日志""记录这个问题/编成博客" |
 | `journal` | `record-development-blog` | **兼容壳**：已并入 `record-change-log` 的长记模式 | 老触发词照旧命中这里，读到它就转去执行 `record-change-log` |
