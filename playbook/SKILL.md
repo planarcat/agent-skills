@@ -20,6 +20,15 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 3. **新增技能必须登记到本文件的「技能地图」**，否则等于没装（agent 找不到）。
 4. 技能正文互相引用时用**条件引用**（"装了 X 就读它的 Y 节；没装也不影响"），不要写成硬依赖。
 
+## 开发规范（用户口径）
+
+**开发任务完成后，提交即推送。**
+
+- 在**需求分支**上开发 → 任务/阶段做完就 `git commit`，然后**直接 `git push` 到该分支的远程同名分支**（上游就是它自己），不用每次问。
+- **不推主分支、不 `--force`、不开 PR**（除非用户明确要求）。
+- 若不在需求分支上（主分支、临时探查分支、无上游）→ 只提交，说明原因，别硬推。
+- commit message 走 `generate-commit`；分支创建与命名走 `create-requirement-branch`；逐阶段执行并在每阶段收尾提交推送走 `plan-execution`。
+
 ## 可移植性（单个技能也能被单独带走）
 
 **这张地图是"单向索引"，不是依赖。** 地图指向技能；技能**不反向依赖** `playbook`，也不依赖别的技能的文件。所以：
@@ -56,7 +65,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 | `dev` | `resolve-merge-conflict` | 解合并冲突；禁止整树覆盖本地修改 | 有冲突/要同步远程时 |
 | `dev` | `test-case-authoring` | 测试三件套：写用例 / 补测试 / 让测试变绿 | 说"写测试/加用例" |
 | `dev` | `create-requirement-branch` | 建需求分支与 worktree 目录 `{id后4位}-{标题截取}（{id}）`，产出**一行 `cd` 进入路径**（默认不起服务） | 说"开需求分支" |
-| `dev` | `generate-commit` | 生成通俗易懂的 commit message（默认不推送） | 说"生成 commit" |
+| `dev` | `generate-commit` | 生成通俗易懂的 commit message；**在需求分支上提交后直接推送**（用户说"只提交/先别推"才止步） | 说"生成 commit" |
 | `journal` | `record-change-log` | **沉淀改动/问题**：短记（`Logs/`，≤100 字）+ 长记（`Blogs/`，第一人称） | 说"编成日志""记录这个问题/编成博客" |
 | `journal` | `record-development-blog` | **兼容壳**：已并入 `record-change-log` 的长记模式 | 老触发词照旧命中这里，读到它就转去执行 `record-change-log` |
 
