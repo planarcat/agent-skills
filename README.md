@@ -16,6 +16,14 @@ cd ~/agent-skills
 ./install.sh ~/.claude/skills        # 或 ~/.workbuddy/skills，看你用哪个工具
 ```
 
+**Windows**（PowerShell 不认 `.sh`，用 `install.ps1`，行为一致、默认用目录联接）：
+
+```powershell
+git clone https://github.com/planarcat/agent-skills $env:USERPROFILE\agent-skills
+cd $env:USERPROFILE\agent-skills
+powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\skills
+```
+
 **装完一次就记住了**：这个路径会写进仓库根的 `install.config`。以后只要 `cd ~/agent-skills && ./install.sh`，它就会**把仓库技能更新到所有记住过的目录**（换机器、多工具并行都照顾到）。仓库 `git pull` 后技能立即生效，**不必重装**（软链接模式）。
 
 **两条安全约定**：
@@ -192,7 +200,8 @@ agent-skills/
 ├── cnb-push-audit/               # 取数：CNB 仓库推送/提交核查
 ├── tapd-todo-query/              # 取数：TAPD 待办需求与状态核对
 ├── playbook/                     # 入口：技能地图 + 流程路由（名字固定不改）
-├── install.sh                    # 安装/更新：默认软链接挂进技能目录
+├── install.sh                    # 安装/更新（macOS / Linux）：默认软链接挂进技能目录
+├── install.ps1                   # 安装/更新（Windows PowerShell）：默认用目录联接，行为同 install.sh
 └── README.md
 ```
 
@@ -244,6 +253,25 @@ cd ~/Documents/agent-skills
 ```
 
 > 软链接的好处：`git pull` 后技能**立刻**是新版，不必重跑安装。代价：仓库里**新增**技能时要跑一次 `./install.sh` 才会挂上去。
+
+#### Windows（PowerShell）
+
+**PowerShell 不认 `.sh`**——直接 `./install.sh` 什么都不会发生。用同目录的 `install.ps1`（行为与 `install.sh` 一致）：
+
+```powershell
+cd C:\Users\<你>\Documents\Workspace\agent-skills
+
+# 首次：装到该目录并记住（默认用「目录联接」Junction，不需要管理员）
+powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\skills
+
+# 以后：更新所有记住过的目录
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+- Windows 上的技能目录：`%USERPROFILE%\.claude\skills`、`%USERPROFILE%\.workbuddy\skills` 等（同 mac，只是换成用户主目录）。
+- 链接形式用 **Junction（目录联接）**，普通用户即可创建；若本机策略不允许，脚本会**自动降级为拷贝**并提示（想固定拷加 `-Copy`）。
+- 其余参数与 `install.sh` 对应：`-Targets` / `-Forget <目录>` / `-List` / `-Lint` / `-Group report` / `-NoEntry` / `-Prune` / `-PruneBak`。
+- 也可以用 **Git Bash**：`bash install.sh`（参数与 mac 一致）。
 
 #### 手动装（不用脚本）
 

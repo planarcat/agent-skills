@@ -29,6 +29,9 @@
 #
 # 入口技能：playbook —— agent 找不着北时先读它，它按流程与状态把请求路由到执行技能。
 # 它属于"入口"，**名字不要改**（改名 = agent 从原来的位置进不来）。
+#
+# Windows 用户：PowerShell 不认 .sh。用同目录的 `install.ps1`（推荐），
+#   或者在 Git Bash 里跑 `bash install.sh`。
 
 set -euo pipefail
 

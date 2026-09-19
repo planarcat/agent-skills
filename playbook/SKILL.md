@@ -120,6 +120,9 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 
 **为什么用软链接**：`git pull` 后技能立即生效，不必每次重装。仓库里新增技能时跑一次 `./install.sh` 即可补齐。
 
+**Windows**：PowerShell 不认 `.sh`，用同目录的 `install.ps1`（行为一致，默认用「目录联接」Junction，不需要管理员）：
+`powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\skills`；或在 Git Bash 里 `bash install.sh`。
+
 **两条安全约定**：路径**必须先存在**（本工具不创建技能目录），不存在的路径直接跳过；记住的路径每次运行都会重新检查，路径没了就跳过（换机器、Windows 路径拿到 mac 上跑都属于这种情况）。记住的路径写在仓库根 `install.config`（本机状态，不进 git），**连安装模式一起记**——用 `--copy` 装的记成 `copy <路径>`，以后不带参数跑也不会被悄悄换成软链接。
 
 **换模式时的备份**：把"已经有真实目录"的位置改成软链时，只有**内容与仓库不一致**才会留 `<技能名>.bak-<时间戳>`（保住本地改动）；内容一致就直接替换。清理用 `./install.sh --prune-bak`。
