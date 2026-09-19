@@ -100,13 +100,17 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 ## 安装与更新（仓库根 `install.sh`）
 
 ```bash
-./install.sh                     # 装全部技能，默认用软链接
-./install.sh --group report      # 只装一组（自动带上入口 playbook）
-./install.sh --update            # 重扫仓库：补齐漏装的、修复悬空链接
+./install.sh <安装目录>          # 装到该目录（默认软链接）并记住它；目录必须已存在
+./install.sh                     # 以后：更新到所有记住过的目录
+./install.sh --group report <目录>  # 只装一组（自动带上入口 playbook）
+./install.sh --targets           # 看记住哪些目录、是否还存在
+./install.sh --forget <目录>     # 忘掉一个目录
 ./install.sh --copy              # 不想用软链接时退回拷贝模式
 ./install.sh --list              # 看技能与分组，不安装
 ```
 
-**为什么用软链接**：`git pull` 后技能立即生效，不必每次重装。新增技能要跑一次 `--update` 才会被链接进技能目录。
+**为什么用软链接**：`git pull` 后技能立即生效，不必每次重装。仓库里新增技能时跑一次 `./install.sh` 即可补齐。
+
+**两条安全约定**：路径**必须先存在**（本工具不创建技能目录），不存在的路径直接跳过；记住的路径每次运行都会重新检查，路径没了就跳过（换机器、Windows 路径拿到 mac 上跑都属于这种情况）。记住的路径写在仓库根 `install.config`（本机状态，不进 git）。
 
 **建议**：无论装哪一组，都带上 `playbook`（入口）。找不着北的时候先读它。

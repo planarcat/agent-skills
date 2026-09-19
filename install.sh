@@ -1,20 +1,26 @@
 #!/usr/bin/env bash
-# 把本仓库的技能安装 / 更新到 AI 工具的技能目录。
+# 技能安装 / 更新工具。
 #
 # 用法：
-#   ./install.sh                            装全部技能（默认软链接，git pull 后即生效）
-#   ./install.sh ~/.claude/skills           装到指定目录
-#   ./install.sh --group report ~/.claude/skills
-#                                           只装某一组（report / query / plan / pm / dev / journal）
-#                                           分组安装会自动带上入口 playbook
-#   ./install.sh ~/.claude/skills report-pipeline report-writer
-#                                           只装点名的那几个
-#   ./install.sh --no-entry --group report   移植用：装一组但**不带入口** playbook
-#   ./install.sh --update                   重扫仓库：补齐漏装的、报告失效链接（不动已装好的）
-#   ./install.sh --copy [目标目录]          退回拷贝模式（默认是软链接）
-#   ./install.sh --prune                    顺手删掉指向本仓库但已失效的软链接
-#   ./install.sh --lint                     自包含性体检：单个技能能否被单独带走
-#   ./install.sh --list                     只列出技能与分组，不安装
+#   ./install.sh <安装目录> [技能名…]   装到该目录，并**记住这个路径**
+#   ./install.sh                        不带参数：把仓库技能**更新到所有记住过的路径**
+#   ./install.sh <目录> --group report  只装某一组（report / query / plan / pm / dev / journal）
+#                                       分组安装会自动带上入口 playbook
+#   ./install.sh --targets              看记住了哪些安装目录（并逐个检查是否存在）
+#   ./install.sh --forget <目录>        忘掉一个安装目录（不删已装的文件）
+#   ./install.sh --copy <目录>          用拷贝代替软链接（默认软链接）
+#   ./install.sh --no-entry             分组安装**不带**入口 playbook（移植用）
+#   ./install.sh --prune               清掉指向本仓库但源已不存在的失效软链接（对全部记忆目录）
+#   ./install.sh --lint                技能自包含性体检（不安装）
+#   ./install.sh --list                列技能与分组，不安装
+#   ./install.sh --update              兼容旧写法，等同不带参数
+#
+# 三条硬规矩（本工具的行为约定）：
+#   1. **不主动创建工具的 skills 目录**——目标目录必须已存在，否则跳过并提示。
+#   2. 记住的路径每次运行都会**重新检查是否存在**：不存在就跳过（比如换了机器、
+#      盘没挂载、Windows 路径拿到 mac 上跑），不会瞎建目录。
+#   3. 装过的目录记在仓库根的 `install.config`（每行一个路径，`#` 注释）。
+#      该文件是**本机状态**，不要提交到 git（已在 .gitignore 里）。
 #
 # 为什么需要这一步：本仓库的技能都在**顶层目录**，而工具要求
 # <技能目录>/<技能名>/SKILL.md。直接把仓库整个 clone 进技能目录会多套一层，
@@ -26,12 +32,15 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_FILE="$REPO_DIR/install.config"
+
 LINK_MODE=1          # 默认软链接
 LIST_ONLY=0
 LINT_ONLY=0
-UPDATE_ONLY=0
+TARGETS_ONLY=0
 NO_ENTRY=0
 PRUNE=0
+FORGET=""
 TARGET=""
 GROUP=""
 SKILLS=()
@@ -52,25 +61,59 @@ group_skills() {
   esac
 }
 
-while [ $# -gt 0 ]; do
-  case "$1" in
-    --copy)   LINK_MODE=0; shift ;;
-    --link)   LINK_MODE=1; shift ;;   # 兼容旧写法（现在默认就是软链接）
-    --list)   LIST_ONLY=1; shift ;;
-    --lint)   LINT_ONLY=1; shift ;;
-    --update) UPDATE_ONLY=1; shift ;;
-    --no-entry) NO_ENTRY=1; shift ;;  # 移植用：不带入口 playbook
-    --prune)  PRUNE=1; shift ;;
-    --group)
-      if [ $# -lt 2 ]; then
-        echo "错误：--group 需要跟一个分组名（report / query / plan / pm / dev / journal）" >&2
-        exit 1
-      fi
-      GROUP="$2"; shift 2 ;;
-    -h|--help) sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-    *) if [ -z "$TARGET" ]; then TARGET="$1"; else SKILLS+=("$1"); fi; shift ;;
-  esac
-done
+# ---------- install.config：记住装过哪些目录 ----------
+
+# 读出所有记住的路径（去掉注释/空行/首尾空白）
+config_read() {
+  [ -f "$CONFIG_FILE" ] || return 0
+  while IFS= read -r line || [ -n "$line" ]; do
+    line="${line%%#*}"                 # 去行内注释
+    line="$(printf '%s' "$line" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
+    [ -n "$line" ] && printf '%s\n' "$line"
+  done < "$CONFIG_FILE"
+}
+
+# 归一化：去掉末尾的 / 或 \，便于比对去重
+norm_path() {
+  printf '%s' "$1" | sed 's/[\/\\]*$//'
+}
+
+# 追加一条（已存在则不动）
+config_add() {
+  local p="$1" n
+  n="$(norm_path "$p")"
+  while IFS= read -r old; do
+    [ "$(norm_path "$old")" = "$n" ] && return 0
+  done < <(config_read)
+  if [ ! -f "$CONFIG_FILE" ]; then
+    {
+      echo "# 技能安装目标（每行一个路径）。本文件是本机状态，不要提交到 git。"
+      echo "# 由 ./install.sh <目录> 自动追加；手工增删也可以，改完存盘，下次运行生效。"
+      echo "# Windows 路径写在 mac 上不会装（会提示不存在）——这正是期望的行为。"
+    } > "$CONFIG_FILE"
+  fi
+  printf '%s\n' "$n" >> "$CONFIG_FILE"
+  echo "  已记住安装目标：${n}"
+}
+
+# 删掉一条
+config_forget() {
+  local p="$1" n tmp
+  n="$(norm_path "$p")"
+  [ -f "$CONFIG_FILE" ] || { echo "  没有 install.config，无需忘记。"; return 0; }
+  tmp="$(mktemp)"
+  while IFS= read -r line; do
+    case "$line" in
+      \#*) printf '%s\n' "$line" >> "$tmp"; continue ;;
+    esac
+    if [ "$(norm_path "$line")" = "$n" ]; then
+      continue
+    fi
+    printf '%s\n' "$line" >> "$tmp"
+  done < "$CONFIG_FILE"
+  mv "$tmp" "$CONFIG_FILE"
+  echo "  已忘记安装目标：${n}（已装的文件没动）"
+}
 
 all_skills() {
   local d
@@ -79,11 +122,37 @@ all_skills() {
   done
 }
 
+# ---------- 参数 ----------
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --copy)   LINK_MODE=0; shift ;;
+    --link)   LINK_MODE=1; shift ;;   # 兼容旧写法（现在默认就是软链接）
+    --update) shift ;;                # 兼容旧写法：等同"不带参数"（更新所有记住的目录）
+    --list)   LIST_ONLY=1; shift ;;
+    --lint)   LINT_ONLY=1; shift ;;
+    --targets) TARGETS_ONLY=1; shift ;;
+    --no-entry) NO_ENTRY=1; shift ;;
+    --prune)  PRUNE=1; shift ;;
+    --forget) FORGET="${2:-}"; shift $(( $# > 1 ? 2 : 1 )) ;;
+    --group)
+      if [ $# -lt 2 ]; then
+        echo "错误：--group 需要跟一个分组名（report / query / plan / pm / dev / journal）" >&2
+        exit 1
+      fi
+      GROUP="$2"; shift 2 ;;
+    -h|--help) sed -n '2,32p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) if [ -z "$TARGET" ]; then TARGET="$1"; else SKILLS+=("$1"); fi; shift ;;
+  esac
+done
+
+# ---------- 体检模式（不安装）----------
+
 # 自包含性体检：本仓库的技能都是"能被单独带走"的单元。
 # 判据：① 技能目录内不得有跳出自身目录的相对路径；② 正文不得引用别的技能下的文件路径。
 if [ "$LINT_ONLY" -eq 1 ]; then
   echo "自包含性体检（${REPO_DIR}）"
-  echo "判据：① 不跳出自身目录 ② 不引用别的技能下的文件路径"
+  echo "判据：① 不跳出自身目录 ② 不引用别的技能下的文件路径 ③ 同名参考文件不漂移"
   echo
   warn=0
   tips=0
@@ -108,7 +177,6 @@ if [ "$LINT_ONLY" -eq 1 ]; then
     fi
   done
   # 同名参考文件漂移检查：同一份文档在多个技能里各留一份（为保持各自自包含）时，内容必须一致。
-  # 本仓库已知一处：references/gather-to-draft.md 同时存在于 report-writer 与 report-draft-filter。
   tmp="$(mktemp)"
   for f in "$REPO_DIR"/*/references/*.md; do
     [ -f "$f" ] || continue
@@ -143,6 +211,31 @@ if [ "$LINT_ONLY" -eq 1 ]; then
   exit 0
 fi
 
+# ---------- 看记忆的安装目标 ----------
+
+if [ "$TARGETS_ONLY" -eq 1 ]; then
+  echo "记住的安装目标（${CONFIG_FILE}）："
+  found=0
+  while IFS= read -r p; do
+    found=1
+    if [ -d "$p" ]; then
+      n=$(ls -A "$p" 2>/dev/null | wc -l | tr -d ' ')
+      echo "  ✅ ${p}（存在，已有 ${n} 项）"
+    else
+      echo "  ⚠️  ${p}（不存在——运行时装机会跳过它）"
+    fi
+  done < <(config_read)
+  [ "$found" -eq 0 ] && echo "  （还没有记住任何目录；用 ./install.sh <安装目录> 装一次就会记住）"
+  exit 0
+fi
+
+if [ -n "$FORGET" ]; then
+  config_forget "$FORGET"
+  exit 0
+fi
+
+# ---------- 列出技能与分组 ----------
+
 if [ "$LIST_ONLY" -eq 1 ]; then
   echo "仓库里的技能（${REPO_DIR}）："
   all_skills | sed 's/^/  /'
@@ -156,8 +249,17 @@ if [ "$LIST_ONLY" -eq 1 ]; then
   echo "  pm      产品经理常用        $(group_skills pm)"
   echo "  dev     开发与质量          $(group_skills dev)"
   echo "  journal 记录与沉淀          $(group_skills journal)"
+  echo
+  echo "记住的安装目标："
+  if [ -f "$CONFIG_FILE" ]; then
+    config_read | sed 's/^/  /'
+  else
+    echo "  （空；用 ./install.sh <安装目录> 装一次就会记住）"
+  fi
   exit 0
 fi
+
+# ---------- 确定要装哪些技能 ----------
 
 if [ -n "$GROUP" ]; then
   if ! grp="$(group_skills "$GROUP")"; then
@@ -172,7 +274,7 @@ if [ -n "$GROUP" ]; then
   fi
 fi
 
-if [ "$UPDATE_ONLY" -eq 1 ] || [ ${#SKILLS[@]} -eq 0 ]; then
+if [ ${#SKILLS[@]} -eq 0 ]; then
   SKILLS=()
   while IFS= read -r name; do SKILLS+=("$name"); done < <(all_skills)
 fi
@@ -182,27 +284,32 @@ if [ ${#SKILLS[@]} -eq 0 ]; then
   exit 1
 fi
 
-if [ -z "$TARGET" ]; then
-  for cand in "$HOME/.claude/skills" "$HOME/.workbuddy/skills" "$HOME/.agents/skills" "$HOME/.cursor/skills"; do
-    if [ -d "$cand" ]; then TARGET="$cand"; break; fi
-  done
-  TARGET="${TARGET:-$HOME/.claude/skills}"
-  echo "未指定目标目录，自动选用：$TARGET"
+# ---------- 确定要装到哪些目录 ----------
+
+TARGETS=()
+if [ -n "$TARGET" ]; then
+  TARGETS=("${TARGET/#\~/$HOME}")
+else
+  while IFS= read -r p; do TARGETS+=("${p/#\~/$HOME}"); done < <(config_read)
+  if [ ${#TARGETS[@]} -eq 0 ]; then
+    echo "还没有记住任何安装目录。" >&2
+    echo >&2
+    echo "用法：./install.sh <安装目录> [技能名…]   例如：" >&2
+    echo "  ./install.sh ~/.workbuddy/skills      # WorkBuddy" >&2
+    echo "  ./install.sh ~/.claude/skills         # Claude Code" >&2
+    echo >&2
+    echo "本工具**不会**替你创建技能目录。以下是本机已存在的候选（仅提示，未安装）：" >&2
+    for cand in "$HOME/.claude/skills" "$HOME/.workbuddy/skills" "$HOME/.agents/skills" "$HOME/.cursor/skills"; do
+      [ -d "$cand" ] && echo "  ✅ $cand" >&2
+    done
+    exit 1
+  fi
 fi
 
-TARGET="${TARGET/#\~/$HOME}"
-mkdir -p "$TARGET"
-
-case "$(cd "$TARGET" && pwd)/" in
-  "$REPO_DIR"/*)
-    echo "错误：目标目录在仓库内部（${TARGET}），会造成递归。请换一个位置。" >&2
-    exit 1
-    ;;
-esac
-
-# 装一个技能。返回码：0=新装/新链接，2=跳过（不是技能目录），3=已是最新
+# 安装一个技能到指定目录。
+# 返回码：0=新装/新链接，2=跳过（不是技能目录/目标不存在），3=已是最新
 install_one() {
-  local name="$1" src="$REPO_DIR/$1" dst="$TARGET/$1" keep ts
+  local tdir="$1" name="$2" src="$REPO_DIR/$2" dst="$tdir/$2" keep ts
   if [ ! -f "$src/SKILL.md" ]; then
     echo "  跳过 ${name}（不是技能目录，缺 SKILL.md）"
     return 2
@@ -218,7 +325,7 @@ install_one() {
     if [ -e "$dst" ] && [ ! -L "$dst" ]; then
       ts="$(date +%Y%m%d%H%M%S)"
       mv "$dst" "$dst.bak-$ts"
-      echo "  原有 ${name} 目录已挪到 $(basename "$dst").bak-$ts（未删除，确认后可自行清理）"
+      echo "  原有 ${name} 目录已挪到 $(basename "$dst").bak-${ts}（未删除，确认后可自行清理）"
     fi
     rm -f "$dst"
     ln -s "$src" "$dst"
@@ -247,43 +354,72 @@ install_one() {
   return 0
 }
 
-ok=0; skipped=0; fresh=0
-for name in "${SKILLS[@]}"; do
-  set +e
-  install_one "$name"; rc=$?
-  set -e
-  case "$rc" in
-    0) ok=$((ok + 1)) ;;
-    2) skipped=$((skipped + 1)) ;;
-    3) fresh=$((fresh + 1)) ;;
-  esac
-done
+# ---------- 开工：逐个目标目录 ----------
 
-# 顺手报一下失效链接：指向本仓库、但仓库里已经没有这个技能了
-stale=0
-for p in "$TARGET"/*; do
-  [ -L "$p" ] || continue
-  case "$(readlink "$p")" in
-    "$REPO_DIR"/*)
-      if [ ! -e "$p" ]; then
-        stale=$((stale + 1))
-        if [ "$PRUNE" -eq 1 ]; then
-          rm -f "$p"; echo "  已清理失效链接 $(basename "$p")（源已不在仓库）"
-        else
-          echo "  提示：$(basename "$p") 是失效链接（仓库里已无此技能）；加 --prune 可清理"
+first_ok=0
+for tdir in "${TARGETS[@]}"; do
+  echo "── 目标目录：$tdir"
+  if [ ! -d "$tdir" ]; then
+    echo "  ⚠️  路径不存在，**跳过**（本工具不创建技能目录）。"
+    echo "      确认路径写对、或先由该工具自己建好目录，再来装。"
+    continue
+  fi
+
+  ok=0; skipped=0; fresh=0
+  for name in "${SKILLS[@]}"; do
+    set +e
+    install_one "$tdir" "$name"; rc=$?
+    set -e
+    case "$rc" in
+      0) ok=$((ok + 1)) ;;
+      2) skipped=$((skipped + 1)) ;;
+      3) fresh=$((fresh + 1)) ;;
+    esac
+  done
+  first_ok=1
+
+  # 顺手报一下失效链接：指向本仓库、但仓库里已经没有这个技能了
+  stale=0
+  for p in "$tdir"/*; do
+    [ -L "$p" ] || continue
+    case "$(readlink "$p")" in
+      "$REPO_DIR"/*)
+        if [ ! -e "$p" ]; then
+          stale=$((stale + 1))
+          if [ "$PRUNE" -eq 1 ]; then
+            rm -f "$p"; echo "  已清理失效链接 $(basename "$p")（源已不在仓库）"
+          else
+            echo "  提示：$(basename "$p") 是失效链接（仓库里已无此技能）；加 --prune 可清理"
+          fi
         fi
-      fi
-      ;;
-  esac
+        ;;
+    esac
+  done
+
+  if [ "$LINK_MODE" -eq 1 ]; then
+    echo "  └ 新链接 ${ok} / 已是最新 ${fresh} / 跳过 ${skipped}"
+  else
+    echo "  └ 新安装 ${ok} / 已是最新 ${fresh} / 跳过 ${skipped}"
+  fi
+  [ "$stale" -gt 0 ] && [ "$PRUNE" -eq 0 ] && echo "  └ 另有 ${stale} 个失效链接（见上）"
+  echo
 done
 
-echo
-if [ "$LINK_MODE" -eq 1 ]; then
-  echo "完成：新链接 ${ok} 个，已是最新 ${fresh} 个，跳过 ${skipped} 个 → ${TARGET}"
-  echo "提示：软链接模式下 git pull 后技能立即生效；仓库里新增技能后跑一次 ./install.sh --update 即可补链。"
-else
-  echo "完成：新安装 ${ok} 个，已是最新 ${fresh} 个，跳过 ${skipped} 个 → ${TARGET}"
-  echo "提示：拷贝模式下仓库更新后要重新跑一次本脚本；想省这一步，去掉 --copy（默认软链接）。"
+# 显式给的目标目录：装成功了就记下来，下次不用再输
+if [ -n "$TARGET" ] && [ "$first_ok" -eq 1 ]; then
+  config_add "${TARGET/#\~/$HOME}"
 fi
-[ "$stale" -gt 0 ] && echo "另：发现 ${stale} 个失效链接（见上），加 --prune 可清理。"
+
+if [ "$first_ok" -eq 0 ]; then
+  echo "没有任何目录被安装（上面每个目标都跳过了）。"
+  echo "记忆文件：${CONFIG_FILE}（未新增条目）"
+  exit 1
+fi
+
+if [ "$LINK_MODE" -eq 1 ]; then
+  echo "提示：软链接模式下 git pull 后技能立即生效；仓库里**新增技能**后跑一次 ./install.sh 即可补齐。"
+else
+  echo "提示：拷贝模式下仓库更新后要重跑一次本工具；想省这一步，去掉 --copy（默认软链接）。"
+fi
+echo "记忆文件：${CONFIG_FILE}（./install.sh --targets 查看，--forget <目录> 移除）"
 echo "入口技能：${ENTRY_SKILL} —— agent 找不着北时先读它，它按流程与状态路由到执行技能。"

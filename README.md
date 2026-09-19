@@ -8,14 +8,21 @@
 
 **不知道该用哪个技能**：读入口技能 **`playbook`**。它是技能地图 + 流程路由——按你现在处在哪一步（需求/方案/执行/锁定/汇报），把你指到对应的执行技能。**它不替代任何执行技能，只负责带路。**
 
-**换机器 / 换工具**：两行搞定，不用挑技能、不用指定目录。
+**换机器 / 换工具**：克隆一次，**指定技能目录装一次**，之后不用再输路径。
 
 ```bash
 git clone https://github.com/planarcat/agent-skills ~/agent-skills
-cd ~/agent-skills && ./install.sh
+cd ~/agent-skills
+./install.sh ~/.claude/skills        # 或 ~/.workbuddy/skills，看你用哪个工具
 ```
 
-`install.sh` 会自动找到该工具的技能目录（Claude Code / WorkBuddy / Codex 等），**默认用软链接**把各技能挂进去——所以仓库 `git pull` 之后技能立即生效，**不必每次重装**。仓库本身留在 `~/agent-skills`。（不想用软链接：加 `--copy`。）
+**装完一次就记住了**：这个路径会写进仓库根的 `install.config`。以后只要 `cd ~/agent-skills && ./install.sh`，它就会**把仓库技能更新到所有记住过的目录**（换机器、多工具并行都照顾到）。仓库 `git pull` 后技能立即生效，**不必重装**（软链接模式）。
+
+**两条安全约定**：
+1. **不主动创建技能目录**——你给的路径必须已存在；不存在就跳过并提示（比如把 Windows 路径拿到 mac 上跑，只会提示"不存在"）。
+2. 记住的路径**每次运行都重新检查**：路径没了（换机、盘没挂）就跳过，不会瞎建目录。
+
+`install.config` 是**本机状态**（每行一个路径），已在 `.gitignore` 里，不会进仓库；`./install.sh --targets` 查看、`--forget <目录>` 移除。（不想用软链接：加 `--copy`。）
 
 **一条铁律**：别把仓库整个 clone 到技能目录里面。工具只往下扫一层，只认 `<技能目录>/<技能名>/SKILL.md`；多套一层就扫不到。`install.sh` 存在的唯一理由就是替你把这一层拆开。
 
@@ -54,13 +61,24 @@ cd ~/agent-skills && ./install.sh
 
 | 命令 | 作用 |
 |:---|:---|
-| `./install.sh` | 全装，**默认软链接**（`git pull` 后立即生效） |
-| `./install.sh --update` | 重扫仓库：补齐漏装的技能、报告失效链接；已装好的不动 |
+| `./install.sh <目录>` | 装到该目录（**默认软链接**），并**记住这个路径** |
+| `./install.sh` | 不带参数：把仓库技能**更新到所有记住过的目录**（日常就用这条） |
+| `./install.sh --targets` | 看记住哪些安装目录，并逐个检查是否存在 |
+| `./install.sh --forget <目录>` | 忘掉一个目录（已装的文件不动） |
 | `./install.sh --copy` | 退回拷贝模式（不使用软链接时） |
-| `./install.sh --prune` | 顺手删掉指向本仓库但已失效的软链接 |
-| `./install.sh --list` | 只列技能与分组 |
+| `./install.sh --prune` | 清理指向本仓库但已失效的软链接（对全部记忆目录） |
+| `./install.sh --list` | 列技能、分组与记住的目录，不安装 |
 
-> 软链接模式下，**改内容不用重装**（`git pull` 即生效）；只有在仓库**新增/删除技能**时才需要跑一次 `--update`。
+举例：
+
+```bash
+./install.sh ~/.workbuddy/skills              # WorkBuddy：装一次并记住
+./install.sh --group report ~/.claude/skills  # 只装一组（自动带上入口 playbook）
+./install.sh ~/.claude/skills report-writer tapd-todo-query   # 点名几个
+./install.sh                                  # 以后：一键更新上面所有目录
+```
+
+> 软链接模式下，**改内容不用重装**（`git pull` 即生效）；只有在仓库**新增/删除技能**时才需要跑一次 `./install.sh`。
 
 ### 把某个技能 / 技能组移植到别处
 
@@ -196,15 +214,18 @@ cd ~/Documents/agent-skills
 #### 然后用安装脚本装进工具技能目录
 
 ```bash
-./install.sh                          # 自动探测技能目录（~/.claude/skills 优先），装全部 25 个；默认软链接
-./install.sh ~/.claude/skills         # 指定目录
+./install.sh ~/.claude/skills         # 装到该目录（默认软链接），并记住它
+./install.sh                          # 以后：更新到所有记住过的目录
 ./install.sh --group report ~/.claude/skills   # 只装某一组（report / query / plan / pm / dev / journal，自动带上 playbook）
 ./install.sh ~/.claude/skills report-pipeline report-writer   # 只装点名的那几个
-./install.sh --update                 # 仓库新增/删除了技能时：重扫一次，补齐漏装、报告失效链接
 ./install.sh --copy ~/.claude/skills  # 不用软链接、退回拷贝模式
+./install.sh --targets                # 看记住哪些目录、是否还存在
+./install.sh --forget ~/.claude/skills # 忘掉一个目录（不删已装文件）
 ./install.sh --prune                  # 清理指向本仓库但已失效的软链接
 ./install.sh --list                   # 列出所有技能与分组，不安装
 ```
+
+> **技能目录必须先存在**：本工具不替你创建（`mkdir -p ~/.claude/skills` 是你的事）。给了不存在的路径只会提示并跳过。
 
 装完的技能目录长这样（软链接模式：每个技能是指向仓库的快捷方式）：
 
@@ -217,7 +238,7 @@ cd ~/Documents/agent-skills
 └── ...（其余技能）
 ```
 
-> 软链接的好处：`git pull` 后技能**立刻**是新版，不必重跑安装。代价：仓库里**新增**技能时要跑一次 `--update` 才会挂上去。
+> 软链接的好处：`git pull` 后技能**立刻**是新版，不必重跑安装。代价：仓库里**新增**技能时要跑一次 `./install.sh` 才会挂上去。
 
 #### 手动装（不用脚本）
 

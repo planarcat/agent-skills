@@ -1,6 +1,10 @@
-# 导出产物
+# 导出产物（旧的 export-portable.py 已删除，保留忽略规则以防旧产物被提交）
 report-skill-portable/
 *.bak-*
+
+# 本机安装状态：记住装过哪些技能目录，路径与机器绑定，不进仓库
+install.config
+install.config.bak*
 
 # 系统
 .DS_Store
