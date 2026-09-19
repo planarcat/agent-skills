@@ -140,6 +140,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
 | 📋 **PRD** | `prd-authoring` | 按固定结构写 PRD，落盘 Docs/ 或 Plans/ |
 | ❓ **澄清** | `requirement-clarification` | 模糊需求先澄清；已确认 / 待确认 / 假设 |
+| 🧩 **拆解** | `requirement-breakdown` | 开发前需求拆解：功能点 + 边界/歧义/待确认/验收，产出可直接填日报②栏的需求理解 |
 | ✅ **故事** | `user-story-acceptance` | 用户故事 + Given/When/Then 验收与测试提纲 |
 | ⚖️ **取舍** | `competitive-or-feature-brief` | 竞品/功能取舍简报：推荐与不做代价 |
 | 📣 **发版** | `release-note-pm` | 对用户 / 对运营 / 对研发三套发版说明 |
@@ -180,6 +181,7 @@ agent-skills/
 ├── plan-lock/                    # 方案锁定
 ├── generate-commit/              # 生成 commit
 ├── create-requirement-branch/    # 创建需求分支
+├── requirement-breakdown/        # 开发前需求拆解（日报②栏素材）
 ├── resolve-merge-conflict/       # 手动解决合并冲突（禁止覆盖）
 ├── record-change-log/            # 改动/问题沉淀：短记 Logs/ + 长记 Blogs/
 ├── record-development-blog/      # 兼容壳：已并入 record-change-log

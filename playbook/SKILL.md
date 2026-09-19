@@ -65,6 +65,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 | `dev` | `resolve-merge-conflict` | 解合并冲突；禁止整树覆盖本地修改 | 有冲突/要同步远程时 |
 | `dev` | `test-case-authoring` | 测试三件套：写用例 / 补测试 / 让测试变绿 | 说"写测试/加用例" |
 | `dev` | `create-requirement-branch` | 建需求分支与 worktree 目录 `{id后4位}-{标题截取}（{id}）`，产出**一行 `cd` 进入路径**（默认不起服务） | 说"开需求分支" |
+| `dev` | `requirement-breakdown` | **开发前需求拆解**：功能点 + 边界/歧义/待确认/验收 + 日报②栏素材 | 建完分支后、需求首次进「开发中」前（日报硬规则） |
 | `dev` | `generate-commit` | 生成通俗易懂的 commit message；**在需求分支上提交后直接推送**（用户说"只提交/先别推"才止步） | 说"生成 commit" |
 | `journal` | `record-change-log` | **沉淀改动/问题**：短记（`Logs/`，≤100 字）+ 长记（`Blogs/`，第一人称） | 说"编成日志""记录这个问题/编成博客" |
 | `journal` | `record-development-blog` | **兼容壳**：已并入 `record-change-log` 的长记模式 | 老触发词照旧命中这里，读到它就转去执行 `record-change-log` |
@@ -76,8 +77,8 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 | 需求模糊 / 口头 / 截图 | `requirement-clarification` | → `prd-authoring` 或 `user-story-acceptance` |
 | 需求清楚，要技术方案 | `plan-discussion` | → `plan-execution` → `plan-lock` |
 | 只要一句"怎么改" | `change-advice` | 不动代码；确认后再进 `development-guardrails` |
-| 准备动代码 | `development-guardrails` | 改 → `change-impact-regression` → `generate-commit` |
-| 要开新需求分支 | `create-requirement-branch` | 并行时用 worktree |
+| 准备动代码 | `requirement-breakdown`（日报硬规则：进开发中前必须有需求理解）→ `development-guardrails` | 改 → `change-impact-regression` → `generate-commit`（完成后直接推需求分支） |
+| 要开新需求分支 | `create-requirement-branch` → `requirement-breakdown` | 并行时用 worktree；拆解完再开工 |
 | 合并有冲突 / 要同步远程 | `resolve-merge-conflict` | → `change-impact-regression` |
 | 改完要做最终复查 | `impact-surface-audit` | 触发词敏感，别随手用 |
 | 要写/补测试 | `test-case-authoring` | 按 Part A/B/C 选 |
