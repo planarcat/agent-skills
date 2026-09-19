@@ -11,6 +11,7 @@
 #   ./install.sh --copy <目录>          用拷贝代替软链接（默认软链接）
 #   ./install.sh --no-entry             分组安装**不带**入口 playbook（移植用）
 #   ./install.sh --prune               清掉指向本仓库但源已不存在的失效软链接（对全部记忆目录）
+#   ./install.sh --prune-bak           清理 <技能名>.bak-<时间戳> 旧备份（仅当该技能已是软链）
 #   ./install.sh --lint                技能自包含性体检（不安装）
 #   ./install.sh --list                列技能与分组，不安装
 #   ./install.sh --update              兼容旧写法，等同不带参数
@@ -41,6 +42,7 @@ LINT_ONLY=0
 TARGETS_ONLY=0
 NO_ENTRY=0
 PRUNE=0
+PRUNE_BAK=0
 FORGET=""
 TARGET=""
 GROUP=""
@@ -173,6 +175,7 @@ while [ $# -gt 0 ]; do
     --targets) TARGETS_ONLY=1; shift ;;
     --no-entry) NO_ENTRY=1; shift ;;
     --prune)  PRUNE=1; shift ;;
+    --prune-bak) PRUNE_BAK=1; shift ;;
     --forget) FORGET="${2:-}"; shift $(( $# > 1 ? 2 : 1 )) ;;
     --group)
       if [ $# -lt 2 ]; then
@@ -372,11 +375,17 @@ install_one() {
       echo "  已是最新 ${name}（软链接指向仓库）"
       return 3
     fi
-    # 目标位置是真实目录 → 先挪到一边，不直接删（保住可能的本地改动与旧版 data/）
+    # 目标位置是真实目录 → 先看内容：
+    #   · 与仓库完全一致（就是同一技能的旧拷贝）→ 没东西可丢，直接替换，**不产生 .bak**
+    #   · 与仓库不同（可能有本地改动）→ 挪到 .bak-<时间戳> 保住，绝不直接删
     if [ -e "$dst" ] && [ ! -L "$dst" ]; then
-      ts="$(date +%Y%m%d%H%M%S)"
-      mv "$dst" "$dst.bak-$ts"
-      echo "  原有 ${name} 目录已挪到 $(basename "$dst").bak-${ts}（未删除，确认后可自行清理）"
+      if [ -d "$dst" ] && diff -rq "$src" "$dst" >/dev/null 2>&1; then
+        echo "  原有 ${name} 与仓库内容一致，直接替换（不备份）"
+      else
+        ts="$(date +%Y%m%d%H%M%S)"
+        mv "$dst" "$dst.bak-${ts}"
+        echo "  ⚠️ 原有 ${name} 与仓库内容不同（可能有你的本地改动），已备份到 $(basename "$dst").bak-${ts}（未删除）"
+      fi
     fi
     rm -f "$dst"
     ln -s "$src" "$dst"
@@ -457,6 +466,25 @@ for tdir in "${TARGET_PATHS[@]}"; do
     echo "  └ 新安装 ${ok} / 已是最新 ${fresh} / 跳过 ${skipped}"
   fi
   [ "$stale" -gt 0 ] && [ "$PRUNE" -eq 0 ] && echo "  └ 另有 ${stale} 个失效链接（见上）"
+
+  # 旧备份目录 <技能名>.bak-<时间戳>：
+  # 只会在"目标位置原有真实目录、且内容与仓库不同"时产生。若该技能现在已是
+  # 指向仓库的软链接，备份就是多余副本 → 可用 --prune-bak 清理（默认只提示）。
+  for p in "$tdir"/*.bak-*; do
+    [ -e "$p" ] || continue
+    bname="$(basename "$p")"
+    skill="${bname%%.bak-*}"
+    if [ -L "$tdir/$skill" ] && [ "$(readlink "$tdir/$skill")" = "$REPO_DIR/$skill" ]; then
+      if [ "$PRUNE_BAK" -eq 1 ]; then
+        rm -rf "$p"
+        echo "  已清理旧备份 ${bname}（${skill} 已是软链，备份多余的）"
+      else
+        echo "  提示：${bname} 是旧备份，且 ${skill} 已改挂软链 → 加 --prune-bak 可清理"
+      fi
+    else
+      echo "  提示：${bname} 是旧备份，但 ${skill} 当前不是指向仓库的软链 → 先别删，人工确认后再处理"
+    fi
+  done
   echo
 done
 
