@@ -86,7 +86,7 @@ cd ~/agent-skills && ./install.sh
 | 离线 / 打包给别人 | `tar -czf skills.tar.gz -C ~/export .` |
 | 保留完整历史 | `git archive --format=tar HEAD report-writer | tar -x -C ~/export` |
 
-**自包含性体检**：`./install.sh --lint` —— 检查每个技能目录有没有跳出自身目录的相对路径，并列出"文档级跨技能指针"（例如某技能正文写着"规范源见 `report-writer/references/spec.md`"）。
+**自包含性体检**：`./install.sh --lint` —— 检查每个技能目录有没有跳出自身目录的相对路径，列出"文档级跨技能指针"（例如某技能正文写着"规范源见 `report-writer/references/spec.md`"），并检测**同名参考文件漂移**（同一份文档在多个技能里各留一份时，内容必须一致）。
 
 > 唯一的已知软耦合：**日报三件套共用一份规范源**（`spec.md` 放在 `report-writer` 里），建议整组移植；单独搬 `report-pipeline` 或 `report-draft-filter` 也能跑，只是"口径冲突回查"那个指针会指空，改为以它们自带 `references/` 为准。
 

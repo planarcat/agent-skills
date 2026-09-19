@@ -107,6 +107,30 @@ if [ "$LINT_ONLY" -eq 1 ]; then
       echo "      同仓库（或同组一起移植）时能解析；若只搬本技能，这些指针会指空。"
     fi
   done
+  # 同名参考文件漂移检查：同一份文档在多个技能里各留一份（为保持各自自包含）时，内容必须一致。
+  # 本仓库已知一处：references/gather-to-draft.md 同时存在于 report-writer 与 report-draft-filter。
+  tmp="$(mktemp)"
+  for f in "$REPO_DIR"/*/references/*.md; do
+    [ -f "$f" ] || continue
+    if command -v md5sum >/dev/null 2>&1; then h="$(md5sum "$f" | awk '{print $1}')"; else h="$(md5 -q "$f")"; fi
+    printf '%s\t%s\t%s\n' "$(basename "$f")" "$h" "${f#"$REPO_DIR"/}" >> "$tmp"
+  done
+  drift=0
+  prev_base=""; prev_hash=""; prev_path=""
+  while IFS="$(printf '\t')" read -r base h path; do
+    if [ "$base" = "$prev_base" ] && [ "$h" != "$prev_hash" ]; then
+      drift=$((drift + 1))
+      echo "  ⚠ 同名参考文件内容不一致（手工同步漏了）：${base}"
+      echo "      ${prev_path}"
+      echo "      ${path}"
+    fi
+    prev_base="$base"; prev_hash="$h"; prev_path="$path"
+  done < <(sort "$tmp")
+  rm -f "$tmp"
+  if [ "$drift" -gt 0 ]; then
+    warn=$((warn + drift))
+    echo "      → 修正：把两份改成一致（或让其中一份引用另一份）"
+  fi
   if [ "$warn" -eq 0 ] && [ "$tips" -eq 0 ]; then
     echo "  ✅ 全部技能自包含：任意单个技能或技能组都能直接拷走使用（不带入口 playbook 也能跑）。"
   elif [ "$warn" -eq 0 ]; then
