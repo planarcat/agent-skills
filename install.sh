@@ -35,6 +35,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$REPO_DIR/install.config"
 
 LINK_MODE=1          # 默认软链接
+EXPLICIT_MODE=0      # 本次是否显式给了 --copy / --link（显式优先于记忆里的模式）
 LIST_ONLY=0
 LINT_ONLY=0
 TARGETS_ONLY=0
@@ -78,22 +79,60 @@ norm_path() {
   printf '%s' "$1" | sed 's/[\/\\]*$//'
 }
 
-# 追加一条（已存在则不动）
+# 一条记录 = 「可选模式前缀 + 路径」。bare 路径＝软链接（默认）；`copy <路径>`＝拷贝模式。
+# 记住模式是为了防呆：某台机器/某个工具不认软链接时用 copy 装过，以后不带参数跑
+# 不会被悄悄换回软链接。
+entry_mode() {
+  case "$1" in
+    copy\ *)  echo copy ;;
+    link\ *)  echo link ;;
+    *)        echo link ;;
+  esac
+}
+
+entry_path() {
+  case "$1" in
+    copy\ *)  printf '%s' "${1#copy }" ;;
+    link\ *)  printf '%s' "${1#link }" ;;
+    *)        printf '%s' "$1" ;;
+  esac
+}
+
+# 追加一条（同一路径已存在则更新模式，不重复）
 config_add() {
-  local p="$1" n
+  local p="$1" m="$2" n tmp exist
   n="$(norm_path "$p")"
+  exist=0
   while IFS= read -r old; do
-    [ "$(norm_path "$old")" = "$n" ] && return 0
+    [ "$(norm_path "$(entry_path "$old")")" = "$n" ] && exist=1
   done < <(config_read)
   if [ ! -f "$CONFIG_FILE" ]; then
     {
-      echo "# 技能安装目标（每行一个路径）。本文件是本机状态，不要提交到 git。"
+      echo "# 技能安装目标（每行一个）。本文件是本机状态，不要提交到 git。"
+      echo "# 格式：<路径>            → 软链接安装（默认）"
+      echo "#       copy <路径>       → 拷贝安装（工具不认软链接时用这个）"
       echo "# 由 ./install.sh <目录> 自动追加；手工增删也可以，改完存盘，下次运行生效。"
       echo "# Windows 路径写在 mac 上不会装（会提示不存在）——这正是期望的行为。"
     } > "$CONFIG_FILE"
   fi
-  printf '%s\n' "$n" >> "$CONFIG_FILE"
-  echo "  已记住安装目标：${n}"
+  if [ "$exist" -eq 1 ]; then
+    tmp="$(mktemp)"
+    while IFS= read -r line; do
+      case "$line" in
+        \#*) printf '%s\n' "$line" >> "$tmp"; continue ;;
+      esac
+      if [ "$(norm_path "$(entry_path "$line")")" = "$n" ]; then
+        if [ "$m" = "copy" ]; then printf 'copy %s\n' "$n" >> "$tmp"; else printf '%s\n' "$n" >> "$tmp"; fi
+      else
+        printf '%s\n' "$line" >> "$tmp"
+      fi
+    done < "$CONFIG_FILE"
+    mv "$tmp" "$CONFIG_FILE"
+    echo "  已更新安装目标记录：${n}（模式：$([ "$m" = copy ] && echo 拷贝 || echo 软链接)）"
+    return 0
+  fi
+  if [ "$m" = "copy" ]; then printf 'copy %s\n' "$n" >> "$CONFIG_FILE"; else printf '%s\n' "$n" >> "$CONFIG_FILE"; fi
+  echo "  已记住安装目标：${n}（模式：$([ "$m" = copy ] && echo 拷贝 || echo 软链接)）"
 }
 
 # 删掉一条
@@ -106,7 +145,7 @@ config_forget() {
     case "$line" in
       \#*) printf '%s\n' "$line" >> "$tmp"; continue ;;
     esac
-    if [ "$(norm_path "$line")" = "$n" ]; then
+    if [ "$(norm_path "$(entry_path "$line")")" = "$n" ]; then
       continue
     fi
     printf '%s\n' "$line" >> "$tmp"
@@ -126,8 +165,8 @@ all_skills() {
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --copy)   LINK_MODE=0; shift ;;
-    --link)   LINK_MODE=1; shift ;;   # 兼容旧写法（现在默认就是软链接）
+    --copy)   LINK_MODE=0; EXPLICIT_MODE=1; shift ;;
+    --link)   LINK_MODE=1; EXPLICIT_MODE=1; shift ;;   # 兼容旧写法（现在默认就是软链接）
     --update) shift ;;                # 兼容旧写法：等同"不带参数"（更新所有记住的目录）
     --list)   LIST_ONLY=1; shift ;;
     --lint)   LINT_ONLY=1; shift ;;
@@ -216,13 +255,16 @@ fi
 if [ "$TARGETS_ONLY" -eq 1 ]; then
   echo "记住的安装目标（${CONFIG_FILE}）："
   found=0
-  while IFS= read -r p; do
+  while IFS= read -r line; do
     found=1
+    p="$(entry_path "$line")"
+    m="$(entry_mode "$line")"
+    [ "$m" = copy ] && mdesc="拷贝" || mdesc="软链接"
     if [ -d "$p" ]; then
       n=$(ls -A "$p" 2>/dev/null | wc -l | tr -d ' ')
-      echo "  ✅ ${p}（存在，已有 ${n} 项）"
+      echo "  ✅ ${p}（存在，已有 ${n} 项 ｜ 模式：${mdesc}）"
     else
-      echo "  ⚠️  ${p}（不存在——运行时装机会跳过它）"
+      echo "  ⚠️  ${p}（不存在——运行时装机会跳过它 ｜ 模式：${mdesc}）"
     fi
   done < <(config_read)
   [ "$found" -eq 0 ] && echo "  （还没有记住任何目录；用 ./install.sh <安装目录> 装一次就会记住）"
@@ -286,12 +328,21 @@ fi
 
 # ---------- 确定要装到哪些目录 ----------
 
-TARGETS=()
+TARGET_PATHS=()
+TARGET_MODES=()
 if [ -n "$TARGET" ]; then
-  TARGETS=("${TARGET/#\~/$HOME}")
+  TARGET_PATHS=("${TARGET/#\~/$HOME}")
+  if [ "$LINK_MODE" -eq 1 ]; then TARGET_MODES=("link"); else TARGET_MODES=("copy"); fi
 else
-  while IFS= read -r p; do TARGETS+=("${p/#\~/$HOME}"); done < <(config_read)
-  if [ ${#TARGETS[@]} -eq 0 ]; then
+  while IFS= read -r line; do
+    TARGET_PATHS+=("$(entry_path "$line")")
+    if [ "$EXPLICIT_MODE" -eq 1 ]; then
+      if [ "$LINK_MODE" -eq 1 ]; then TARGET_MODES+=("link"); else TARGET_MODES+=("copy"); fi
+    else
+      TARGET_MODES+=("$(entry_mode "$line")")
+    fi
+  done < <(config_read)
+  if [ ${#TARGET_PATHS[@]} -eq 0 ]; then
     echo "还没有记住任何安装目录。" >&2
     echo >&2
     echo "用法：./install.sh <安装目录> [技能名…]   例如：" >&2
@@ -306,16 +357,16 @@ else
   fi
 fi
 
-# 安装一个技能到指定目录。
+# 安装一个技能到指定目录。mode: link | copy
 # 返回码：0=新装/新链接，2=跳过（不是技能目录/目标不存在），3=已是最新
 install_one() {
-  local tdir="$1" name="$2" src="$REPO_DIR/$2" dst="$tdir/$2" keep ts
+  local tdir="$1" name="$2" mode="$3" src="$REPO_DIR/$2" dst="$tdir/$2" keep ts
   if [ ! -f "$src/SKILL.md" ]; then
     echo "  跳过 ${name}（不是技能目录，缺 SKILL.md）"
     return 2
   fi
 
-  if [ "$LINK_MODE" -eq 1 ]; then
+  if [ "$mode" = "link" ]; then
     # 已经是正确的软链接 → 幂等跳过（这正是日常更新不必重装的原因）
     if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
       echo "  已是最新 ${name}（软链接指向仓库）"
@@ -357,8 +408,12 @@ install_one() {
 # ---------- 开工：逐个目标目录 ----------
 
 first_ok=0
-for tdir in "${TARGETS[@]}"; do
-  echo "── 目标目录：$tdir"
+idx=0
+for tdir in "${TARGET_PATHS[@]}"; do
+  tmode="${TARGET_MODES[$idx]}"
+  idx=$((idx + 1))
+  [ "$tmode" = copy ] && mdesc="拷贝" || mdesc="软链接"
+  echo "── 目标目录：${tdir}（模式：${mdesc}）"
   if [ ! -d "$tdir" ]; then
     echo "  ⚠️  路径不存在，**跳过**（本工具不创建技能目录）。"
     echo "      确认路径写对、或先由该工具自己建好目录，再来装。"
@@ -368,7 +423,7 @@ for tdir in "${TARGETS[@]}"; do
   ok=0; skipped=0; fresh=0
   for name in "${SKILLS[@]}"; do
     set +e
-    install_one "$tdir" "$name"; rc=$?
+    install_one "$tdir" "$name" "$tmode"; rc=$?
     set -e
     case "$rc" in
       0) ok=$((ok + 1)) ;;
@@ -396,7 +451,7 @@ for tdir in "${TARGETS[@]}"; do
     esac
   done
 
-  if [ "$LINK_MODE" -eq 1 ]; then
+  if [ "$tmode" = link ]; then
     echo "  └ 新链接 ${ok} / 已是最新 ${fresh} / 跳过 ${skipped}"
   else
     echo "  └ 新安装 ${ok} / 已是最新 ${fresh} / 跳过 ${skipped}"
@@ -405,9 +460,10 @@ for tdir in "${TARGETS[@]}"; do
   echo
 done
 
-# 显式给的目标目录：装成功了就记下来，下次不用再输
+# 显式给的目标目录：装成功了就记下来（连模式一起），下次不用再输
 if [ -n "$TARGET" ] && [ "$first_ok" -eq 1 ]; then
-  config_add "${TARGET/#\~/$HOME}"
+  if [ "$LINK_MODE" -eq 1 ]; then umode="link"; else umode="copy"; fi
+  config_add "${TARGET/#\~/$HOME}" "$umode"
 fi
 
 if [ "$first_ok" -eq 0 ]; then
@@ -416,10 +472,12 @@ if [ "$first_ok" -eq 0 ]; then
   exit 1
 fi
 
-if [ "$LINK_MODE" -eq 1 ]; then
+any_link=0
+for m in "${TARGET_MODES[@]}"; do [ "$m" = link ] && any_link=1; done
+if [ "$any_link" -eq 1 ]; then
   echo "提示：软链接模式下 git pull 后技能立即生效；仓库里**新增技能**后跑一次 ./install.sh 即可补齐。"
 else
-  echo "提示：拷贝模式下仓库更新后要重跑一次本工具；想省这一步，去掉 --copy（默认软链接）。"
+  echo "提示：拷贝模式下仓库更新后要重跑一次本工具（本机记住的就是拷贝模式，不会自动换成软链接）。"
 fi
 echo "记忆文件：${CONFIG_FILE}（./install.sh --targets 查看，--forget <目录> 移除）"
 echo "入口技能：${ENTRY_SKILL} —— agent 找不着北时先读它，它按流程与状态路由到执行技能。"
