@@ -53,7 +53,7 @@ description: "After modifying application source code, produce an impact surface
 
 ## GitNexus MCP（检索影响面）
 
-当 Cursor 已启用 **`user-gitnexus`** MCP 且目标仓库已索引时，**必须先尝试**用 GitNexus 补充/校验影响面，再写交付清单。调用前阅读 MCP 工具 schema（`impact`、`detect_changes`、`api_impact` 等）。
+当**你所在工具**（Cursor / WorkBuddy / Claude Code 等）已启用 **`user-gitnexus`** MCP 且目标仓库已索引时，**必须先尝试**用 GitNexus 补充/校验影响面，再写交付清单。调用前阅读 MCP 工具 schema（`impact`、`detect_changes`、`api_impact` 等）。
 
 ### 推荐调用顺序（改后收尾）
 

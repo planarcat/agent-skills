@@ -125,7 +125,7 @@ cd ~/agent-skills
 | 🔧 **执行** | `plan-execution` | 按方案逐阶段实施开发，产出执行结果文档 |
 | 🔒 **锁定** | `plan-lock` | 锁定前核对方案/结果/遗留清单，确认闭环后归档 |
 | 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
-| 🌿 **分支** | `create-requirement-branch` | 建 `dev/hcb/{id}_{标题}`；并行 worktree 默认起本地服务；本仓普通建分支一般不起服务 |
+| 🌿 **分支** | `create-requirement-branch` | 建 `{id后4位}-{标题截取}（{id}）` 分支与 worktree 目录；并行 worktree 默认起本地服务；本仓普通建分支一般不起服务 |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
 | 📋 **PRD** | `prd-authoring` | 按固定结构写 PRD，落盘 Docs/ 或 Plans/ |
 | ❓ **澄清** | `requirement-clarification` | 模糊需求先澄清；已确认 / 待确认 / 假设 |
@@ -341,9 +341,9 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 - "从主分支拉个需求分支"
 - "用 worktree 并行"、"当前分支还在做别的，另开一条线"
 
-从远程主分支（主分支名可读当前 Git 仓根的 `AGENT.md` / `CLAUDE.md`）创建 `dev/hcb/{需求id}_{需求标题}`。**上游必须是该分支自己**，绝不能跟踪主分支。
+从远程主分支（主分支名可读当前 Git 仓根的 `AGENT.md` / `CLAUDE.md`）创建需求分支，命名规范 `{id后4位}-{标题截取}（{id}）`（例：`2792-效果图与转平台能力流程重构（1002792）`），worktree 目录与分支同形。**上游必须是该分支自己**，绝不能跟踪主分支。
 
-当前分支正忙或要并行时：用 **Git Worktree** 在旁路目录建分支，不碰原工作区；再用第二个 Cursor 窗口打开该目录。仅当用户明确「不用 worktree」且工作区允许时，才在本仓 in-place 切换。
+当前分支正忙或要并行时：用 **Git Worktree** 在旁路目录建分支，不碰原工作区；再用**你惯用的工具**打开该目录（Cursor / VS Code / JB / 命令行型 Agent 都行，见技能正文「跨工具怎么做」）。仅当用户明确「不用 worktree」且工作区允许时，才在本仓 in-place 切换。
 
 **本地服务：** 仅 **worktree 并行**时默认在新目录自动启动（装依赖、换端口避开原窗口，不杀 A 的服务；可说「不起服务」跳过）。本仓**普通新建分支**一般**不**起服务，沿用原窗口已在跑的 dev 即可。
 
