@@ -26,6 +26,10 @@
 
 [CmdletBinding()]
 param(
+  # 位置参数放**第一位**：Windows PowerShell 会按声明顺序给参数自动编号，
+  # 若把它放最后，第一个位置参数会被 [string]$Forget 抢走（实测踩过）。
+  [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
+  [string[]] $Rest,
   [switch] $Copy,
   [switch] $Link,
   [switch] $List,
@@ -35,9 +39,7 @@ param(
   [switch] $Prune,
   [switch] $PruneBak,
   [switch] $NoEntry,
-  [string] $Group,
-  [Parameter(ValueFromRemainingArguments = $true)]
-  [string[]] $Rest
+  [string] $Group
 )
 
 try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
@@ -272,11 +274,12 @@ if ($Target) {
     Write-Host '还没有记住任何安装目录。' -ForegroundColor Yellow
     Write-Host ''
     Write-Host '用法：.\install.ps1 <安装目录> [技能名…]   例如：'
-    Write-Host "  .\install.ps1 $env:USERPROFILE\.claude\skills      # Claude Code"
-    Write-Host "  .\install.ps1 $env:USERPROFILE\.workbuddy\skills   # WorkBuddy"
+    Write-Host "  .\install.ps1 $(Join-Path $HOME '.claude\skills')      # Claude Code"
+    Write-Host "  .\install.ps1 $(Join-Path $HOME '.workbuddy\skills')   # WorkBuddy"
     Write-Host ''
     Write-Host '本工具不会替你创建技能目录。以下是本机已存在的候选（仅提示，未安装）：'
-    foreach ($c in "$env:USERPROFILE\.claude\skills", "$env:USERPROFILE\.workbuddy\skills", "$env:USERPROFILE\.cursor\skills", "$env:USERPROFILE\.codex\skills", "$env:USERPROFILE\.agents\skills") {
+    $cands = @('.claude\skills', '.workbuddy\skills', '.cursor\skills', '.codex\skills', '.agents\skills') | ForEach-Object { Join-Path $HOME $_ }
+    foreach ($c in $cands) {
       if (Test-Path -LiteralPath $c -PathType Container) { Write-Host "  [OK] $c" }
     }
     exit 1
@@ -313,21 +316,25 @@ function Install-One([string] $tdir, [string] $name, [string] $mode) {
         Write-Host "  [!] 原有 ${name} 与仓库内容不同（可能有你的本地改动），已备份到 $name.bak-$ts（未删除）"
       }
     }
-    try {
-      New-Item -ItemType Junction -Path $dst -Target $src -ErrorAction Stop | Out-Null
-      Write-Host "  已联接 ${name}"
-      return 'new'
-    } catch {
+    # 建链接：命令"没报错" ≠ 真建出来了 —— 必须复核一次（实测：macOS 上
+    # New-Item -ItemType Junction 会静默成功但什么都没建，所以先按平台选类型，再验证）。
+    $created = $false
+    if ($IsWin) {
       try {
-        New-Item -ItemType SymbolicLink -Path $dst -Target $src -ErrorAction Stop | Out-Null
-        Write-Host "  已建立符号链接 ${name}"
-        return 'new'
-      } catch {
-        Copy-Item -LiteralPath $src -Destination $dst -Recurse -Force
-        Write-Host "  [!] 本机无法建链接（需要管理员或开发者模式），已改为拷贝 ${name}；想固定用拷贝请加 -Copy"
-        return 'new'
-      }
+        New-Item -ItemType Junction -Path $dst -Target $src -ErrorAction Stop | Out-Null
+        $created = Test-Path -LiteralPath $dst
+      } catch { $created = $false }
+      if ($created) { Write-Host "  已联接 ${name}"; return 'new' }
     }
+    try {
+      New-Item -ItemType SymbolicLink -Path $dst -Target $src -ErrorAction Stop | Out-Null
+      $created = Test-Path -LiteralPath $dst
+    } catch { $created = $false }
+    if ($created) { Write-Host "  已建立符号链接 ${name}"; return 'new' }
+
+    Copy-Item -LiteralPath $src -Destination $dst -Recurse -Force
+    Write-Host "  [!] 本机无法建链接（需要管理员 / 开发者模式），已改为拷贝 ${name}；想固定用拷贝请加 -Copy"
+    return 'new'
   }
 
   # ---- 拷贝模式 ----

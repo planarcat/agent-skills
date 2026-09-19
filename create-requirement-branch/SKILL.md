@@ -191,7 +191,32 @@ git push -u origin HEAD
 
 用户明确说「起服务 / 把 dev 跑起来」才执行本节。判定命令按序：文档里的启动方式 → `package.json` 的 `scripts`（`dev` > `serve` > `start`）→ 锁文件选包管理器（`pnpm-lock.yaml`→pnpm、`yarn.lock`→yarn，否则 npm）→ 仍不确定就问，别瞎猜。
 
-三个必须避的坑：
+### 先试：共享主仓的 node_modules，跳过 install（秒级）
+
+新 worktree 没有 `node_modules` 才需要 install。**可以不装**——把主 worktree（或上一个 worktree）的 `node_modules` 用符号链接/联接挂过来：
+
+```bash
+# mac / Linux：绝对路径最省事（换机器或挪目录会断，断了重连即可）
+ln -sfn "<主仓路径>/node_modules" "<worktree路径>/node_modules"
+# monorepo 里每个包都有自己的 node_modules，就按同样办法各挂一个
+
+# Windows（PowerShell）：目录联接，普通用户可用
+New-Item -ItemType Junction -Path "<worktree路径>\node_modules" -Target "<主仓路径>\node_modules"
+```
+
+什么时候**不能**用（回退正常 install）：
+
+- 本分支**改过依赖**（动了 `package.json` / `pnpm-lock.yaml`）→ 共享的是主分支的依赖，会缺包/错版本。
+- 出现诡异的模块解析问题、或 pnpm 报 `node_modules` 相关警告且服务起不来 → 撤掉链接，老老实实 `pnpm install --prefer-offline`（暖 store 一般 1 分钟内）。
+
+注意点：
+
+- 主仓必须 install 过；**主分支的依赖更新了，就在主仓重跑一次 install**，worktree 自动跟着用，不用每条分支各装一遍。
+- 两个 dev **同时首次启动**会抢 Vite 预构建缓存 → 先起一边，ready 后再起另一边。
+- pnpm 可能提示 `node_modules` 是符号链接 → 可忽略；pnpm 的 `.pnpm` 硬链接直连全局 store，跨目录照样可用。
+- 不想共享了：删掉链接，正常 install 即可恢复独立依赖。
+
+### 三个必须避的坑
 
 1. **`node_modules` 存在 ≠ 可用**：抽查 `node_modules/.bin` 是否非空；空的话先 `pnpm install --prefer-offline`，还不行 `pnpm install --force`。
 2. **别抢端口**：worktree 与原窗口常撞同一默认端口 → 换端口起（`pnpm dev -- --port <空闲端口>` / `PORT=<空闲端口>`），**不要杀原窗口 A 的进程**。
