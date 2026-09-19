@@ -21,9 +21,23 @@ description: "仅在用户明确要求做「最终复查 / 全面影响面检索
 | `development-guardrails` | 改之中，注释 / 埋点 | 不做影响面 |
 | `change-impact-regression` | **一般改动收尾**（默认自动执行） | 常规 d=1/d=2 upstream + 回归清单 |
 | **`impact-surface-audit`（本 skill）** | **用户明确要求「最终 / 深度 / 全面」复查** | **穷尽式扫描共用点 × 所有已知盲区** |
-| `record-change-log` / `record-development-blog` | 复查后归档 | — |
+| `record-change-log` | 复查后归档（短记 `Logs/` / 长记 `Blogs/`，`record-development-blog` 已并入它） | — |
 
 **关键差别**：`change-impact-regression` 有可能被自动附带执行；本 skill **只在用户明确用触发词请求时执行**，不做默认附带。
+
+---
+
+## 前置：GitNexus 不在时怎么办（先看这条）
+
+本 skill 的 Phase 2 建立在一张代码关系图（GitNexus MCP / CLI：`impact`、`detect_changes`、`cypher` 等）之上。**没装或索引过期时不要停摆，也不要假装查过图**：
+
+| 情形 | 怎么做 |
+|---|---|
+| MCP/CLI 不可用 | **跳过 Phase 2**，把 Phase 1（diff → 共用点清单）用纯 grep / 引用搜索补全；在交付物里**显式标注「未经图校验」** |
+| 索引落后很多 / 重索引代价大 | 先问用户是否允许重索引；不允许就按上一条降级 |
+| 只想用图做抽查 | 用 `impact <Symbol>` 查**单个最可疑的共用点**即可，不必全跑 |
+
+隔离要求不变：**图给的、grep 补的、人肉判断的，三类证据必须在交付物里分开标注**——这条比"有没有用上图"更重要。
 
 ---
 

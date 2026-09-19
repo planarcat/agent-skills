@@ -57,8 +57,8 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 | `dev` | `test-case-authoring` | 测试三件套：写用例 / 补测试 / 让测试变绿 | 说"写测试/加用例" |
 | `dev` | `create-requirement-branch` | 建需求分支 `dev/hcb/{id}_{标题}`，并行用 worktree | 说"开需求分支" |
 | `dev` | `generate-commit` | 生成通俗易懂的 commit message（默认不推送） | 说"生成 commit" |
-| `journal` | `record-change-log` | 把改动过程编成简短变更日志 | 说"将上述改动编成日志" |
-| `journal` | `record-development-blog` | 把问题/需求编成开发博客 | 说"记录这个问题/编成博客" |
+| `journal` | `record-change-log` | **沉淀改动/问题**：短记（`Logs/`，≤100 字）+ 长记（`Blogs/`，第一人称） | 说"编成日志""记录这个问题/编成博客" |
+| `journal` | `record-development-blog` | **兼容壳**：已并入 `record-change-log` 的长记模式 | 老触发词照旧命中这里，读到它就转去执行 `record-change-log` |
 
 ## 流程路由（按你现在在哪一步）
 
@@ -74,7 +74,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 | 要写/补测试 | `test-case-authoring` | 按 Part A/B/C 选 |
 | 一天干完要出日报 | `report-pipeline`（随时落卡）→ `report-draft-filter` → `report-writer` | 周报走 `report-writer` 的「附：周报」 |
 | 要核对做了什么 / 任务状态 | `query` 组：`cnb-push-audit`、`tapd-todo-query` | 结果喂给 `report-writer` 的对齐检查 |
-| 要发版 / 沉淀记录 | `release-note-pm`、`record-change-log`、`record-development-blog` | — |
+| 要发版 / 沉淀记录 | `release-note-pm`、`record-change-log`（短记/长记都在它里面） | — |
 | 贴了会议纪要 | `meeting-to-action` | 行动项可转 `prd-authoring` / `plan-discussion` |
 
 ## 状态判定（怎么知道现在在哪一步）

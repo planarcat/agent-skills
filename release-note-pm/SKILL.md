@@ -19,8 +19,7 @@ description: "当用户说「写发版说明」「release notes」「changelog�
 |---|---|
 | **本 skill** | 产品向发版说明（三套受众） |
 | `generate-commit` | Git commit message |
-| `record-change-log` | 开发过程短日志（`Logs/`） |
-| `record-development-blog` | 问题/需求复盘长文（`Blogs/`） |
+| `record-change-log` | 开发过程记录：短记（`Logs/`，≤100 字）与长记（`Blogs/`，第一人称复盘）——`record-development-blog` 已并入它 |
 
 ## 输入
 

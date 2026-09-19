@@ -82,7 +82,7 @@ description: "After modifying application source code, produce an impact surface
 ### MCP 不可用时的回退
 
 - 未配置 GitNexus、索引缺失、或工具报错 → **不得**伪造图结果；改用 `git diff` + 代码内 grep/引用搜索，并在交付中注明「未使用 GitNexus，影响面为手工推断」。
-- 仍可参考 `gitnexus-impact-analysis` skill 中的风险分级思路，但证据须来自 diff/代码。
+- 仍可参考 `gitnexus-impact-analysis` 中的风险分级思路（**外部技能，不在本仓库**，装了才用），但证据须来自 diff/代码。
 
 ---
 
@@ -183,7 +183,7 @@ description: "After modifying application source code, produce an impact surface
 
 | skill | 关系 |
 |:---|:---|
-| `gitnexus-impact-analysis` | GitNexus 工具用法与 d=1/d=2 风险语义；本 skill 在**改后交付**场景下调用 MCP |
+| `gitnexus-impact-analysis`（**外部技能，不在本仓库**） | GitNexus 工具用法与 d=1/d=2 风险语义；本 skill 在**改后交付**场景下调用 MCP；没装这个技能不影响本 skill 执行 |
 | `development-guardrails` | Part A/B 管改中与调试；本 skill 在改后收尾配合 |
 | `test-case-authoring` | Part A 写测试 / Part C 测驱动调试修产品后，收尾影响面仍用本文 |
 

@@ -309,7 +309,8 @@ v3 §3.2 要求卡点必带 6 项，采集时就按这个结构记：
 ## Resources
 
 - `references/card-format.md` — 素材卡完整样例、正反例对照、字段填写细则、多 agent 场景示例、当日文档骨架、归并动作序列。
-- `scripts/export-portable.py` — **移植导出脚本**。把三层技能打包成可移植版（单文件通用版 + 技能压缩包 + 移植说明），重新运行即重新生成，不手写副本。用法：`python3 scripts/export-portable.py [-o 输出目录] [--merge AGENTS.md] [--lite]`。
+
+> 早先还有一个 `scripts/export-portable.py`（把三层技能导出成单文件 `AGENTS.md`，给不支持 Skill 机制的工具用）。它整份是 **v2 口径**（七模块 / 责任内联 / 21:00 截止），已于 2026-09-19 删除。现在要移植用仓库根 `./install.sh --copy [--no-entry] [目标目录] [技能名…]`，不需要"导出成单文件"这一步。
 
 ## 整套技能的文件清单（移植时按此核对）
 
@@ -320,9 +321,8 @@ v3 §3.2 要求卡点必带 6 项，采集时就按这个结构记：
 | 采集 | report-pipeline | `SKILL.md`、`references/card-format.md` | ✅ |
 | 分拣 | report-draft-filter | `SKILL.md`、`references/gather-to-draft.md` | ✅ |
 | 成型 | report-writer | `SKILL.md`、`references/templates.md`、`references/gather-to-draft.md` | ✅ |
-| 工具 | report-pipeline | `scripts/export-portable.py` | ⭕ 仅移植时需要 |
 
-全为纯 Markdown + 一个零依赖 Python 脚本；无外部服务、无网络、无第三方库。
+全为纯 Markdown；无外部服务、无网络、无第三方库。
 **装完即可用，不需要改任何路径**：运行时数据落在**当前工作区**内，技能目录保持只读；项目名一律从当天素材里取，技能内不含项目清单。唯一写死的是报告作者本人姓名（何成标）。
 
 ## 与其他技能的关系

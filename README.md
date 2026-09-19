@@ -92,7 +92,7 @@ cd ~/agent-skills && ./install.sh
 
 **移植后入口怎么办**：不装 `playbook` 就按各技能自己的触发词直接唤起，完全够用；装了 `playbook` 就要注意它是**全库地图**——只装了子集时，地图里会列到没装的技能，按需裁掉那几行（或干脆不带入口，用 `--no-entry`）。
 
-**工具不支持 Skill 机制时**：改用单文件规则。跑 `report-pipeline/scripts/export-portable.py`（报告类）生成 `AGENTS.md`，放进项目根目录。
+**工具不支持 Skill 机制时**：把技能正文（`SKILL.md` + `references/`）直接拷进该工具的规则文件 / 项目根目录的 `AGENTS.md`。早先有个 `report-pipeline/scripts/export-portable.py` 干这件事，但它整份是 v2 口径（七模块 / 责任内联 / 21:00 截止），已于 2026-09-19 删除——**别再用它生成的旧文件**。
 
 ## 简介
 
@@ -150,8 +150,8 @@ agent-skills/
 ├── generate-commit/              # 生成 commit
 ├── create-requirement-branch/    # 创建需求分支
 ├── resolve-merge-conflict/       # 手动解决合并冲突（禁止覆盖）
-├── record-change-log/            # 改动短日志
-├── record-development-blog/      # 开发博客
+├── record-change-log/            # 改动/问题沉淀：短记 Logs/ + 长记 Blogs/
+├── record-development-blog/      # 兼容壳：已并入 record-change-log
 ├── development-guardrails/       # 开发中规范
 ├── change-impact-regression/     # 影响面与回归
 ├── change-advice/                # 修改建议（不改代码）
@@ -450,7 +450,7 @@ PM 推荐顺序：模糊需求 → `requirement-clarification` → `prd-authorin
 cp -R report-pipeline report-draft-filter report-writer ~/.claude/skills/
 ```
 
-要点：`report-writer/references/spec.md` 是规范**源文档**（逐字收录、不得改写），**冲突一律以它为准**；其中周报（§6）、月报（§7）两节保留存档，本套技能不触发。`report-pipeline/scripts/export-portable.py` 可把整套导出成单文件规则（或幂等合并进已有的 `AGENTS.md`），供不支持 Skill 机制的工具使用。
+要点：`report-writer/references/spec.md` 是规范**源文档**（逐字收录、不得改写），**冲突一律以它为准**；其中周报、月报两节保留存档，日报/周报正文以 v3 为准。要把这套技能搬到不支持 Skill 机制的工具，直接把 `SKILL.md` 与 `references/` 拷进该工具的规则文件即可（旧的 `export-portable.py` 生成单文件那套已删除，它是 v2 口径）。
 
 **装完即用，零配置**：
 
