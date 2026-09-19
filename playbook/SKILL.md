@@ -20,6 +20,17 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 3. **新增技能必须登记到本文件的「技能地图」**，否则等于没装（agent 找不到）。
 4. 技能正文互相引用时用**条件引用**（"装了 X 就读它的 Y 节；没装也不影响"），不要写成硬依赖。
 
+## 可移植性（单个技能也能被单独带走）
+
+**这张地图是"单向索引"，不是依赖。** 地图指向技能；技能**不反向依赖** `playbook`，也不依赖别的技能的文件。所以：
+
+- **把任意单个技能（含技能组）拷到别的工具/机器，它自己能跑** —— 每个技能目录都是自包含的单元（自己的 `SKILL.md` + 自己的 `references/`），没有跨目录的相对路径。
+- 带走某个技能时，**不需要**带 `playbook`，也**不需要**改它的内容。
+- 唯一要注意的是**文档级指针**：少数技能正文里会写"规范源见 `report-writer/references/spec.md`"这类**同仓库路径**——同仓库或同组一起搬时能解析，只搬单个时那个指针会指空（不影响执行，按技能自带 `references/` 走即可）。
+- 已知的软耦合：**日报三件套共用一份规范源**（放在 `report-writer` 里）→ 建议 `report-pipeline` / `report-draft-filter` / `report-writer` **整组移植**。
+- 体检命令：仓库根 `./install.sh --lint`（检查每个技能是否自包含、列出文档级跨技能指针）。
+- 移植命令：`./install.sh --copy <目标目录> <技能名…>`；整组用 `--copy --no-entry --group <组名> <目标目录>`（`--no-entry` 不带入口）。
+
 ## 技能地图（24 个）
 
 | 分组 | 技能 | 干什么 | 何时读它 |
@@ -84,7 +95,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 | 需要连接器 | `cnb-push-audit`（cnb）、`tapd-todo-query`（tapd） | 未连接时先提示用户连接 |
 | 会写盘 | `plan-*`（`Plans/`）、`report-*`（各工作区 `.workbuddy/reports/` 与日报/周报文件）、`record-*`、`prd-authoring`（`Docs/`） | 落点遵守各技能正文 |
 | 只读 / 只分析 | `change-advice`、`impact-surface-audit`、`development-guardrails` | 不产出业务代码改动 |
-| 规范源 | `report-writer/references/spec.md`（日报/周报规范） | 口径冲突以它为准 |
+| 规范源 | `report-writer` 技能里的 `references/spec.md`（日报/周报规范） | 口径冲突以它为准；日报三件套建议整组移植 |
 
 ## 安装与更新（仓库根 `install.sh`）
 

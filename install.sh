@@ -9,9 +9,11 @@
 #                                           分组安装会自动带上入口 playbook
 #   ./install.sh ~/.claude/skills report-pipeline report-writer
 #                                           只装点名的那几个
+#   ./install.sh --no-entry --group report   移植用：装一组但**不带入口** playbook
 #   ./install.sh --update                   重扫仓库：补齐漏装的、报告失效链接（不动已装好的）
 #   ./install.sh --copy [目标目录]          退回拷贝模式（默认是软链接）
 #   ./install.sh --prune                    顺手删掉指向本仓库但已失效的软链接
+#   ./install.sh --lint                     自包含性体检：单个技能能否被单独带走
 #   ./install.sh --list                     只列出技能与分组，不安装
 #
 # 为什么需要这一步：本仓库的技能都在**顶层目录**，而工具要求
@@ -26,7 +28,9 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LINK_MODE=1          # 默认软链接
 LIST_ONLY=0
+LINT_ONLY=0
 UPDATE_ONLY=0
+NO_ENTRY=0
 PRUNE=0
 TARGET=""
 GROUP=""
@@ -53,7 +57,9 @@ while [ $# -gt 0 ]; do
     --copy)   LINK_MODE=0; shift ;;
     --link)   LINK_MODE=1; shift ;;   # 兼容旧写法（现在默认就是软链接）
     --list)   LIST_ONLY=1; shift ;;
+    --lint)   LINT_ONLY=1; shift ;;
     --update) UPDATE_ONLY=1; shift ;;
+    --no-entry) NO_ENTRY=1; shift ;;  # 移植用：不带入口 playbook
     --prune)  PRUNE=1; shift ;;
     --group)
       if [ $# -lt 2 ]; then
@@ -72,6 +78,46 @@ all_skills() {
     [ -f "${d}SKILL.md" ] && basename "$d"
   done
 }
+
+# 自包含性体检：本仓库的技能都是"能被单独带走"的单元。
+# 判据：① 技能目录内不得有跳出自身目录的相对路径；② 正文不得引用别的技能下的文件路径。
+if [ "$LINT_ONLY" -eq 1 ]; then
+  echo "自包含性体检（${REPO_DIR}）"
+  echo "判据：① 不跳出自身目录 ② 不引用别的技能下的文件路径"
+  echo
+  warn=0
+  tips=0
+  for d in "$REPO_DIR"/*/; do
+    [ -f "${d}SKILL.md" ] || continue
+    name="$(basename "$d")"
+    out_of_scope="$(grep -rInE '(\.\./)+[A-Za-z]' "${d}SKILL.md" 2>/dev/null | grep -v '\.\.\./' || true)"
+    cross=""
+    for other in $(all_skills); do
+      [ "$other" = "$name" ] && continue
+      if grep -q "${other}/" "${d}SKILL.md" 2>/dev/null; then cross="$cross $other"; fi
+    done
+    if [ -n "$out_of_scope" ]; then
+      warn=$((warn + 1))
+      echo "  ⚠ ${name}：发现跳出自身目录的相对路径"
+      echo "$out_of_scope" | head -5 | sed 's/^/      /'
+    fi
+    if [ -n "$cross" ]; then
+      tips=$((tips + 1))
+      echo "  · ${name}：正文里引用了别的技能下的文件路径 →${cross}"
+      echo "      同仓库（或同组一起移植）时能解析；若只搬本技能，这些指针会指空。"
+    fi
+  done
+  if [ "$warn" -eq 0 ] && [ "$tips" -eq 0 ]; then
+    echo "  ✅ 全部技能自包含：任意单个技能或技能组都能直接拷走使用（不带入口 playbook 也能跑）。"
+  elif [ "$warn" -eq 0 ]; then
+    echo "  ✅ 没有真依赖：所有技能都自包含；上面 ${tips} 条只是文档指针，同组一起搬就不会指空。"
+  fi
+  echo
+  echo "移植示例："
+  echo "  ./install.sh --copy ~/export report-writer            # 拷一个技能成独立包"
+  echo "  ./install.sh --copy --no-entry --group report ~/export # 拷一整组（不带入口）"
+  exit 0
+fi
 
 if [ "$LIST_ONLY" -eq 1 ]; then
   echo "仓库里的技能（${REPO_DIR}）："
@@ -95,7 +141,11 @@ if [ -n "$GROUP" ]; then
     exit 1
   fi
   # shellcheck disable=SC2206
-  SKILLS=($grp $ENTRY_SKILL)      # 分组安装自动带上入口
+  if [ "$NO_ENTRY" -eq 1 ]; then
+    SKILLS=($grp)                 # 移植用：不带入口
+  else
+    SKILLS=($grp $ENTRY_SKILL)    # 日常：分组安装自动带上入口
+  fi
 fi
 
 if [ "$UPDATE_ONLY" -eq 1 ] || [ ${#SKILLS[@]} -eq 0 ]; then

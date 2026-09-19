@@ -62,6 +62,36 @@ cd ~/agent-skills && ./install.sh
 
 > 软链接模式下，**改内容不用重装**（`git pull` 即生效）；只有在仓库**新增/删除技能**时才需要跑一次 `--update`。
 
+### 把某个技能 / 技能组移植到别处
+
+**入口 `playbook` 只是索引，不是依赖**——地图指向技能，技能不反向依赖 `playbook`，也不依赖别的技能的文件。所以**任意单个技能都可以被单独拷走直接使用**：
+
+```bash
+# 只拿一个技能（带它自己的 references/），从仓库产出一个独立文件夹
+./install.sh --copy --no-entry ~/export report-writer
+
+# 拿一整组（--no-entry 表示不带入口 playbook）
+./install.sh --copy --no-entry --group report ~/export
+
+# 拿全库
+./install.sh --copy --no-entry ~/export
+```
+
+`--copy` 会**逐技能整体拷贝**（保留各自的 `references/`、`scripts/`），产物就是一个普通文件夹，丢到任何工具的技能目录里都能用，不需要仓库在场。
+
+| 情形 | 怎么做 |
+|:---|:---|
+| 装到另一台机器 / 另一个工具 | `--copy` 出独立包，或 `git clone` 后在那台机器跑 `./install.sh` |
+| 只要几个技能 | 命令末尾点名：`./install.sh --copy ~/export report-writer tapd-todo-query` |
+| 离线 / 打包给别人 | `tar -czf skills.tar.gz -C ~/export .` |
+| 保留完整历史 | `git archive --format=tar HEAD report-writer | tar -x -C ~/export` |
+
+**自包含性体检**：`./install.sh --lint` —— 检查每个技能目录有没有跳出自身目录的相对路径，并列出"文档级跨技能指针"（例如某技能正文写着"规范源见 `report-writer/references/spec.md`"）。
+
+> 唯一的已知软耦合：**日报三件套共用一份规范源**（`spec.md` 放在 `report-writer` 里），建议整组移植；单独搬 `report-pipeline` 或 `report-draft-filter` 也能跑，只是"口径冲突回查"那个指针会指空，改为以它们自带 `references/` 为准。
+
+**移植后入口怎么办**：不装 `playbook` 就按各技能自己的触发词直接唤起，完全够用；装了 `playbook` 就要注意它是**全库地图**——只装了子集时，地图里会列到没装的技能，按需裁掉那几行（或干脆不带入口，用 `--no-entry`）。
+
 **工具不支持 Skill 机制时**：改用单文件规则。跑 `report-pipeline/scripts/export-portable.py`（报告类）生成 `AGENTS.md`，放进项目根目录。
 
 ## 简介
