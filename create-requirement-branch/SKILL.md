@@ -211,6 +211,7 @@ New-Item -ItemType Junction -Path "<worktree路径>\node_modules" -Target "<主�
 
 注意点：
 
+- **git 侧不会把它当成修改**：`node_modules` 本就在 `.gitignore`（pnpm/npm 项目默认），里面的符号链接 `git status` 根本看不到。自检：`git check-ignore -v node_modules`（会显示命中的规则）。
 - 主仓必须 install 过；**主分支的依赖更新了，就在主仓重跑一次 install**，worktree 自动跟着用，不用每条分支各装一遍。
 - 两个 dev **同时首次启动**会抢 Vite 预构建缓存 → 先起一边，ready 后再起另一边。
 - pnpm 可能提示 `node_modules` 是符号链接 → 可忽略；pnpm 的 `.pnpm` 硬链接直连全局 store，跨目录照样可用。
