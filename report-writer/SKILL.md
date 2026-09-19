@@ -242,10 +242,10 @@ v3 假定任务行由 TAPD 自动带出。**在本地作业时，这一步由 AI
 4. `owner` 不是本人的任务 → 必须让用户手填「协同人」。
 
 > **同步字段改哪一头（09-18 实证）**：`状态` 和 `owner` 只能改 TAPD。用户说"日报里 owner 去掉某某"时，**改日报不改 TAPD 只会造出反向不一致**（报表少一个人、TAPD 多一个人），照样算虚报。动作顺序永远是 **先改 TAPD → 再让报表同步**。
-> **改父子结构的 owner 必须级联**：TAPD 子需求各自独立挂 owner，改父不会带着子变。先 `ancestor_id=<父id>` 实查完整子列表（别用记忆里的"父 + N 子"数字，会过时），再逐条 `update_story_or_task`，改完复核；子需求里 owner 只有后端单人、本人不参与的不动。细节见 `tapd-todo-query` 技能的「改 TAPD 同步字段时」节。
+> **改父子结构的 owner 必须级联**：TAPD 子需求各自独立挂 owner，改父不会带着子变。先 `ancestor_id=<父id>` 实查完整子列表（别用记忆里的"父 + N 子"数字，会过时），再逐条 `update_story_or_task`，改完复核；子需求里 owner 只有后端单人、本人不参与的不动。细节见 `tapd-todo-query` 技能的「改 TAPD 同步字段时」节（**没装那个技能时，按本节这套流程走就行**）。
 > **状态词认准 §7.1 表反推的 raw key，别认 TAPD 界面名**（09-18 22:57 更正上一条）：机器比对用的就是 §7.1（`planning`=评审中 / `status_3`=**待测试**）。而 TAPD 用户端旧枚举的流转顺序是 `planning`(初稿) → `status_3`(**评审中**) → `developing`(实现中) → `status_4`(测试中) —— **"评审中"在界面挂在 `status_3`、在规范挂在 `planning`，两个不是一回事**。
 > 所以：想让日报写「评审中」并合规 → **TAPD 要设 `planning`**（不是 status_3）。09-18 就是设成 status_3 后，日报的「评审中」按表被判成 planning ≠ status_3 → 报表与 TAPD 不一致。
-> **改状态前先查工作流**：用户端 `实现中 → 评审中` 不被允许（只能到「测试中」）；`planning → status_3` 才行。查 `get_workflows_all_transitions`。细节见 `tapd-todo-query`。
+> **改状态前先查工作流**：用户端 `实现中 → 评审中` 不被允许（只能到「测试中」）；`planning → status_3` 才行。查 `get_workflows_all_transitions`；装了 `tapd-todo-query` 的话，流转细则与各项目状态 key 见它的「改状态」节（**没装也不影响，本节流程自足**）。
 
 **跨工作区收素材**（同日报流水线）：① 当前工作区 → ② 会话里出现过路径的工作区 → ③ 日报工作区的 `sources.md` → ④ 仍缺就问一句"今天还在别的哪个目录干过活？"，问一次记进 `sources.md`。
 

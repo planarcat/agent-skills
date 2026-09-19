@@ -5,7 +5,7 @@
 #   ./install.sh                            装全部技能到自动探测到的技能目录
 #   ./install.sh ~/.claude/skills           装到指定目录
 #   ./install.sh --group report ~/.claude/skills
-#                                           只装某一组（report / plan / pm）
+#                                           只装某一组（report / plan / pm / query）
 #   ./install.sh ~/.claude/skills report-pipeline report-writer
 #                                           只装点名的那几个
 #   ./install.sh --link ~/.claude/skills    用软链接代替复制（git pull 后自动生效）
@@ -29,6 +29,7 @@ SKILLS=()
 group_skills() {
   case "$1" in
     report|日报) echo "report-pipeline report-draft-filter report-writer" ;;
+    query|查询)  echo "cnb-push-audit tapd-todo-query" ;;
     plan|方案)   echo "plan-discussion plan-execution plan-lock" ;;
     pm|产品)     echo "prd-authoring requirement-clarification user-story-acceptance competitive-or-feature-brief release-note-pm meeting-to-action" ;;
     *) return 1 ;;
@@ -41,7 +42,7 @@ while [ $# -gt 0 ]; do
     --list) LIST_ONLY=1; shift ;;
     --group)
       if [ $# -lt 2 ]; then
-        echo "错误：--group 需要跟一个分组名（report / plan / pm）" >&2
+        echo "错误：--group 需要跟一个分组名（report / plan / pm / query）" >&2
         exit 1
       fi
       GROUP="$2"; shift 2 ;;
@@ -63,6 +64,7 @@ if [ "$LIST_ONLY" -eq 1 ]; then
   echo
   echo "分组（--group <名>）："
   echo "  report  日报三件套         $(group_skills report)"
+  echo "  query   数据源核查         $(group_skills query)"
   echo "  plan    方案讨论→执行→锁定  $(group_skills plan)"
   echo "  pm      产品经理常用        $(group_skills pm)"
   exit 0
@@ -70,7 +72,7 @@ fi
 
 if [ -n "$GROUP" ]; then
   if ! grp="$(group_skills "$GROUP")"; then
-    echo "错误：未知分组「${GROUP}」。可用分组：report / plan / pm" >&2
+    echo "错误：未知分组「${GROUP}」。可用分组：report / plan / pm / query" >&2
     exit 1
   fi
   # shellcheck disable=SC2206
