@@ -82,7 +82,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 | 合并有冲突 / 要同步远程 | `resolve-merge-conflict` | → `change-impact-regression` |
 | 改完要做最终复查 | `impact-surface-audit` | 触发词敏感，别随手用 |
 | 要写/补测试 | `test-case-authoring` | 按 Part A/B/C 选 |
-| 一天干完要出日报 | `report-pipeline`（随时落卡）→ `report-draft-filter` → `report-writer` | 周报走 `report-writer` 的「附：周报」 |
+| 一天干完要出日报 | `report-pipeline`（随时落卡）→ `report-draft-filter` → `report-writer` | 周报走 `report-writer` 的「附：周报」；**前置动作（TAPD 对齐/补计划时间/查正式线）与成品形态见工作区《日报周报生产流程_SOP.md》** |
 | 要核对做了什么 / 任务状态 | `query` 组：`cnb-push-audit`、`tapd-todo-query` | 结果喂给 `report-writer` 的对齐检查 |
 | 要发版 / 沉淀记录 | `release-note-pm`、`record-change-log`（短记/长记都在它里面） | — |
 | 贴了会议纪要 | `meeting-to-action` | 行动项可转 `prd-authoring` / `plan-discussion` |
