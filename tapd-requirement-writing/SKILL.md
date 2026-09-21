@@ -1,6 +1,6 @@
 ---
 name: tapd-requirement-writing
-description: 在 TAPD 里编写 / 重整需求（父需求 + 子需求）的规范与操作流程。当用户说「写 TAPD 需求」「把这些整理成需求」「重写 TAPD」「需求太碎了合并一下」「需求文案怎么写」，或需要新建/改写/作废 TAPD 需求、设置处理人与排期、把图内嵌到需求正文时使用。需要 TAPD connector 已连接。
+description: 在 TAPD 里编写 / 重整需求（父需求 + 子需求）的规范与操作流程。当用户说「写 TAPD 需求」「把这些整理成需求」「重写 TAPD」「需求太碎了合并一下」「需求文案怎么写」，或需要新建/改写/作废 TAPD 需求、设置处理人与排期、上传截图到需求时使用。需要 TAPD connector 已连接。
 ---
 
 # TAPD 需求编写与重整
@@ -9,7 +9,7 @@ description: 在 TAPD 里编写 / 重整需求（父需求 + 子需求）的规�
 - 把讨论/会议内容落成 TAPD 需求（父 + 子）
 - 需求太碎要合并，或拆分粒度不对要重整
 - 改写已有需求文案、调整处理人/排期、作废并入旧需求
-- 往需求正文里内嵌图片（不是附件）
+- 上传截图/图片到需求（MCP 只能挂成附件，正文内嵌需人工粘贴）
 
 ## 前置
 - TAPD connector 已连接
@@ -102,11 +102,20 @@ update_story_or_task(workspace_id, options={ id, name, description, owner, begin
 3. 描述里写明**作废原因 + 归属 + 原内容摘要**（留痕）
 4. 反向在新需求备注里加一行「后端实现见子需求 …00xxxx」建立双向可查
 
-### 往需求正文内嵌图片（不是附件）
-1. `upload_image(workspace_id, entry_type=story, entry_id, filename)` → 拿 `upload_url` → `curl -F "file=@图" -F "filename=原文件名" "<url>"`；或分块 `chunk_start → chunk_append（纯 base64、每块 ≤50000 字符、去掉 data:image 前缀）→ chunk_finish`
-2. 取结果的 `value`（如 `/tfl/captures/2026-09/tapd_xxxx.png`）——**别用 `get_image` 的 `download_url`（只有 300 秒）**
-3. 描述里写 `<p><img src="https://www.tapd.cn/<workspace_id>/tfl/captures/xxx.png" /></p>`
-4. 图片必须先挂到该 entry（带 entry_id），正文才引用得到
+### 图片：MCP 只能传成「附件」，正文内嵌要人工粘贴（实测 2026-09-21）
+**能做的**
+1. `upload_image(workspace_id, entry_type="story", entry_id=..., filename=...)` → 拿 `upload_url` → `curl -F "file=@图" -F "filename=原文件名" "<url>"` → 返回 `Attachment`（id / filename / content_type），图就挂在该需求下成为**附件**
+2. tiff 等格式**不能上传**，先转 PNG：`sips -s format png 图.tiff --out 图.png`（太大可 `sips -Z 1800 --setProperty format jpeg --setProperty formatOptions 60`）
+3. 描述里写一句「附图见本条需求附件」
+
+**做不到的（别再试）**
+- 拿不到正文内嵌需要的 `tfl_image` 持久路径（`/tfl/captures/...`）——`upload_image` 返回体里没有
+- `get_entity_attachments` 只给 **300 秒有效**的 tmp download_url，不能写进正文
+- `get_image` **不接受**那个 tmp download_url（422 ParamError）
+- 分块上传（`chunk_start → chunk_append → chunk_finish`）虽可用，但一张正常截图要 4 块 × 5 万字符经工具参数传，**不现实**
+- `file.tapd.cn/attachments/<id>` 之类的稳定 URL 探测全部 302 到登录页，不可用
+
+**结论**：正文内嵌图片 = **由人在 TAPD 页面粘贴一次**（把转换好的 PNG 给他，或告诉他文件路径）。MCP 侧的上限就是「图挂成附件 + 描述里注明附图」。
 
 ---
 
@@ -137,5 +146,6 @@ update_story_or_task(workspace_id, options={ id, name, description, owner, begin
 | 自己推演边界问题写进待确认 | 会议里没提到的就不写；用户说「不考虑」的直接删 |
 | 一次改了 TAPD、另一次忘了同步本地文档 | 口径变更必做全量巡检 |
 | 以为能改父级 | MCP 不支持，需网页端拖 |
-| 用 `get_image` 的 download_url 内嵌 | 300 秒失效，要用持久路径 `value` |
+| 拿 tiff 直接传 | 不能上传，先 `sips` 转 PNG |
+| 以为 MCP 能把图内嵌进正文 | 只能传成附件；正文内嵌需人工在页面粘贴 |
 | 文案里写「后端为主/纯前端」 | 分工只在处理人字段体现 |
