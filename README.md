@@ -139,6 +139,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 🌿 **分支** | `create-requirement-branch` | 建 `{id后4位}-{标题截取}（{id}）` 分支与 worktree 目录，产出物是**一行 `cd` 进入路径**；默认不起服务（要起由你点名） |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
 | 📋 **PRD** | `prd-authoring` | 按固定结构写 PRD，落盘 Docs/ 或 Plans/ |
+| 🎯 **TAPD 需求** | `tapd-requirement-writing` | 在 TAPD 写/重整需求：五段式文案（问题/需求/功能变更/验收标准/备注）、按功能拆粒度、处理人规则、作废并入旧需求、正文内嵌图片 |
 | ❓ **澄清** | `requirement-clarification` | 模糊需求先澄清；已确认 / 待确认 / 假设 |
 | 🧩 **拆解** | `requirement-breakdown` | 开发前需求拆解：功能点 + 边界/歧义/待确认/验收，产出可直接填日报②栏的需求理解 |
 | ✅ **故事** | `user-story-acceptance` | 用户故事 + Given/When/Then 验收与测试提纲 |
@@ -200,6 +201,7 @@ agent-skills/
 ├── report-draft-filter/          # 日报：工作小结 → 日报草稿
 ├── report-writer/                # 日报：成型（内附规范源文档）
 ├── cnb-push-audit/               # 取数：CNB 仓库推送/提交核查
+├── tapd-requirement-writing/     # TAPD：写/重整需求（文案结构 + 操作要点）
 ├── tapd-todo-query/              # 取数：TAPD 待办需求与状态核对
 ├── playbook/                     # 入口：技能地图 + 流程路由（名字固定不改）
 ├── install.sh                    # 安装/更新（macOS / Linux）：默认软链接挂进技能目录

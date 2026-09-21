@@ -59,6 +59,7 @@ group_skills() {
   case "$1" in
     report|日报)  echo "report-pipeline report-draft-filter report-writer" ;;
     query|查询)   echo "cnb-push-audit tapd-todo-query" ;;
+    tapd|需求)    echo "tapd-requirement-writing tapd-todo-query" ;;
     plan|方案)    echo "plan-discussion plan-execution plan-lock" ;;
     pm|产品)      echo "prd-authoring requirement-clarification user-story-acceptance competitive-or-feature-brief release-note-pm meeting-to-action" ;;
     dev|开发)     echo "requirement-breakdown development-guardrails change-advice change-impact-regression impact-surface-audit resolve-merge-conflict test-case-authoring create-requirement-branch generate-commit" ;;
