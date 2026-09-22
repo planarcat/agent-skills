@@ -4,7 +4,7 @@
 # 用法：
 #   ./install.sh <安装目录> [技能名…]   装到该目录，并**记住这个路径**
 #   ./install.sh                        不带参数：把仓库技能**更新到所有记住过的路径**
-#   ./install.sh <目录> --group report  只装某一组（report / query / tapd / plan / pm / dev / review / journal）
+#   ./install.sh <目录> --group report  只装某一组（report / query / tapd / plan / pm / dev / journal）
 #                                       分组安装会自动带上入口 playbook
 #   ./install.sh --targets              看记住了哪些安装目录（并逐个检查是否存在）
 #   ./install.sh --forget <目录>        忘掉一个安装目录（不删已装的文件）
@@ -63,7 +63,6 @@ group_skills() {
     plan|方案)    echo "plan-discussion plan-execution plan-lock" ;;
     pm|产品)      echo "prd-authoring requirement-clarification user-story-acceptance competitive-or-feature-brief release-note-pm meeting-to-action" ;;
     dev|开发)     echo "requirement-breakdown development-guardrails change-advice change-impact-regression impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring create-requirement-branch generate-commit" ;;
-    review|审查)  echo "full-code-review code-reviewer silent-failure-hunter type-design-analyzer pr-test-analyzer comment-analyzer code-simplifier" ;;
     journal|记录) echo "record-change-log record-development-blog" ;;
     *) return 1 ;;
   esac
@@ -184,7 +183,7 @@ while [ $# -gt 0 ]; do
     --forget) FORGET="${2:-}"; shift $(( $# > 1 ? 2 : 1 )) ;;
     --group)
       if [ $# -lt 2 ]; then
-        echo "错误：--group 需要跟一个分组名（report / query / tapd / plan / pm / dev / review / journal）" >&2
+        echo "错误：--group 需要跟一个分组名（report / query / tapd / plan / pm / dev / journal）" >&2
         exit 1
       fi
       GROUP="$2"; shift 2 ;;
@@ -299,7 +298,6 @@ if [ "$LIST_ONLY" -eq 1 ]; then
   echo "  plan    方案讨论→执行→锁定  $(group_skills plan)"
   echo "  pm      产品经理常用        $(group_skills pm)"
   echo "  dev     开发与质量          $(group_skills dev)"
-  echo "  review  代码审查           $(group_skills review)"
   echo "  journal 记录与沉淀          $(group_skills journal)"
   echo
   echo "记住的安装目标："
@@ -315,7 +313,7 @@ fi
 
 if [ -n "$GROUP" ]; then
   if ! grp="$(group_skills "$GROUP")"; then
-    echo "错误：未知分组「${GROUP}」。可用分组：report / query / tapd / plan / pm / dev / review / journal" >&2
+    echo "错误：未知分组「${GROUP}」。可用分组：report / query / tapd / plan / pm / dev / journal" >&2
     exit 1
   fi
   # shellcheck disable=SC2206

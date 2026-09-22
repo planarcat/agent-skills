@@ -39,10 +39,23 @@ description: "代码审查（智能分级 L0–L3）：当用户说「全面审�
 | 逻辑复杂度明显上升 | code-simplifier |
 | （任何 L2 都默认包含） | code-reviewer |
 
+## 维度标准（内置 references/）
+
+六个维度的审查标准都内置在本技能 `references/` 下：派遣子代理时把对应文件原文注入单子；降级自查时逐维 Read。它们是本技能的内部资料——工具只认 `<技能目录>/SKILL.md`，不会被当作独立技能发现，对外始终只有 `full-code-review` 一个入口。
+
+| 维度 | 标准文件 | 管什么 |
+| --- | --- | --- |
+| code-reviewer | `references/code-reviewer.md` | 通用审查：0–100 打分，只报 ≥80 |
+| silent-failure-hunter | `references/silent-failure-hunter.md` | 静默失败 / 错误处理 |
+| type-design-analyzer | `references/type-design-analyzer.md` | 类型与接口契约 |
+| pr-test-analyzer | `references/pr-test-analyzer.md` | 测试覆盖 |
+| comment-analyzer | `references/comment-analyzer.md` | 注释质量 |
+| code-simplifier | `references/code-simplifier.md` | 简化机会 |
+
 ## 第三步：执行
 
-- **有子代理能力** → 并行派遣（Claude Code / Codex / ZCode / AutoClaw / Trae 各自机制）；**无或不可用（如额度限制）** → 顺序降级并注明——注意 L1 / L2 本身维度少，降级代价也小。
-- 每个子代理的单子 = 维度 + 审查范围 + 对应技能标准 + 输出格式（位置[文件:行] / 问题 / 影响 / 建议）+「只审不代改」。
+- **有子代理能力** → 并行派遣（Claude Code / Codex / ZCode / AutoClaw / Trae 各自机制）；**无或不可用（如额度限制）** → 主代理按同一套维度标准顺序自查并注明——注意 L1 / L2 本身维度少，降级代价也小。
+- 每个子代理的单子 = 维度 + 审查范围 + 审查标准（Read 本技能 `references/<维度>.md` 原文注入）+ 输出格式（位置[文件:行] / 问题 / 影响 / 建议）+「只审不代改」。
 - 成本纪律：只审 diff；跳过锁文件、生成文件、快照（除非用户点名）；每维度输出 Top-N（默认 10 条）；子代理失败重试 1 次，仍失败由主代理补位并标注缺口。
 
 ## 第四步：汇总（按级别给不同篇幅）

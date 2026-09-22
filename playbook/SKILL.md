@@ -40,7 +40,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 - 体检命令：仓库根 `./install.sh --lint`（检查每个技能是否自包含、列出文档级跨技能指针、检测**同名参考文件漂移**——同一份文档在多个技能里各留一份时内容必须一致）。
 - 移植命令：`./install.sh --copy <目标目录> <技能名…>`；整组用 `--copy --no-entry --group <组名> <目标目录>`（`--no-entry` 不带入口）。
 
-## 技能地图（33 个）
+## 技能地图（27 个）
 
 | 分组 | 技能 | 干什么 | 何时读它 |
 |---|---|---|---|
@@ -63,13 +63,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 | `dev` | `change-advice` | 只分析不改码：原因、改动点、风险 | 说"怎么改/为什么报错" |
 | `dev` | `change-impact-regression` | 改完后列影响面 + 具体回归方法 | 代码改完收尾时 |
 | `dev` | `impact-surface-audit` | 最终复查：挖对**非本功能模块**的隐性辐射 | 明确说"最终复查/影响面检索"（强触发，慎用） |
-| `review` | `full-code-review` | **代码审查**智能分级（L0–L3）：小改单代理快审、按类型定向 2–3 维、提 MR 前六维全量；只审不代改 | 说「审查一下 / 全面审查 / 快速看一下 / full review」、提交前检查 |
-| `review` | `code-reviewer` | 通用审查：0–100 打分、只报 ≥80 的问题（各级别打底维度） | full-code-review 派遣时读；也可单独点名 |
-| `review` | `silent-failure-hunter` | 静默失败：吞异常 / 空 catch / 断裂异步链路 | full-code-review 按改动类型派遣（L2/L3） |
-| `review` | `type-design-analyzer` | 类型 / 数据模型 / 接口契约审查 | full-code-review 按改动类型派遣（L2/L3） |
-| `review` | `pr-test-analyzer` | 测试覆盖与用例质量审查 | full-code-review 按改动类型派遣（L2/L3） |
-| `review` | `comment-analyzer` | 注释 / 文档块质量审查 | full-code-review 按改动类型派遣（L2/L3） |
-| `review` | `code-simplifier` | 简化机会：复杂度上升与可收敛写法 | full-code-review 按改动类型派遣（L2/L3） |
+| `dev` | `full-code-review` | **代码审查**智能分级（L0–L3）：小改单代理快审、按类型定向 2–3 维、提 MR 前六维全量（6 维标准内置在本技能 references/ 下）；只审不代改 | 说「审查一下 / 全面审查 / 快速看一下 / full review」、提交前检查 |
 | `dev` | `resolve-merge-conflict` | 解合并冲突；禁止整树覆盖本地修改 | 有冲突/要同步远程时 |
 | `dev` | `test-case-authoring` | 测试三件套：写用例 / 补测试 / 让测试变绿 | 说"写测试/加用例" |
 | `dev` | `create-requirement-branch` | 建需求分支与 worktree 目录 `{id后4位}-{标题截取}（{id}）`，建完即跑 `pnpm install`（无报错不加检测），产出**一行 `cd` 进入路径**（默认不起服务） | 说"开需求分支" |
@@ -112,7 +106,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 |---|---|---|
 | 需要连接器 | `cnb-push-audit`（cnb）、`tapd-todo-query` / `tapd-requirement-writing`（tapd） | 未连接时先提示用户连接 |
 | 会写盘 | `plan-*`（`Plans/`）、`report-*`（各工作区 `.workbuddy/reports/` 与日报/周报文件）、`record-*`、`prd-authoring`（`Docs/`） | 落点遵守各技能正文 |
-| 只读 / 只分析 | `change-advice`、`impact-surface-audit`、`development-guardrails`、`full-code-review` 及 6 个维度技能 | 不产出业务代码改动 |
+| 只读 / 只分析 | `change-advice`、`impact-surface-audit`、`development-guardrails`、`full-code-review` | 不产出业务代码改动 |
 | 规范源 | `report-writer` 技能里的 `references/spec.md`（日报/周报规范） | 口径冲突以它为准；日报三件套建议整组移植 |
 
 ## 安装与更新（仓库根 `install.sh`）
