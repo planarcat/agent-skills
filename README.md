@@ -137,7 +137,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 🔧 **执行** | `plan-execution` | 按方案逐阶段实施开发，产出执行结果文档 |
 | 🔒 **锁定** | `plan-lock` | 锁定前核对方案/结果/遗留清单，确认闭环后归档 |
 | 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
-| 🌿 **分支** | `create-requirement-branch` | 建 `{id后4位}-{标题截取}（{id}）` 分支与 worktree 目录，产出物是**一行 `cd` 进入路径**；默认不起服务（要起由你点名） |
+| 🌿 **分支** | `create-requirement-branch` | 建 `{id后4位}-{标题截取}（{id}）` 分支与 worktree 目录，建完即跑 `pnpm install`（速度优先，无报错不加检测），产出物是**一行 `cd` 进入路径**；默认不起服务（要起由你点名） |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
 | 📋 **PRD** | `prd-authoring` | 按固定结构写 PRD，落盘 Docs/ 或 Plans/ |
 | 🎯 **TAPD 需求** | `tapd-requirement-writing` | 在 TAPD 写/重整需求：五段式文案（问题/需求/功能变更/验收标准/备注）、按功能拆粒度、处理人规则、作废并入旧需求、正文内嵌图片 |
@@ -383,9 +383,11 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 **产出物：分支 + worktree 目录 + 一行进入路径**（例：`cd ./Apps/frontend/2792-效果图与转平台能力流程重构（1002792）`）。worktree 位置按序判断：仓库文档约定 → 仓根已有 `Apps/frontend/` 就放那儿 → 兜底 `<原仓父目录>/<原仓名>-wt-<分支名>`。
 
+**建完即跑 `pnpm install`（2026-09-22 用户口径：速度优先）**：在新建工作目录（in-place 则为本仓根）直接执行；不预检依赖、不检测是否完成、装完不验证——报错才处理。除建分支必需的 git 操作与这条安装命令外，不做任何额外检测（不校验上游、不复核 worktree、不找启动命令）。
+
 **开发规范：任务完成即推送。** 在需求分支上，每个任务/阶段开发完成后 `git commit` → **直接 `git push` 到该分支的远程同名分支**（上游就是它自己），不用每次问。**不推主分支、不 `--force`、不开 PR**（除非用户要求）。落地在 `playbook`（开发规范）、`plan-execution`（逐阶段收尾）、`generate-commit`（推送规则）、`create-requirement-branch`（分支用途）。
 
-**本地服务默认不启动**——技能只给路径（和一行备查的启动命令），要跑由你点名；点名时才做依赖检查、换端口避开原窗口、后台起服务那一套。
+**本地服务默认不启动**——技能只给路径，要跑由你点名；点名时才做依赖检查、换端口避开原窗口、后台起服务那一套。
 
 #### 6. 手动解决合并冲突（resolve-merge-conflict）
 

@@ -7,7 +7,7 @@ description: "当用户说「创建新需求分支」「开需求分支」「新
 
 从**远程主分支最新提交**拉出需求分支，上游设成**同名远程分支（自己）**。
 
-**产出物 = 分支 + worktree 目录 + 一行进入路径**。本技能**不自动启动本地服务**（要起由用户点名，见文末「需要起服务时」）。
+**产出物 = 分支 + worktree 目录 + 一行进入路径 + 一次 `pnpm install`**。本技能**不自动启动本地服务**（要起由用户点名，见文末「需要起服务时」）。
 
 **建完之后的开发规范**：本需求的开发提交**都推回这条分支**——提交后直接 `git push` 到该分支的远程同名分支（上游就是它自己）；不推主分支、不 `--force`、不开 PR（除非用户要求）。
 
@@ -16,6 +16,24 @@ description: "当用户说「创建新需求分支」「开需求分支」「新
 **再往后**：开发（`development-guardrails` → `change-impact-regression`）→ 每项完成即提交推送到本分支（`generate-commit`）→ 随手落素材卡（`report-pipeline`）→ 上测试线/正式线后查 CNB 更新状态。全链路见工作区《日报周报生产流程_SOP.md》「零、日常主线」。
 
 **本文档不绑定某个工具**：涉及"打开新目录""后台起服务"这类动作，按你实际用的工具照「跨工具怎么做」选一条。
+
+## 速度优先（默认 · 2026-09-22 用户口径）
+
+整个动作只有三步，能多快就多快：
+
+1. **建分支**：定主分支 → `fetch` → 建分支 / worktree → `push -u`（判定与创建照下文规则，不加额外往返）
+2. **装依赖**：在建好的工作目录直接跑 `pnpm install`
+3. **交付**：给出一行 `cd` 进入路径，结束
+
+**不做的事（除非报错或用户点名）**：
+
+- 不做任何完成检测：不校验上游、不用 `git status` / `git worktree list` 复核、不确认 node_modules
+- `pnpm install` 不预检：不查 pnpm 版本、不看锁文件、不判断是不是 Node 项目、不共享 node_modules
+- `pnpm install` 正常结束即算完成，装完不验证（不跑 `pnpm ls`、不 build、不追加装包）
+- 不找启动命令、不读 `package.json`（用户点名起服务时才按文末那节判定）
+- 撞名不预查（既有口径：直接建，失败即复用）
+
+**`pnpm install` 报错才介入**：读清报错，做最小修复并重试一次；仍失败就如实汇报，不循环重试、不自行换包管理器。
 
 ## 命名规范
 
@@ -87,6 +105,7 @@ description: "当用户说「创建新需求分支」「开需求分支」「新
 5. 建分支必须 `--no-track`。
 6. **默认不启动本地服务**；只在用户明确说「起服务 / 跑起来」时才执行文末那节。
 7. 不改业务代码、不 `commit`。
+8. 建完分支即在工作目录跑 `pnpm install`（速度优先：无报错不做任何检测，见「速度优先」）。
 
 ---
 
@@ -132,7 +151,7 @@ description: "当用户说「创建新需求分支」「开需求分支」「新
 ## 模式 A：Worktree 并行（推荐）
 
 ```
-fetch → worktree add -b --no-track → push -u → 校验上游 → 给出进入路径（不起服务）
+fetch → worktree add -b --no-track → push -u → pnpm install → 给出进入路径（不起服务）
 ```
 
 在**原仓根** `git fetch origin`（可选 `git fetch origin <主分支>:<主分支>`，失败只警告）。**不要** switch/stash 当前分支。
@@ -141,9 +160,8 @@ fetch → worktree add -b --no-track → push -u → 校验上游 → 给出进�
 git worktree add "<worktree路径>" -b "<分支名>" "origin/<主分支>" --no-track
 cd "<worktree路径>"
 git push -u origin HEAD
+pnpm install   # 不预检、装完不验证
 ```
-
-校验：`@{u}` = `origin/<分支名>`，绝不是主分支。
 
 **复用优先**：创建失败或发现同一需求已有 worktree（目录名含同一个 id）→ **直接复用该目录**，不要重复新建、不要改名。
 
@@ -158,7 +176,7 @@ git push -u origin HEAD
   worktree:  <工作目录相对路径，如 ./Apps/frontend/2792-效果图与转平台能力流程重构（1002792）>
   进入:      cd ./Apps/frontend/2792-效果图与转平台能力流程重构（1002792）
   （绝对路径：<绝对路径>）
-  启动命令:  <dev-cmd，如 pnpm dev>   ← 备查，**未执行**；要跑由你说
+  install:   pnpm install 已在工作目录执行（无报错则不再说明）
   原工作区:  未改动；原窗口可继续跑 A
 ```
 
@@ -179,7 +197,7 @@ git worktree remove "<worktree路径>"
 仅当用户明确不用 worktree，且工作区允许时。
 
 ```
-fetch → switch -c --no-track → push -u → 校验 → 汇报（给路径，不起服务）
+fetch → switch -c --no-track → push -u → pnpm install → 汇报（给路径，不起服务）
 ```
 
 有未提交且检出会冲突 → **改走模式 A**，禁止 stash 强切。
@@ -187,9 +205,10 @@ fetch → switch -c --no-track → push -u → 校验 → 汇报（给路径，�
 ```bash
 git switch -c "<分支名>" --no-track "origin/<主分支>"
 git push -u origin HEAD
+pnpm install
 ```
 
-汇报中注明：`工作目录: <仓根>`（没换目录）、`启动命令: <dev-cmd>（未执行）`。
+汇报中注明：`工作目录: <仓根>`（没换目录）、`pnpm install: 已执行`。
 
 ---
 
@@ -209,7 +228,7 @@ git push -u origin HEAD
 
 ## 需要起服务时（仅用户点名，默认不做）
 
-用户明确说「起服务 / 把 dev 跑起来」才执行本节。判定命令按序：文档里的启动方式 → `package.json` 的 `scripts`（`dev` > `serve` > `start`）→ 锁文件选包管理器（`pnpm-lock.yaml`→pnpm、`yarn.lock`→yarn，否则 npm）→ 仍不确定就问，别瞎猜。
+用户明确说「起服务 / 把 dev 跑起来」才执行本节。**默认路径下 `pnpm install` 已在建分支时执行完毕，本节只管「起服务」本身**；「共享 node_modules 跳过 install」仅在 install 没跑过 / 失败的特殊情况使用。判定命令按序：文档里的启动方式 → `package.json` 的 `scripts`（`dev` > `serve` > `start`）→ 锁文件选包管理器（`pnpm-lock.yaml`→pnpm、`yarn.lock`→yarn，否则 npm）→ 仍不确定就问，别瞎猜。
 
 ### 先试：共享主仓的 node_modules，跳过 install（秒级）
 
@@ -249,7 +268,7 @@ New-Item -ItemType Junction -Path "<worktree路径>\node_modules" -Target "<主�
 
 ## 触发示例
 
-- 「创建新需求分支，id=1140677205001002792，标题=效果图与转平台能力流程重构（F1~F9 共 9 个功能，均可独立开发上线）」→ `2792-效果图与转平台能力流程重构（1002792）`，最后给 `cd` 路径
+- 「创建新需求分支，id=1140677205001002792，标题=效果图与转平台能力流程重构（F1~F9 共 9 个功能，均可独立开发上线）」→ `2792-效果图与转平台能力流程重构（1002792）`，装完依赖给 `cd` 路径
 - 「用 worktree 并行开需求：id=1002816，标题=WB 颜色接口按色系分组展示」→ `2816-WB-颜色接口按色系分组展示（1002816）`
 - 「用 worktree 并行开…，顺便把 dev 跑起来」→ 例外：用户点名，才执行「需要起服务时」
-- 「开一条需求分支，标题=导出报表，就在当前仓切，不用 worktree」→ 只建分支、给路径，不起服务
+- 「开一条需求分支，标题=导出报表，就在当前仓切，不用 worktree」→ 建分支、`pnpm install`、给路径，不起服务

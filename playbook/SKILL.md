@@ -65,7 +65,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 | `dev` | `impact-surface-audit` | 最终复查：挖对**非本功能模块**的隐性辐射 | 明确说"最终复查/影响面检索"（强触发，慎用） |
 | `dev` | `resolve-merge-conflict` | 解合并冲突；禁止整树覆盖本地修改 | 有冲突/要同步远程时 |
 | `dev` | `test-case-authoring` | 测试三件套：写用例 / 补测试 / 让测试变绿 | 说"写测试/加用例" |
-| `dev` | `create-requirement-branch` | 建需求分支与 worktree 目录 `{id后4位}-{标题截取}（{id}）`，产出**一行 `cd` 进入路径**（默认不起服务） | 说"开需求分支" |
+| `dev` | `create-requirement-branch` | 建需求分支与 worktree 目录 `{id后4位}-{标题截取}（{id}）`，建完即跑 `pnpm install`（无报错不加检测），产出**一行 `cd` 进入路径**（默认不起服务） | 说"开需求分支" |
 | `dev` | `requirement-breakdown` | **开发前需求拆解**：功能点 + 边界/歧义/待确认/验收 + 日报②栏素材 | 建完分支后、需求首次进「开发中」前（日报硬规则） |
 | `dev` | `generate-commit` | 生成通俗易懂的 commit message；**在需求分支上提交后直接推送**（用户说"只提交/先别推"才止步） | 说"生成 commit" |
 | `journal` | `record-change-log` | **沉淀改动/问题**：短记（`Logs/`，≤100 字）+ 长记（`Blogs/`，第一人称） | 说"编成日志""记录这个问题/编成博客" |
