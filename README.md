@@ -55,7 +55,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 
 ### 只想装一部分
 
-`./install.sh` 不带参数会装**全部 28 个技能**。只想要一组就点名分组，不用逐个列技能名：
+`./install.sh` 不带参数会装**全部 34 个技能**。只想要一组就点名分组，不用逐个列技能名：
 
 ```bash
 ./install.sh --group report  ~/.claude/skills    # 日报三件套
@@ -64,6 +64,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 ./install.sh --group plan    ~/.claude/skills    # 方案讨论→执行→锁定
 ./install.sh --group pm      ~/.claude/skills    # 产品经理常用
 ./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/测试/分支/提交）
+./install.sh --group review  ~/.claude/skills    # 代码审查（六维审查套装）
 ./install.sh --group journal ~/.claude/skills    # 记录与沉淀（变更日志 / 开发博客）
 ./install.sh --list                              # 看有哪些技能和分组，不安装
 ```
@@ -139,7 +140,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
 | 🌿 **分支** | `create-requirement-branch` | 建 `{id后4位}-{标题截取}（{id}）` 分支与 worktree 目录，建完即跑 `pnpm install`（速度优先，无报错不加检测），产出物是**一行 `cd` 进入路径**；默认不起服务（要起由你点名） |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
-| 🔍 **代码审查** | `full-code-review` | 智能分级审查（L0–L3）：小改快审、按类型定向、提 MR 前六维全量；只审不代改 |
+| 🔍 **代码审查** | `full-code-review` | 智能分级审查（L0–L3）：小改快审、按类型定向、提 MR 前六维全量；只审不代改（附 6 个维度子技能） |
 | 📋 **PRD** | `prd-authoring` | 按固定结构写 PRD，落盘 Docs/ 或 Plans/ |
 | 🎯 **TAPD 需求** | `tapd-requirement-writing` | 在 TAPD 写/重整需求：五段式文案（问题/需求/功能变更/验收标准/备注）、按功能拆粒度、处理人规则、作废并入旧需求、正文内嵌图片 |
 | ❓ **澄清** | `requirement-clarification` | 模糊需求先澄清；已确认 / 待确认 / 假设 |
@@ -194,6 +195,12 @@ agent-skills/
 ├── test-case-authoring/          # 测试 Part A/B/C
 ├── impact-surface-audit/         # 最终影响面审计（强触发词）
 ├── full-code-review/             # 代码审查：智能分级 L0–L3（只审不代改）
+├── code-reviewer/                # 维度：通用审查（0–100 打分）
+├── silent-failure-hunter/        # 维度：静默失败
+├── type-design-analyzer/         # 维度：类型与接口契约
+├── pr-test-analyzer/             # 维度：测试覆盖
+├── comment-analyzer/             # 维度：注释质量
+├── code-simplifier/              # 维度：简化机会
 ├── prd-authoring/                # PM：写 PRD
 ├── requirement-clarification/    # PM：需求澄清
 ├── user-story-acceptance/        # PM：用户故事 + AC
@@ -237,7 +244,7 @@ cd ~/Documents/agent-skills
 ```bash
 ./install.sh ~/.claude/skills         # 装到该目录（默认软链接），并记住它
 ./install.sh                          # 以后：更新到所有记住过的目录
-./install.sh --group report ~/.claude/skills   # 只装某一组（report / query / tapd / plan / pm / dev / journal，自动带上 playbook）
+./install.sh --group report ~/.claude/skills   # 只装某一组（report / query / tapd / plan / pm / dev / review / journal，自动带上 playbook）
 ./install.sh ~/.claude/skills report-pipeline report-writer   # 只装点名的那几个
 ./install.sh --copy ~/.claude/skills  # 不用软链接、退回拷贝模式
 ./install.sh --targets                # 看记住哪些目录、是否还存在
@@ -530,7 +537,7 @@ cp -R report-pipeline report-draft-filter report-writer ~/.claude/skills/
 
 说出以下任一关键词即可触发：「全面审查一下当前修改 / xx 代码 / xx 分支」「快速审查」「简单看一下这个改动」「提交前检查」「六维审查」「full review」。
 
-按改动规模与类型**自动分级**：**L0** 免审（纯文案 / 锁文件，跑 lint 自查）→ **L1** 快审（≤2 文件 ≤50 行，单代理）→ **L2** 定向审（按类型路由 2–3 个维度）→ **L3** 全量（大改动 / 高风险路径 / 提 MR 前，六个维度子代理）。「全面」强制 L3，「快速」强制 L1。只审不代改；无子代理能力或子代理失败时由主代理补位并标注缺口。
+按改动规模与类型**自动分级**：**L0** 免审（纯文案 / 锁文件，跑 lint 自查）→ **L1** 快审（≤2 文件 ≤50 行，单代理）→ **L2** 定向审（按类型路由 2–3 个维度）→ **L3** 全量（大改动 / 高风险路径 / 提 MR 前，六个维度子代理）。「全面」强制 L3，「快速」强制 L1。只审不代改。六个维度子技能（`code-reviewer` / `silent-failure-hunter` / `type-design-analyzer` / `pr-test-analyzer` / `comment-analyzer` / `code-simplifier`）随仓库提供，装 `review` 组即齐；没装或子代理失败时由主代理补位并标注缺口。
 
 ### 文档输出位置
 

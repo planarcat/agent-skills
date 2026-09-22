@@ -5,7 +5,7 @@
   用法（在仓库根目录）：
     .\install.ps1 <安装目录> [技能名…]   装到该目录（默认用「目录联接」）并记住这个路径
     .\install.ps1                         不带参数：更新到所有记住过的目录
-    .\install.ps1 <目录> -Group report    只装某一组（report / query / tapd / plan / pm / dev / journal，自动带入口）
+    .\install.ps1 <目录> -Group report    只装某一组（report / query / tapd / plan / pm / dev / review / journal，自动带入口）
     .\install.ps1 -Targets                看记住哪些目录（含存在性与模式）
     .\install.ps1 -Forget <目录>          忘掉一个目录（已装的文件不动）
     .\install.ps1 -List                   列技能、分组与记住的目录
@@ -58,6 +58,7 @@ function Get-GroupSkills([string] $name) {
     { $_ -in 'plan','方案' }    { return 'plan-discussion plan-execution plan-lock' }
     { $_ -in 'pm','产品' }      { return 'prd-authoring requirement-clarification user-story-acceptance competitive-or-feature-brief release-note-pm meeting-to-action' }
     { $_ -in 'dev','开发' }     { return 'requirement-breakdown development-guardrails change-advice change-impact-regression impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring create-requirement-branch generate-commit' }
+    { $_ -in 'review','审查' }  { return 'full-code-review code-reviewer silent-failure-hunter type-design-analyzer pr-test-analyzer comment-analyzer code-simplifier' }
     { $_ -in 'journal','记录' } { return 'record-change-log record-development-blog' }
     default { return $null }
   }
@@ -232,7 +233,7 @@ if ($List) {
   Write-Host "入口：$EntrySkill（技能地图 + 流程路由；找不着北先读它）"
   Write-Host ''
   Write-Host '分组（-Group <名>）：'
-  foreach ($g in 'report','query','tapd','plan','pm','dev','journal') { Write-Host ("  {0,-8}{1}" -f $g, (Get-GroupSkills $g)) }
+  foreach ($g in 'report','query','tapd','plan','pm','dev','review','journal') { Write-Host ("  {0,-8}{1}" -f $g, (Get-GroupSkills $g)) }
   Write-Host ''
   Write-Host '记住的安装目标：'
   $lines = @(Read-Config)
@@ -250,7 +251,7 @@ if ($pos.Count -ge 2) { $SkillNames = $pos[1..($pos.Count - 1)] }
 $Skills = @()
 if ($Group) {
   $grp = Get-GroupSkills $Group
-  if (-not $grp) { Write-Host '错误：未知分组。可用分组：report / query / tapd / plan / pm / dev / journal'; exit 1 }
+  if (-not $grp) { Write-Host '错误：未知分组。可用分组：report / query / tapd / plan / pm / dev / review / journal'; exit 1 }
   $Skills = @($grp -split '\s+')
   if (-not $NoEntry) { $Skills += $EntrySkill }
 } elseif ($SkillNames.Count -gt 0) {
