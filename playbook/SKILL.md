@@ -44,7 +44,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 
 | 分组 | 技能 | 干什么 | 何时读它 |
 |---|---|---|---|
-| `report` | `report-pipeline` | 采集与共写层：阶段完成即更新共享日报（Reports/daily_work/）里自己会话的块 | 用户说"记一下/出日报"、多 agent 并行共写日报时 |
+| `report` | `report-pipeline` | 采集与共写层：阶段完成即更新共享日报（Reports/daily_work/）里自己会话的块，每个工作节点带 [HH:MM] 时间 | 用户说"记一下/出日报"、多 agent 并行共写日报时 |
 | `report` | `report-draft-filter` | 分拣层：口语化小结去噪、归类成共享日报条目 | 用户发来"今天做了啥"的大段文字 |
 | `report` | `report-writer` | 收口层：在共享日报上出日报（+ 周报按需）；内附 v3 规范源文档、SOP、模板 | 要成稿、要查合规/虚报口径时 |
 | `query` | `cnb-push-audit` | 查 CNB 三仓库某分支的推送/提交明细 | 核对"今天推了什么"、日报要判"代码到哪一步"（需 cnb 连接器） |
