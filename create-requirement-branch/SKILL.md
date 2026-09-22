@@ -13,7 +13,7 @@ description: "当用户说「创建新需求分支」「开需求分支」「新
 
 **下一步（日报硬规则）**：开工前先做一次**需求拆解**（`requirement-breakdown`）——日报 v3 要求需求首次进「开发中」前必须写过一次需求理解；没装那个技能也要自己写清边界 / 歧义 / 待确认点再动手。拆解文档统一落在**工作区根目录**的 `Docs/需求拆解/`（按日期归档），**不随代码提交**。
 
-**再往后**：开发（`development-guardrails` → `change-impact-regression`）→ 每项完成即提交推送到本分支（`generate-commit`）→ 随手落素材卡（`report-pipeline`）→ 上测试线/正式线后查 CNB 更新状态。全链路见工作区《日报周报生产流程_SOP.md》「零、日常主线」。
+**再往后**：开发（`development-guardrails` → `change-impact-regression`）→ 每项完成即提交推送到本分支（`generate-commit`）→ 随手把工作记进共享日报（`report-pipeline`，只更新自己会话的块）→ 上测试线/正式线后查 CNB 更新状态。全链路见工作区《日报周报生产流程_SOP.md》「零、日常主线」。
 
 **本文档不绑定某个工具**：涉及"打开新目录""后台起服务"这类动作，按你实际用的工具照「跨工具怎么做」选一条。
 

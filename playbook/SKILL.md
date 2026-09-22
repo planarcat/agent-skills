@@ -44,9 +44,9 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 
 | 分组 | 技能 | 干什么 | 何时读它 |
 |---|---|---|---|
-| `report` | `report-pipeline` | 采集层：阶段「先记一笔」落素材卡 → 次日 09:30 前归并 | 用户说"记一下/出日报"、多 agent 并行要汇总时 |
-| `report` | `report-draft-filter` | 分拣层：口语化小结去噪、归到 v3 五栏 | 用户发来"今天做了啥"的大段文字 |
-| `report` | `report-writer` | 成型层：出日报（+ 周报按需）；内附 v3 规范源文档、SOP、模板 | 要成稿、要查合规/虚报口径时 |
+| `report` | `report-pipeline` | 采集与共写层：阶段完成即更新共享日报（Reports/daily_work/）里自己会话的块 | 用户说"记一下/出日报"、多 agent 并行共写日报时 |
+| `report` | `report-draft-filter` | 分拣层：口语化小结去噪、归类成共享日报条目 | 用户发来"今天做了啥"的大段文字 |
+| `report` | `report-writer` | 收口层：在共享日报上出日报（+ 周报按需）；内附 v3 规范源文档、SOP、模板 | 要成稿、要查合规/虚报口径时 |
 | `query` | `cnb-push-audit` | 查 CNB 三仓库某分支的推送/提交明细 | 核对"今天推了什么"、日报要判"代码到哪一步"（需 cnb 连接器） |
 | `query` | `tapd-todo-query` | 查 TAPD 待办需求、核对状态与归属 | 要拉任务行、改状态/owner 前（需 tapd 连接器） |
 | `tapd` | `tapd-requirement-writing` | 写/重整 TAPD 需求：五段式文案、按功能拆粒度、处理人规则、作废并入、正文内嵌图片 | 要写/重整 TAPD 需求、上传截图时（需 tapd 连接器） |
@@ -95,7 +95,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 
 - `Plans/<主题>/execution-plan.md` 存在且未归档 → 处在"待执行"→ `plan-execution`
 - `Plans/<主题>/COMPLETED.md` + `UNEXECUTED.md` 已齐 → 可 `plan-lock`
-- 工作区 `.workbuddy/reports/cards/YYYY-MM-DD.md` 有今天的卡 → 处在"日报采集"，→ `report-pipeline` 归并
+- 工作区 `Reports/daily_work/YYYY-MM-DD.md` 已存在 → 处在"日报共写"，→ `report-pipeline` 更新自己会话的块；用户说"出日报" → `report-writer` 收口
 - 用户提到具体 TAPD 条目号 / CNB 分支名 → `query` 组
 - 刚发生过文件改动（本轮 Write/Edit）→ `change-impact-regression`
 - 判断不了：**问一句最短的问题**（"你是要出方案，还是直接改？"），别猜着往下走。
@@ -105,7 +105,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 | 类型 | 技能 | 说明 |
 |---|---|---|
 | 需要连接器 | `cnb-push-audit`（cnb）、`tapd-todo-query` / `tapd-requirement-writing`（tapd） | 未连接时先提示用户连接 |
-| 会写盘 | `plan-*`（`Plans/`）、`report-*`（各工作区 `.workbuddy/reports/` 与日报/周报文件）、`record-*`、`prd-authoring`（`Docs/`） | 落点遵守各技能正文 |
+| 会写盘 | `plan-*`（`Plans/`）、`report-*`（各工作区 `Reports/`）、`record-*`、`prd-authoring`（`Docs/`） | 落点遵守各技能正文 |
 | 只读 / 只分析 | `change-advice`、`impact-surface-audit`、`development-guardrails`、`full-code-review` | 不产出业务代码改动 |
 | 规范源 | `report-writer` 技能里的 `references/spec.md`（日报/周报规范） | 口径冲突以它为准；日报三件套建议整组移植 |
 
