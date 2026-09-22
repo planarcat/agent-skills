@@ -4,7 +4,7 @@
 # 用法：
 #   ./install.sh <安装目录> [技能名…]   装到该目录，并**记住这个路径**
 #   ./install.sh                        不带参数：把仓库技能**更新到所有记住过的路径**
-#   ./install.sh <目录> --group report  只装某一组（report / query / plan / pm / dev / journal）
+#   ./install.sh <目录> --group report  只装某一组（report / query / tapd / plan / pm / dev / journal）
 #                                       分组安装会自动带上入口 playbook
 #   ./install.sh --targets              看记住了哪些安装目录（并逐个检查是否存在）
 #   ./install.sh --forget <目录>        忘掉一个安装目录（不删已装的文件）
@@ -183,7 +183,7 @@ while [ $# -gt 0 ]; do
     --forget) FORGET="${2:-}"; shift $(( $# > 1 ? 2 : 1 )) ;;
     --group)
       if [ $# -lt 2 ]; then
-        echo "错误：--group 需要跟一个分组名（report / query / plan / pm / dev / journal）" >&2
+        echo "错误：--group 需要跟一个分组名（report / query / tapd / plan / pm / dev / journal）" >&2
         exit 1
       fi
       GROUP="$2"; shift 2 ;;
@@ -294,6 +294,7 @@ if [ "$LIST_ONLY" -eq 1 ]; then
   echo "分组（--group <名>）："
   echo "  report  日报三件套         $(group_skills report)"
   echo "  query   数据源核查         $(group_skills query)"
+  echo "  tapd    TAPD 需求          $(group_skills tapd)"
   echo "  plan    方案讨论→执行→锁定  $(group_skills plan)"
   echo "  pm      产品经理常用        $(group_skills pm)"
   echo "  dev     开发与质量          $(group_skills dev)"
@@ -312,7 +313,7 @@ fi
 
 if [ -n "$GROUP" ]; then
   if ! grp="$(group_skills "$GROUP")"; then
-    echo "错误：未知分组「${GROUP}」。可用分组：report / query / plan / pm / dev / journal" >&2
+    echo "错误：未知分组「${GROUP}」。可用分组：report / query / tapd / plan / pm / dev / journal" >&2
     exit 1
   fi
   # shellcheck disable=SC2206

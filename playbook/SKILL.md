@@ -40,7 +40,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 - 体检命令：仓库根 `./install.sh --lint`（检查每个技能是否自包含、列出文档级跨技能指针、检测**同名参考文件漂移**——同一份文档在多个技能里各留一份时内容必须一致）。
 - 移植命令：`./install.sh --copy <目标目录> <技能名…>`；整组用 `--copy --no-entry --group <组名> <目标目录>`（`--no-entry` 不带入口）。
 
-## 技能地图（24 个）
+## 技能地图（26 个）
 
 | 分组 | 技能 | 干什么 | 何时读它 |
 |---|---|---|---|
@@ -49,6 +49,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 | `report` | `report-writer` | 成型层：出日报（+ 周报按需）；内附 v3 规范源文档、SOP、模板 | 要成稿、要查合规/虚报口径时 |
 | `query` | `cnb-push-audit` | 查 CNB 三仓库某分支的推送/提交明细 | 核对"今天推了什么"、日报要判"代码到哪一步"（需 cnb 连接器） |
 | `query` | `tapd-todo-query` | 查 TAPD 待办需求、核对状态与归属 | 要拉任务行、改状态/owner 前（需 tapd 连接器） |
+| `tapd` | `tapd-requirement-writing` | 写/重整 TAPD 需求：五段式文案、按功能拆粒度、处理人规则、作废并入、正文内嵌图片 | 要写/重整 TAPD 需求、上传截图时（需 tapd 连接器） |
 | `plan` | `plan-discussion` | 多轮方案讨论，落盘 `Plans/` 生成待执行方案 | 说"讨论方案/设计个方案/规划一下" |
 | `plan` | `plan-execution` | 按待执行方案逐阶段开发，产出已执行/未执行文档 | 说"开始执行/开工"，且 `Plans/` 有最新主题 |
 | `plan` | `plan-lock` | 核对闭环后把主题归档进 `Plans/归档/` | 明确说"锁定/锁吧" |
@@ -102,7 +103,7 @@ description: 技能总入口：技能地图 + 流程路由 + 状态判定。当�
 
 | 类型 | 技能 | 说明 |
 |---|---|---|
-| 需要连接器 | `cnb-push-audit`（cnb）、`tapd-todo-query`（tapd） | 未连接时先提示用户连接 |
+| 需要连接器 | `cnb-push-audit`（cnb）、`tapd-todo-query` / `tapd-requirement-writing`（tapd） | 未连接时先提示用户连接 |
 | 会写盘 | `plan-*`（`Plans/`）、`report-*`（各工作区 `.workbuddy/reports/` 与日报/周报文件）、`record-*`、`prd-authoring`（`Docs/`） | 落点遵守各技能正文 |
 | 只读 / 只分析 | `change-advice`、`impact-surface-audit`、`development-guardrails` | 不产出业务代码改动 |
 | 规范源 | `report-writer` 技能里的 `references/spec.md`（日报/周报规范） | 口径冲突以它为准；日报三件套建议整组移植 |

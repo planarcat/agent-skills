@@ -55,11 +55,12 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 
 ### 只想装一部分
 
-`./install.sh` 不带参数会装**全部 25 个技能**。只想要一组就点名分组，不用逐个列技能名：
+`./install.sh` 不带参数会装**全部 27 个技能**。只想要一组就点名分组，不用逐个列技能名：
 
 ```bash
 ./install.sh --group report  ~/.claude/skills    # 日报三件套
 ./install.sh --group query   ~/.claude/skills    # 数据源核查（CNB 推送 / TAPD 待办）
+./install.sh --group tapd    ~/.claude/skills    # TAPD 需求（写需求 / 待办核查）
 ./install.sh --group plan    ~/.claude/skills    # 方案讨论→执行→锁定
 ./install.sh --group pm      ~/.claude/skills    # 产品经理常用
 ./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/测试/分支/提交）
@@ -234,7 +235,7 @@ cd ~/Documents/agent-skills
 ```bash
 ./install.sh ~/.claude/skills         # 装到该目录（默认软链接），并记住它
 ./install.sh                          # 以后：更新到所有记住过的目录
-./install.sh --group report ~/.claude/skills   # 只装某一组（report / query / plan / pm / dev / journal，自动带上 playbook）
+./install.sh --group report ~/.claude/skills   # 只装某一组（report / query / tapd / plan / pm / dev / journal，自动带上 playbook）
 ./install.sh ~/.claude/skills report-pipeline report-writer   # 只装点名的那几个
 ./install.sh --copy ~/.claude/skills  # 不用软链接、退回拷贝模式
 ./install.sh --targets                # 看记住哪些目录、是否还存在

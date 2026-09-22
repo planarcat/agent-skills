@@ -5,7 +5,7 @@
   用法（在仓库根目录）：
     .\install.ps1 <安装目录> [技能名…]   装到该目录（默认用「目录联接」）并记住这个路径
     .\install.ps1                         不带参数：更新到所有记住过的目录
-    .\install.ps1 <目录> -Group report    只装某一组（report / query / plan / pm / dev / journal，自动带入口）
+    .\install.ps1 <目录> -Group report    只装某一组（report / query / tapd / plan / pm / dev / journal，自动带入口）
     .\install.ps1 -Targets                看记住哪些目录（含存在性与模式）
     .\install.ps1 -Forget <目录>          忘掉一个目录（已装的文件不动）
     .\install.ps1 -List                   列技能、分组与记住的目录
@@ -232,7 +232,7 @@ if ($List) {
   Write-Host "入口：$EntrySkill（技能地图 + 流程路由；找不着北先读它）"
   Write-Host ''
   Write-Host '分组（-Group <名>）：'
-  foreach ($g in 'report','query','plan','pm','dev','journal') { Write-Host ("  {0,-8}{1}" -f $g, (Get-GroupSkills $g)) }
+  foreach ($g in 'report','query','tapd','plan','pm','dev','journal') { Write-Host ("  {0,-8}{1}" -f $g, (Get-GroupSkills $g)) }
   Write-Host ''
   Write-Host '记住的安装目标：'
   $lines = @(Read-Config)
@@ -250,7 +250,7 @@ if ($pos.Count -ge 2) { $SkillNames = $pos[1..($pos.Count - 1)] }
 $Skills = @()
 if ($Group) {
   $grp = Get-GroupSkills $Group
-  if (-not $grp) { Write-Host '错误：未知分组。可用分组：report / query / plan / pm / dev / journal'; exit 1 }
+  if (-not $grp) { Write-Host '错误：未知分组。可用分组：report / query / tapd / plan / pm / dev / journal'; exit 1 }
   $Skills = @($grp -split '\s+')
   if (-not $NoEntry) { $Skills += $EntrySkill }
 } elseif ($SkillNames.Count -gt 0) {
