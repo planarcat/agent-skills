@@ -57,7 +57,7 @@ function Get-GroupSkills([string] $name) {
     { $_ -in 'tapd','需求' }    { return 'tapd-requirement-writing tapd-todo-query' }
     { $_ -in 'plan','方案' }    { return 'plan-discussion plan-execution plan-lock' }
     { $_ -in 'pm','产品' }      { return 'prd-authoring requirement-clarification user-story-acceptance competitive-or-feature-brief release-note-pm meeting-to-action' }
-    { $_ -in 'dev','开发' }     { return 'development-guardrails change-advice change-impact-regression impact-surface-audit resolve-merge-conflict test-case-authoring create-requirement-branch generate-commit' }
+    { $_ -in 'dev','开发' }     { return 'requirement-breakdown development-guardrails change-advice change-impact-regression impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring create-requirement-branch generate-commit' }
     { $_ -in 'journal','记录' } { return 'record-change-log record-development-blog' }
     default { return $null }
   }
