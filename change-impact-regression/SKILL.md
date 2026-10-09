@@ -1,23 +1,23 @@
 ---
-name: change-impact-regression
-description: "After modifying application source code, produce an impact surface list (features, components, modules) and concrete regression test methods to catch indirect behavior drift. Prefer GitNexus MCP (user-gitnexus: detect_changes, impact, api_impact) when available to map diff to dependents and execution flows. Use when finishing a fix, refactor, or feature; when the user asks for 影响面, 回归测试, 改动范围, 测什么; or alongside development-guardrails after any non-trivial code edit. Must Read before delivering the post-change summary if this skill applies."
+name: 改动影响面与回归
+description: "After modifying application source code, produce an impact surface list (features, components, modules) and concrete regression test methods to catch indirect behavior drift. Prefer GitNexus MCP (user-gitnexus: detect_changes, impact, api_impact) when available to map diff to dependents and execution flows. Use when finishing a fix, refactor, or feature; when the user asks for 影响面, 回归测试, 改动范围, 测什么; or alongside 开发中规范 after any non-trivial code edit. Must Read before delivering the post-change summary if this skill applies."
 ---
 
 # 改动影响面与回归测试
 
 在**完成一批源码改动之后**（向用户汇报「改好了」之前），基于真实 diff 与调用关系，列出受影响对象，并给出可执行的回归测试方法。目标是：**覆盖直接改动与合理推断的间接影响**，降低「未改动的模块行为悄悄漂移」的风险。
 
-## 与 development-guardrails 的关系
+## 与 开发中规范 的关系
 
 | skill | 阶段 | 作用 |
 |:---|:---|:---|
-| `development-guardrails` Part A | 改代码**过程中** | 注释守卫 |
-| `development-guardrails` Part B | 排查问题**过程中** | 调试埋点与 REPORT |
+| `开发中规范` Part A | 改代码**过程中** | 注释守卫 |
+| `开发中规范` Part B | 排查问题**过程中** | 调试埋点与 REPORT |
 | **本 skill** | 改代码**完成后** | 影响面清单 + 回归怎么测 |
 
-**不建议把本 skill 全文并入 `development-guardrails`：** 前者是「改时约束」，本 skill 是「改后交付」；合并会让单次 Read 过长，且 User Rules 已绑定 guardrails。推荐 **独立 skill + guardrails 文末交叉引用**。
+**不建议把本 skill 全文并入 `开发中规范`：** 前者是「改时约束」，本 skill 是「改后交付」；合并会让单次 Read 过长，且 User Rules 已绑定 guardrails。推荐 **独立 skill + guardrails 文末交叉引用**。
 
-**协作约定：** 本对话中若已因改代码适用 `development-guardrails`，在**同一轮改动收尾**时默认同时执行本 skill（无需用户再 @）。
+**协作约定：** 本对话中若已因改代码适用 `开发中规范`，在**同一轮改动收尾**时默认同时执行本 skill（无需用户再 @）。
 
 ---
 
@@ -179,14 +179,23 @@ description: "After modifying application source code, produce an impact surface
 
 ---
 
+## 收尾沉淀锚点（知识沉淀 · 2026-10-09）
+
+影响面清单交付的同一轮，若工作区根存在 `Knowledge/`：
+
+- diff 命中某模块卡 frontmatter `module` 覆盖路径 → 检查影响面结论是否要归位更新该卡（按 `知识沉淀` 起草，用户裁决落盘；日报 / 改动记录链路则连续沉淀）
+- 发现模块卡 / 业务文档与实现不符 → 顺手修正（消费即校准）
+- `Knowledge/` 不存在 → 跳过，不为此单独跑一趟（首次沉淀时自举）
+
 ## 与其他 skill 的关系
 
 | skill | 关系 |
 |:---|:---|
 | `gitnexus-impact-analysis`（**外部技能，不在本仓库**） | GitNexus 工具用法与 d=1/d=2 风险语义；本 skill 在**改后交付**场景下调用 MCP；没装这个技能不影响本 skill 执行 |
-| `development-guardrails` | Part A/B 管改中与调试；本 skill 在改后收尾配合 |
-| `test-case-authoring` | Part A 写测试 / Part C 测驱动调试修产品后，收尾影响面仍用本文 |
-| `generate-commit` | 影响面清单交出去之后，按开发规范提交并**直接推送到需求分支**（不推主分支、不 `--force`） |
+| `开发中规范` | Part A/B 管改中与调试；本 skill 在改后收尾配合 |
+| `测试用例编写` | Part A 写测试 / Part C 测驱动调试修产品后，收尾影响面仍用本文 |
+| `生成提交` | 影响面清单交出去之后，按开发规范提交并**直接推送到需求分支**（不推主分支、不 `--force`） |
+| `知识沉淀` | 收尾锚点：影响面结论归位模块卡更新；文档与实现不符顺手修正 |
 
 ## 与 Part B 调试的关系
 

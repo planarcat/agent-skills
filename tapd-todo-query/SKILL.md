@@ -1,5 +1,5 @@
 ---
-name: tapd-todo-query
+name: TAPD待办查询
 description: 查询何成标在 TAPD 各项目（灵创_用户端 / 来图 / 灵创_工厂端）名下待开发的需求清单（未完成状态）。当用户问「TAPD 上我还有哪些需求/任务待开发」「查一下待办需求」「核对 TAPD 需求状态」时使用。需要 TAPD connector 已连接。
 ---
 

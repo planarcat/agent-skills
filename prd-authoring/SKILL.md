@@ -1,6 +1,6 @@
 ---
-name: prd-authoring
-description: "当用户说「写 PRD」「写需求」「补 PRD」「出需求说明」「写产品需求文档」「整理成 PRD」等时触发。按固定结构产出 PRD（背景/目标/非目标/用户故事/验收标准/埋点/风险/依赖仓），落盘到 Docs/ 或 Plans/；禁止改业务源码。与 plan-discussion（技术方案讨论）、requirement-clarification（需求未澄清）、user-story-acceptance（只拆故事与 AC）区分。"
+name: 撰写PRD
+description: "当用户说「写 PRD」「写需求」「补 PRD」「出需求说明」「写产品需求文档」「整理成 PRD」等时触发。按固定结构产出 PRD（背景/目标/非目标/用户故事/验收标准/埋点/风险/依赖仓），落盘到 Docs/ 或 Plans/；禁止改业务源码。与 方案讨论（技术方案讨论）、需求澄清（需求未澄清）、用户故事验收（只拆故事与 AC）区分。"
 ---
 
 # 写 PRD（产品需求文档）
@@ -18,12 +18,12 @@ description: "当用户说「写 PRD」「写需求」「补 PRD」「出需求�
 | Skill | 何时用 |
 |---|---|
 | **本 skill** | 产出正式/半正式 PRD |
-| `requirement-clarification` | 需求模糊、先澄清；澄清完成后再写 PRD |
-| `user-story-acceptance` | 只要用户故事 + AC / 测试提纲，不要完整 PRD |
-| `plan-discussion` | 技术方案多轮讨论，落 `Plans/` 主题与 execution-plan |
-| `competitive-or-feature-brief` | 做不做、方案取舍简报，不是完整 PRD |
+| `需求澄清` | 需求模糊、先澄清；澄清完成后再写 PRD |
+| `用户故事验收` | 只要用户故事 + AC / 测试提纲，不要完整 PRD |
+| `方案讨论` | 技术方案多轮讨论，落 `Plans/` 主题与 execution-plan |
+| `竞品功能简报` | 做不做、方案取舍简报，不是完整 PRD |
 
-需求仍含大量「待确认」时：先走 `requirement-clarification`，或在 PRD 顶部保留「待确认」清单再写正文。
+需求仍含大量「待确认」时：先走 `需求澄清`，或在 PRD 顶部保留「待确认」清单再写正文。
 
 ## 落盘位置
 
@@ -131,7 +131,7 @@ description: "当用户说「写 PRD」「写需求」「补 PRD」「出需求�
 - **验收标准** 必须可演示或可自动化验证。
 - **依赖仓** 表必填；单仓项目可合并为一行并注明仓名。
 - 埋点：有数据诉求必填表；否则显式写不做。
-- 不写实现细节代替需求（除非影响验收）；技术方案指向 `plan-discussion`。
+- 不写实现细节代替需求（除非影响验收）；技术方案指向 `方案讨论`。
 - 引用代码/接口时注明路径或 API，避免臆造字段。
 
 ## 对话交付摘要（落盘后）

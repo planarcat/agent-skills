@@ -1,5 +1,5 @@
 ---
-name: tapd-requirement-writing
+name: TAPD需求撰写
 description: 在 TAPD 里编写 / 重整需求（父需求 + 子需求）的规范与操作流程。当用户说「写 TAPD 需求」「把这些整理成需求」「重写 TAPD」「需求太碎了合并一下」「需求文案怎么写」，或需要新建/改写/作废 TAPD 需求、设置处理人与排期、上传截图到需求时使用。需要 TAPD connector 已连接。
 ---
 

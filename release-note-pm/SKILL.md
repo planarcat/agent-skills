@@ -1,6 +1,6 @@
 ---
-name: release-note-pm
-description: "当用户说「写发版说明」「release notes」「changelog」「版本更新说明」「对内对外发版文案」时触发。产出三套语气：对用户 / 对运营 / 对研发；可落盘 Docs/。不改业务源码。与 generate-commit（git 提交说明）区分。"
+name: 发版说明
+description: "当用户说「写发版说明」「release notes」「changelog」「版本更新说明」「对内对外发版文案」时触发。产出三套语气：对用户 / 对运营 / 对研发；可落盘 Docs/。不改业务源码。与 生成提交（git 提交说明）区分。"
 ---
 
 # 发版说明（PM）
@@ -18,8 +18,8 @@ description: "当用户说「写发版说明」「release notes」「changelog�
 | Skill | 何时用 |
 |---|---|
 | **本 skill** | 产品向发版说明（三套受众） |
-| `generate-commit` | Git commit message |
-| `record-change-log` | 开发过程记录：短记（`Logs/`，≤100 字）与长记（`Blogs/`，第一人称复盘）——`record-development-blog` 已并入它 |
+| `生成提交` | Git commit message |
+| `改动记录` | 开发过程记录：短记（`Logs/`，≤100 字）与长记（`Blogs/`，第一人称复盘）——`开发博客` 已并入它 |
 
 ## 输入
 

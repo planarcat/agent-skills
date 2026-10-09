@@ -1,6 +1,6 @@
 ---
-name: development-guardrails
-description: "Mandatory guardrails before editing source code. ALWAYS read this entire SKILL.md before the first Write/Edit/StrReplace on application source in the conversation if not already loaded. Part A applies to every code change (comments). Part B applies when debugging is needed: bug unresolved, fix incomplete, missing runtime evidence, user says still broken, or investigating errors. Use for 修改代码, 写代码, 实现, 修复, bug, 报错, 调试, 埋点, 重构, refactor, fix, patch, implement, 开发中规范, development-guardrails, @development-guardrails. Listing in available_skills does not count as compliance; must Read file."
+name: 开发中规范
+description: "Mandatory guardrails before editing source code. ALWAYS read this entire SKILL.md before the first Write/Edit/StrReplace on application source in the conversation if not already loaded. Part A applies to every code change (comments). Part B applies when debugging is needed: bug unresolved, fix incomplete, missing runtime evidence, user says still broken, or investigating errors. Use for 修改代码, 写代码, 实现, 修复, bug, 报错, 调试, 埋点, 重构, refactor, fix, patch, implement, 开发中规范, 开发中规范, @开发中规范. Listing in available_skills does not count as compliance; must Read file."
 ---
 
 # 开发中规范
@@ -14,7 +14,7 @@ Skill 出现在 `available_skills` **不等于**已遵守。必须按下列顺�
 1. **Read 本文件**：在本对话中**第一次**即将修改源码（Write / Edit / StrReplace 等）前，若尚未 Read 过本 `SKILL.md`，**必须先 Read 全文**，再动手。
 2. **过适用判断**：Read 后立即按下方决策树判断 Part A / Part B。
 3. **Part B 优先于盲改**：若 B.3 命中，本轮**不得**只改逻辑不埋点；应先布 collector 或先取得 REPORT。
-4. **用户 @ 或点名**：用户 `@development-guardrails`、说「开发中规范」「按 Part B」时，视为强制 Read + 执行，无需用户二次提醒。
+4. **用户 @ 或点名**：用户 `@开发中规范`、说「开发中规范」「按 Part B」时，视为强制 Read + 执行，无需用户二次提醒。
 
 **禁止**：跳过 Read 直接改代码；认为 User Rules 已足够而不打开本 skill。
 
@@ -251,7 +251,7 @@ let count = 0
 ```
 1. 确认「需要调试」且证据不足 / 问题未完整解决
   → 2. 梳理完整复现路径
-  → 2a. 【优先】路径已有或可写最小 spec？→ Read test-case-authoring Part C：Agent 跑测 + [TEST-DEBUG-REPORT]（E2E 叠加 Part B 控制台）
+  → 2a. 【优先】路径已有或可写最小 spec？→ Read 测试用例编写 Part C：Agent 跑测 + [TEST-DEBUG-REPORT]（E2E 叠加 Part B 控制台）
   → 3. 否则：沿路径布静默采集点 + 确定 flush 时机（§B.6 手动 collector）
   → 4. 代理优先自行跑复现（测或手工）；勿在 spec 能复现时仍要求用户手工点流程
   → 5. 复现结束后取得唯一一份诊断报告（[TEST-DEBUG-REPORT] 或 [DEBUG:slug] REPORT）
@@ -259,7 +259,7 @@ let count = 0
   → 7. 验证后清理埋点（含临时 [TEST-DIAG] / [E2E-DIAG]）
 ```
 
-### B.4.1 测试通道（与 test-case-authoring Part C）
+### B.4.1 测试通道（与 测试用例编写 Part C）
 
 | 条件 | 做法 |
 |:---|:---|
@@ -378,10 +378,11 @@ function flushDebugReport(reason) {
 
 | skill | 关系 |
 |---|---|
-| `change-advice` | 用户要求“先别改”时，Part A/B 的改代码流程均不进入 |
+| `改动建议` | 用户要求“先别改”时，Part A/B 的改代码流程均不进入 |
 | `paste-replacement-fallback` | 文件改不进去 → paste 回退；需调试且缺运行证据 → Part B |
-| `change-impact-regression` | **任意非 trivial 源码改动完成后**，在同一轮收尾产出影响面清单与回归测试方法（见该 skill；不必合并进本文） |
-| `test-case-authoring` | Part A 写用例不修产品；Part B E2E 控制台；Part C 测试驱动调试（**有 spec 时 guardrails Part B 优先 Part C**，REPORT 为 `[TEST-DEBUG-REPORT]`） |
+| `改动影响面与回归` | **任意非 trivial 源码改动完成后**，在同一轮收尾产出影响面清单与回归测试方法（见该 skill；不必合并进本文） |
+| `测试用例编写` | Part A 写用例不修产品；Part B E2E 控制台；Part C 查因修产品（**有 spec 时 guardrails Part B 优先 Part C**，REPORT 为 `[TEST-DEBUG-REPORT]`） |
+| `知识沉淀` | 轻标记的接收方：收尾锚点把「待沉淀」标记转成 Knowledge/ 增量 |
 
 ## 质量检查
 
@@ -403,6 +404,17 @@ function flushDebugReport(reason) {
 - 持久注释与临时埋点是否区分清楚
 - 埋点修复后是否已全部删除，注释是否按 Part A 合理保留
 
-**源码改动收尾（与 `change-impact-regression`）：**
+**源码改动收尾（与 `改动影响面与回归`）：**
 
 - 非 trivial 改动完成后，是否已交付影响面清单与必测/建议测回归项
+
+---
+
+# 附：知识沉淀轻标记（2026-10-09 起 · 不打断开发）
+
+开发过程中发现以下任一情况，只做**轻标记**，不写文档、不停下手头的活：
+
+- 发现新坑 / 新口径 / 隐性约定
+- 现场读到的代码与 `Knowledge/` 模块卡或业务文档描述不符
+
+**做法**：在会话里记一行「待沉淀：<一句话>」，本轮收尾时随收尾锚点（`改动影响面与回归` / `改动记录` / 日报链路）交给 `知识沉淀` 处理。首次进入陌生模块前，可顺手查 `Knowledge/_map.md` 有没有对应卡（有就读，没有直接跳过，**不为此停下来**）。

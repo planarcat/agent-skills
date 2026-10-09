@@ -1,6 +1,6 @@
 ---
-name: user-story-acceptance
-description: "当用户说「拆故事」「写用户故事」「写 AC」「验收标准」「给测试用例提纲」「Given When Then」等时触发。产出可测、可演示的用户故事与验收标准（强制 Given/When/Then），可附测试用例提纲；禁止空话与改业务源码。完整 PRD 用 prd-authoring；需求未澄清用 requirement-clarification。"
+name: 用户故事验收
+description: "当用户说「拆故事」「写用户故事」「写 AC」「验收标准」「给测试用例提纲」「Given When Then」等时触发。产出可测、可演示的用户故事与验收标准（强制 Given/When/Then），可附测试用例提纲；禁止空话与改业务源码。完整 PRD 用 撰写PRD；需求未澄清用 需求澄清。"
 ---
 
 # 用户故事 + 验收标准
@@ -19,12 +19,12 @@ description: "当用户说「拆故事」「写用户故事」「写 AC」「验
 | Skill | 何时用 |
 |---|---|
 | **本 skill** | 故事 + AC（+ 可选测试提纲） |
-| `prd-authoring` | 完整 PRD（含背景/埋点/依赖仓等） |
-| `requirement-clarification` | 范围不清，先澄清 |
-| `test-case-authoring` | 在仓库里编写/运行自动化测试代码 |
-| `plan-discussion` | 技术方案讨论 |
+| `撰写PRD` | 完整 PRD（含背景/埋点/依赖仓等） |
+| `需求澄清` | 范围不清，先澄清 |
+| `测试用例编写` | 在仓库里编写/运行自动化测试代码 |
+| `方案讨论` | 技术方案讨论 |
 
-需要落盘自动化测试文件时，交给 `test-case-authoring`，本 skill 只给 **提纲**。
+需要落盘自动化测试文件时，交给 `测试用例编写`，本 skill 只给 **提纲**。
 
 ## 落盘位置（可选）
 
