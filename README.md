@@ -141,6 +141,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 🖥️ **本地服务** | `local-dev-server` | pm2 托管本地 dev server：名字 `=分支前缀`、**端口 = 仓库位+需求id后4位**（如 F-2962→22962）固定可推导；「服务器地址 / 关服务」口令即答，用户随时 `pm2 ls` 自查、`pm2 stop` 自关 |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
 | 🔍 **代码审查** | `full-code-review` | 智能分级审查（L0–L3）：小改快审、按类型定向、提 MR 前六维全量；只审不代改（6 维标准内置） |
+| 🧪 **类人测试** | `human-like-testing` | 有头浏览器像人一样自测验收：看页面→取证→定位→最小修复→重测；读工作区「测试环境卡」，证据链交付 |
 | 📋 **PRD** | `prd-authoring` | 按固定结构写 PRD，落盘 Docs/ 或 Plans/ |
 | 🎯 **TAPD 需求** | `tapd-requirement-writing` | 在 TAPD 写/重整需求：五段式文案（问题/需求/功能变更/验收标准/备注）、按功能拆粒度、处理人规则、作废并入旧需求、正文内嵌图片 |
 | ❓ **澄清** | `requirement-clarification` | 模糊需求先澄清；已确认 / 待确认 / 假设 |
@@ -195,6 +196,7 @@ agent-skills/
 ├── change-impact-regression/     # 影响面与回归
 ├── change-advice/                # 修改建议（不改代码）
 ├── test-case-authoring/          # 测试 Part A/B/C
+├── human-like-testing/           # 类人测试：像人一样自测验收（环境卡 + 证据链）
 ├── impact-surface-audit/         # 最终影响面审计（强触发词）
 ├── full-code-review/             # 代码审查：智能分级 L0–L3（6 维标准内置）
 ├── prd-authoring/                # PM：写 PRD
@@ -461,7 +463,27 @@ Copy-Item -Recurse test-case-authoring $env:USERPROFILE\.cursor\skills\test-case
 编写/增加测试：Read test-case-authoring Part A+B。用测试/spec 查 bug：Read Part C，自跑测试并读 [TEST-DEBUG-REPORT] 再改代码。勿与「只写用例不修产品」混用。
 ```
 
-#### 10. 产品经理技能（P0 / P1）
+#### 10. 类人测试（human-like-testing）
+
+用户说**类人测试 / 像人一样测试 / 测一下 / 自测验收 / 修复后自己验证**时：
+
+- **第 0 步读「测试环境卡」**：工作区 AGENTS.md/CLAUDE.md 类人测试章节 → `docs/testing/` → 没有就让 Agent 现场摸底生成并确认落卡（跨工作区通用件，七项：启动 / 地址 / 登录 / 页面形态 / 桥接 mock / 取证 / 沉淀）
+- **类人三标准**：决策在线（每步看 snapshot 再动）、感官真实（读渲染结果不读代码）、路径与用户一致（走 UI 不绕过界面）
+- **六步闭环**：验收判据先行 → 复现 → 取证三件套（console+network+DOM）→ 分层定位 → 最小修复 → 再验证（含边界），≤5 轮超限人工介入
+- **防作弊**：禁止放宽断言换绿；数据归属一律 DOM 断言非截图；交付必附 diff + 证据链报告
+
+触发词示例：「类人测试」「像人一样测」「测一下这个页面」「自测验收」「修复后自己验证」
+
+安装：
+
+```powershell
+Copy-Item -Recurse human-like-testing $env:USERPROFILE\.agents\skills\human-like-testing
+Copy-Item -Recurse human-like-testing $env:USERPROFILE\.cursor\skills\human-like-testing
+```
+
+与 `test-case-authoring` 分工：写用例 / 红灯 / 测试驱动调试走后者；像人一样操作页面自测验收走本 skill。
+
+#### 11. 产品经理技能（P0 / P1）
 
 | 技能 | 触发示例 | 默认落盘 |
 |:---|:---|:---|
@@ -488,7 +510,7 @@ $dst = "$env:USERPROFILE\.claude\skills"
 
 PM 推荐顺序：模糊需求 → `requirement-clarification` → `prd-authoring` 或 `user-story-acceptance`；取舍用 `competitive-or-feature-brief`；技术方案仍用 `plan-discussion`。
 
-#### 11. 日报编写（共享日报 · 2026-09-22 口径）
+#### 12. 日报编写（共享日报 · 2026-09-22 口径）
 
 三个技能各管一段，按 **共写 → 收口** 配合：
 
@@ -523,7 +545,7 @@ PM 推荐顺序：模糊需求 → `requirement-clarification` → `prd-authorin
 - 所有文件都在**工作区**里，不在技能目录下；落点在 git 仓库时，自行决定是否把 `Reports/` 加进 `.gitignore`。
 - 项目名不写死，取自当天素材；唯一写死的是报告作者本人姓名（何成标）。
 
-#### 12. 知识沉淀（knowledge-precipitation）
+#### 13. 知识沉淀（knowledge-precipitation）
 
 说出以下任一关键词即可触发：
 
