@@ -60,7 +60,7 @@ group_skills() {
     report|日报)  echo "report-pipeline report-draft-filter report-writer" ;;
     query|查询)   echo "cnb-push-audit tapd-todo-query" ;;
     tapd|需求)    echo "tapd-requirement-writing tapd-todo-query" ;;
-    plan|方案)    echo "plan-discussion plan-execution plan-lock" ;;
+    plan|方案)    echo "plan" ;;
     dev|开发)     echo "development-guardrails change-advice change-impact-regression impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring human-like-testing create-requirement-branch generate-commit" ;;
     journal|记录) echo "record-change-log record-development-blog" ;;
     *) return 1 ;;

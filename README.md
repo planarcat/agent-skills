@@ -1,6 +1,6 @@
 # Agent Skills
 
-> 面向 AI 辅助软件开发的 Skills 集合：方案讨论—执行—锁定，以及开发质量、日报等工作流
+> 面向 AI 辅助软件开发的 Skills 集合：方案（讨论—执行—锁定），以及开发质量、日报等工作流
 
 ## 最短路径（先看这个）
 
@@ -55,13 +55,13 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 
 ### 只想装一部分
 
-`./install.sh` 不带参数会装**全部 23 个技能**。只想要一组就点名分组，不用逐个列技能名：
+`./install.sh` 不带参数会装**全部 21 个技能**。只想要一组就点名分组，不用逐个列技能名：
 
 ```bash
 ./install.sh --group report  ~/.claude/skills    # 日报三件套
 ./install.sh --group query   ~/.claude/skills    # 数据源核查（CNB 推送 / TAPD 待办）
 ./install.sh --group tapd    ~/.claude/skills    # TAPD 需求（写需求 / 待办核查）
-./install.sh --group plan    ~/.claude/skills    # 方案讨论→执行→锁定
+./install.sh --group plan    ~/.claude/skills    # 方案（讨论→执行→锁定）
 ./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/测试/分支/提交）
 ./install.sh --group journal ~/.claude/skills    # 记录与沉淀（变更日志 / 开发博客）
 ./install.sh --list                              # 看有哪些技能和分组，不安装
@@ -132,9 +132,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 阶段 | 技能 | 功能 |
 |:---|:---|:---|
 | 🧭 **入口** | `playbook` | **技能地图 + 流程路由**：按当前流程与状态把你指到执行技能；找不着北先读它 |
-| 🧠 **讨论** | `plan-discussion` | 多轮方案讨论，自动落盘记录，生成待执行方案 |
-| 🔧 **执行** | `plan-execution` | 按方案逐阶段实施开发，产出执行结果文档 |
-| 🔒 **锁定** | `plan-lock` | 锁定前核对方案/结果/遗留清单，确认闭环后归档 |
+| 🧠 **方案** | `plan` | 方案全生命周期一个入口：讨论落盘 `Plans/` 生成待执行方案 → 逐 Phase 执行开发 → 核对闭环后归档；三阶段细则在技能内 `references/讨论·执行·锁定.md` |
 | 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
 | 🌿 **分支** | `create-requirement-branch` | 建 `{id后4位}-{标题截取}（{id}）` 分支与 worktree 目录，建完即跑 `pnpm install`（速度优先，无报错不加检测），随即起本地服务（pm2 托管、端口=仓库位+需求id后4位，细则见技能内 `references/本地服务.md`），产出物是**一行 `cd` 进入路径** |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
@@ -148,19 +146,19 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 用户说"讨论方案"
        ↓
   ┌──────────┐
-  │ 创建主题  │  ← plan-discussion
+  │ 创建主题  │  ← 方案 · 讨论阶段
   │ 多轮讨论  │     记录每轮对话，生成 execution-plan.md
   └────┬─────┘
        │ 用户说"开始执行"
        ▼
   ┌──────────┐
-  │ 逐 Phase  │  ← plan-execution
+  │ 逐 Phase  │  ← 方案 · 执行阶段
   │ 执行开发  │     产出 COMPLETED.md + UNEXECUTED.md
   └────┬─────┘
        │ 用户说"锁定主题"
        ▼
   ┌──────────┐
-  │ 锁定归档  │  ← plan-lock
+  │ 锁定归档  │  ← 方案 · 锁定阶段
   │ 不可修改  │     核对三份清单 → 精简摘要写入 未完成池/
   └────┬─────┘
        │ 下次讨论 → 新主题（不继承）
@@ -172,9 +170,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 
 ```
 agent-skills/
-├── plan-discussion/              # 方案讨论
-├── plan-execution/               # 方案执行
-├── plan-lock/                    # 方案锁定
+├── plan/                         # 方案：讨论→执行→锁定（三阶段细则在 references/）
 ├── generate-commit/              # 生成 commit
 ├── create-requirement-branch/    # 创建分支（内附 references/本地服务.md：pm2 起服务细则）
 ├── knowledge-precipitation/      # 知识沉淀（Knowledge/ 开发知识库）
@@ -323,27 +319,25 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 ### 触发方式
 
-#### 1. 方案讨论（plan-discussion）
+#### 1. 方案（plan）
 
-说出以下任一关键词即可触发：
+三阶段共用一个技能，按触发词分流（细则在 `plan/references/` 下）：
+
+**讨论**（`references/讨论.md`）——说出以下任一关键词即可触发：
 
 - "讨论方案"、"讨论计划"、"设计一个方案"
 - "设计方案"、"制定方案"、"做个方案"
 - "规划一下"、"先聊聊怎么做"
 - 任何表达"在动手之前先聊清楚怎么做"的意图
 
-#### 2. 方案执行（plan-execution）
-
-说出以下任一关键词即可触发：
+**执行**（`references/执行.md`）——说出以下任一关键词，且 `Plans/` 存在含 `execution-plan.md` 的未归档主题：
 
 - "开始执行"、"执行方案"、"开始开发"
 - "按方案做"、"开工"、"动手吧"、"implement"
 
 > **默认只执行 Phase 1**。后续 Phase 会自动移入 `UNEXECUTED.md` 的"计划在未来版本加入"章节。用户可通过"执行全部 Phase"等指令覆盖此默认行为。
 
-#### 3. 方案锁定（plan-lock）
-
-只有明确表达锁定意图才会触发，例如：
+**锁定**（`references/锁定.md`）——只有明确表达锁定意图才会触发，例如：
 
 - "锁定主题"
 - "把这个主题锁定"
@@ -375,7 +369,7 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 **建完即跑 `pnpm install`（2026-09-22 用户口径：速度优先）**：在新建工作目录（in-place 则为本仓根）直接执行；不预检依赖、不检测是否完成、装完不验证——报错才处理。除建分支必需的 git 操作与这条安装命令外，不做任何额外检测（不校验上游、不复核 worktree、不找启动命令）。
 
-**开发规范：任务完成即推送。** 在需求分支上，每个任务/阶段开发完成后 `git commit` → **直接 `git push` 到该分支的远程同名分支**（上游就是它自己），不用每次问。**不推主分支、不 `--force`、不开 PR**（除非用户要求）。落地在 `playbook`（开发规范）、`plan-execution`（逐阶段收尾）、`generate-commit`（推送规则）、`create-requirement-branch`（分支用途）。
+**开发规范：任务完成即推送。** 在需求分支上，每个任务/阶段开发完成后 `git commit` → **直接 `git push` 到该分支的远程同名分支**（上游就是它自己），不用每次问。**不推主分支、不 `--force`、不开 PR**（除非用户要求）。落地在 `playbook`（开发规范）、`plan`（执行阶段收尾）、`generate-commit`（推送规则）、`create-requirement-branch`（分支用途）。
 
 **本地服务随分支走**：需求分支建完即由 agent 用 pm2 起服务（端口 = 仓库位+需求id后4位，如 F-2962→22962；细则见 `create-requirement-branch/references/本地服务.md`）——「服务器地址 / 关服务」随时说一声即可，你也能 `pm2 ls` 自查。
 
@@ -507,7 +501,7 @@ Copy-Item -Recurse human-like-testing $env:USERPROFILE\.cursor\skills\human-like
 
 - "沉淀一下"、"沉淀知识"、"记进知识库"、"更新业务文档"
 
-把开发过程中对项目的分析与理解，以**需求为单位**增量沉淀进**工作区根**的 `Knowledge/` 开发知识库（与 Docs/、Logs/、Reports/ 同级，不进业务仓）。**业务逻辑文档是第一公民**：一篇文档读懂一个业务；人机共读，新人、领导不看代码也能看懂（中文优先、零代码命名）。骨架由 skill 首次使用时自举创建，不预写种子；也被 日报采集共写 / 改动影响面与回归 / 改动记录 / 方案锁定 / 生成提交 在收尾时挂载调用。只沉淀，不改业务源码。
+把开发过程中对项目的分析与理解，以**需求为单位**增量沉淀进**工作区根**的 `Knowledge/` 开发知识库（与 Docs/、Logs/、Reports/ 同级，不进业务仓）。**业务逻辑文档是第一公民**：一篇文档读懂一个业务；人机共读，新人、领导不看代码也能看懂（中文优先、零代码命名）。骨架由 skill 首次使用时自举创建，不预写种子；也被 日报采集共写 / 改动影响面与回归 / 改动记录 / 方案（锁定阶段）/ 生成提交 在收尾时挂载调用。只沉淀，不改业务源码。
 
 ### 文档输出位置
 
@@ -532,13 +526,13 @@ Plans/
 └── 2026-06-09-登录安全随手记.md         # 独立讨论文件
 ```
 
-主题文件夹、各轮讨论、独立笔记、`Plans/未完成池/` 摘要名等 **优先中文**；`Plans/` 下固定子目录为 **`归档/`、`未完成池/`**，主题内附件目录为 **`附件/`**；`execution-plan.md` / `COMPLETED.md` / `UNEXECUTED.md` 为三技能固定清单文件名。细则见 `plan-discussion` skill §命名与语言规范。遗留 `Plans/_backlog/`、`assets/` 只读兼容。
+主题文件夹、各轮讨论、独立笔记、`Plans/未完成池/` 摘要名等 **优先中文**；`Plans/` 下固定子目录为 **`归档/`、`未完成池/`**，主题内附件目录为 **`附件/`**；`execution-plan.md` / `COMPLETED.md` / `UNEXECUTED.md` 为三技能固定清单文件名。细则见 `plan` skill §命名与语言规范（本技能 `SKILL.md` 与 `references/` 三阶段细则共用）。遗留 `Plans/_backlog/`、`assets/` 只读兼容。
 
 ## 核心设计原则
 
 ### 锁定机制
 
-- **唯一入口**：只有 `plan-lock` 可以将主题移入 `Plans/归档/`，其他技能均不得越权
+- **唯一入口**：只有 `plan`（锁定阶段）可以将主题移入 `Plans/归档/`，其他技能均不得越权
 - **明确授权**：只有用户明确表达“锁定主题”或同等直接锁定意图时，才允许进入锁定流程
 - **锁定前校验**：必须先核对 `execution-plan.md`、`COMPLETED.md`、`UNEXECUTED.md` 是否形成闭环，发现遗漏不得锁定
 - **未完成归档**：锁定后将 `UNEXECUTED.md` 精简写入 `Plans/未完成池/`
@@ -549,13 +543,13 @@ Plans/
 
 - `Plans/未完成池/` 是专用文件夹，**不是普通主题**，不参与主题扫描与延续判断（遗留 `Plans/_backlog/` 同等排除）
 - 每个主题执行后，未完成事项记录在主题内 `UNEXECUTED.md`
-- 锁定主题时，`plan-lock` 将其精简整合，写入 `Plans/未完成池/{与主题文件夹同名的中文名}.md`
+- 锁定主题时，`plan`（锁定阶段）将其精简整合，写入 `Plans/未完成池/{与主题文件夹同名的中文名}.md`
 - **不做链式继承**：新主题不会自动复制上一主题的遗留清单
 - 如需参考历史遗留，用户主动查阅 `Plans/未完成池/`，自行决定是否纳入新方案
 
 ### 方案讨论模式 ≠ Claude Code Plan Mode
 
-| | 方案讨论模式（本技能） | Claude Code 内置 Plan Mode |
+| | 方案讨论模式（`plan` 技能讨论阶段） | Claude Code 内置 Plan Mode |
 |---|---|---|
 | 编辑文件 | ✅ 可读写 | ❌ 限制 Write/Edit |
 | 编辑范围 | **仅限 `Plans/` 目录** | 无法编辑任何文件 |

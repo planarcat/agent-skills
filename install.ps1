@@ -55,7 +55,7 @@ function Get-GroupSkills([string] $name) {
     { $_ -in 'report','日报' }  { return 'report-pipeline report-draft-filter report-writer' }
     { $_ -in 'query','查询' }   { return 'cnb-push-audit tapd-todo-query' }
     { $_ -in 'tapd','需求' }    { return 'tapd-requirement-writing tapd-todo-query' }
-    { $_ -in 'plan','方案' }    { return 'plan-discussion plan-execution plan-lock' }
+    { $_ -in 'plan','方案' }    { return 'plan' }
     { $_ -in 'dev','开发' }     { return 'development-guardrails change-advice change-impact-regression impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring create-requirement-branch generate-commit' }
     { $_ -in 'journal','记录' } { return 'record-change-log record-development-blog' }
     default { return $null }
