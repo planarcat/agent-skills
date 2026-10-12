@@ -1,6 +1,6 @@
 # Agent Skills
 
-> 面向 AI 辅助软件开发与产品协作的 Skills 集合：方案讨论—执行—锁定，以及 PM 需求/发版等工作流
+> 面向 AI 辅助软件开发的 Skills 集合：方案讨论—执行—锁定，以及开发质量、日报等工作流
 
 ## 最短路径（先看这个）
 
@@ -55,14 +55,13 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 
 ### 只想装一部分
 
-`./install.sh` 不带参数会装**全部 29 个技能**。只想要一组就点名分组，不用逐个列技能名：
+`./install.sh` 不带参数会装**全部 24 个技能**。只想要一组就点名分组，不用逐个列技能名：
 
 ```bash
 ./install.sh --group report  ~/.claude/skills    # 日报三件套
 ./install.sh --group query   ~/.claude/skills    # 数据源核查（CNB 推送 / TAPD 待办）
 ./install.sh --group tapd    ~/.claude/skills    # TAPD 需求（写需求 / 待办核查）
 ./install.sh --group plan    ~/.claude/skills    # 方案讨论→执行→锁定
-./install.sh --group pm      ~/.claude/skills    # 产品经理常用
 ./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/测试/分支/提交/服务）
 ./install.sh --group journal ~/.claude/skills    # 记录与沉淀（变更日志 / 开发博客）
 ./install.sh --list                              # 看有哪些技能和分组，不安装
@@ -128,7 +127,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 
 ## 简介
 
-本项目为 **Claude Code / Cursor** 提供一套 AI 协作技能（Skills），覆盖研发方案生命周期，并包含产品经理常用技能：
+本项目为 **Claude Code / Cursor** 提供一套 AI 协作技能（Skills），覆盖研发方案生命周期与开发质量流程：
 
 | 阶段 | 技能 | 功能 |
 |:---|:---|:---|
@@ -142,14 +141,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
 | 🔍 **代码审查** | `full-code-review` | 智能分级审查（L0–L3）：小改快审、按类型定向、提 MR 前六维全量；只审不代改（6 维标准内置） |
 | 🧪 **类人测试** | `human-like-testing` | 有头浏览器像人一样自测验收：看页面→取证→定位→最小修复→重测；读工作区「测试环境卡」，证据链交付 |
-| 📋 **PRD** | `prd-authoring` | 按固定结构写 PRD，落盘 Docs/ 或 Plans/ |
 | 🎯 **TAPD 需求** | `tapd-requirement-writing` | 在 TAPD 写/重整需求：五段式文案（问题/需求/功能变更/验收标准/备注）、按功能拆粒度、处理人规则、作废并入旧需求、正文内嵌图片 |
-| ❓ **澄清** | `requirement-clarification` | 模糊需求先澄清；已确认 / 待确认 / 假设 |
-| 🧩 **拆解** | `requirement-breakdown` | 开发前需求拆解：功能点 + 边界/歧义/待确认/验收，产出可直接填日报②栏的需求理解 |
-| ✅ **故事** | `user-story-acceptance` | 用户故事 + Given/When/Then 验收与测试提纲 |
-| ⚖️ **取舍** | `competitive-or-feature-brief` | 竞品/功能取舍简报：推荐与不做代价 |
-| 📣 **发版** | `release-note-pm` | 对用户 / 对运营 / 对研发三套发版说明 |
-| 🗓️ **纪要** | `meeting-to-action` | 会纪要 → 决策、待办（负责人+截止）、开放问题 |
 
 ## 工作流概览
 
@@ -188,7 +180,6 @@ agent-skills/
 ├── create-requirement-branch/    # 创建分支
 ├── local-dev-server/             # 本地服务（pm2 托管、端口=仓库位+id后4位）
 ├── knowledge-precipitation/      # 知识沉淀（Knowledge/ 开发知识库）
-├── requirement-breakdown/        # 开发前需求拆解（日报②栏素材）
 ├── resolve-merge-conflict/       # 手动解决合并冲突（禁止覆盖）
 ├── record-change-log/            # 改动/问题沉淀：短记 Logs/ + 长记 Blogs/
 ├── record-development-blog/      # 兼容壳：已并入 record-change-log
@@ -199,12 +190,6 @@ agent-skills/
 ├── human-like-testing/           # 类人测试：像人一样自测验收（环境卡 + 证据链）
 ├── impact-surface-audit/         # 最终影响面审计（强触发词）
 ├── full-code-review/             # 代码审查：智能分级 L0–L3（6 维标准内置）
-├── prd-authoring/                # PM：写 PRD
-├── requirement-clarification/    # PM：需求澄清
-├── user-story-acceptance/        # PM：用户故事 + AC
-├── competitive-or-feature-brief/ # PM：功能/竞品简报
-├── release-note-pm/              # PM：发版说明（三套语气）
-├── meeting-to-action/            # PM：会纪要 → 行动项
 ├── report-pipeline/              # 日报：共享日报采集与共写
 ├── report-draft-filter/          # 日报：工作小结去噪分拣
 ├── report-writer/                # 日报：收口（内附规范源文档）
@@ -242,7 +227,7 @@ cd ~/Documents/agent-skills
 ```bash
 ./install.sh ~/.claude/skills         # 装到该目录（默认软链接），并记住它
 ./install.sh                          # 以后：更新到所有记住过的目录
-./install.sh --group report ~/.claude/skills   # 只装某一组（report / query / tapd / plan / pm / dev / journal，自动带上 playbook）
+./install.sh --group report ~/.claude/skills   # 只装某一组（report / query / tapd / plan / dev / journal，自动带上 playbook）
 ./install.sh ~/.claude/skills report-pipeline report-writer   # 只装点名的那几个
 ./install.sh --copy ~/.claude/skills  # 不用软链接、退回拷贝模式
 ./install.sh --targets                # 看记住哪些目录、是否还存在
@@ -483,34 +468,7 @@ Copy-Item -Recurse human-like-testing $env:USERPROFILE\.cursor\skills\human-like
 
 与 `test-case-authoring` 分工：写用例 / 红灯 / 测试驱动调试走后者；像人一样操作页面自测验收走本 skill。
 
-#### 11. 产品经理技能（P0 / P1）
-
-| 技能 | 触发示例 | 默认落盘 |
-|:---|:---|:---|
-| `prd-authoring` | 「写 PRD」「出需求说明」 | `Docs/PRD/` 或 `Plans/{主题}/` |
-| `requirement-clarification` | 「需求澄清」「口头需求」 | `Docs/需求澄清/` |
-| `user-story-acceptance` | 「拆故事」「写 AC」 | `Docs/用户故事/` |
-| `competitive-or-feature-brief` | 「竞品对比」「要不要做」 | `Docs/功能简报/` |
-| `release-note-pm` | 「写发版说明」「changelog」 | `Docs/发版说明/` |
-| `meeting-to-action` | 「会纪要」「纪要转待办」 | `Docs/会纪要/` |
-
-安装示例（PowerShell，可按需复制单个目录）：
-
-```powershell
-$dst = "$env:USERPROFILE\.claude\skills"
-@(
-  'prd-authoring',
-  'requirement-clarification',
-  'user-story-acceptance',
-  'competitive-or-feature-brief',
-  'release-note-pm',
-  'meeting-to-action'
-) | ForEach-Object { Copy-Item -Recurse $_ "$dst\$_" -Force }
-```
-
-PM 推荐顺序：模糊需求 → `requirement-clarification` → `prd-authoring` 或 `user-story-acceptance`；取舍用 `competitive-or-feature-brief`；技术方案仍用 `plan-discussion`。
-
-#### 12. 日报编写（共享日报 · 2026-09-22 口径）
+#### 11. 日报编写（共享日报 · 2026-09-22 口径）
 
 三个技能各管一段，按 **共写 → 收口** 配合：
 
@@ -545,13 +503,13 @@ PM 推荐顺序：模糊需求 → `requirement-clarification` → `prd-authorin
 - 所有文件都在**工作区**里，不在技能目录下；落点在 git 仓库时，自行决定是否把 `Reports/` 加进 `.gitignore`。
 - 项目名不写死，取自当天素材；唯一写死的是报告作者本人姓名（何成标）。
 
-#### 13. 知识沉淀（knowledge-precipitation）
+#### 12. 知识沉淀（knowledge-precipitation）
 
 说出以下任一关键词即可触发：
 
 - "沉淀一下"、"沉淀知识"、"记进知识库"、"更新业务文档"
 
-把开发过程中对项目的分析与理解，以**需求为单位**增量沉淀进**工作区根**的 `Knowledge/` 开发知识库（与 Docs/、Logs/、Reports/ 同级，不进业务仓）。**业务逻辑文档是第一公民**：一篇文档读懂一个业务；人机共读，新人、领导不看代码也能看懂（中文优先、零代码命名）。骨架由 skill 首次使用时自举创建，不预写种子；也被 需求拆解 / 日报采集共写 / 改动影响面与回归 / 改动记录 / 方案锁定 / 生成提交 在收尾时挂载调用。只沉淀，不改业务源码。
+把开发过程中对项目的分析与理解，以**需求为单位**增量沉淀进**工作区根**的 `Knowledge/` 开发知识库（与 Docs/、Logs/、Reports/ 同级，不进业务仓）。**业务逻辑文档是第一公民**：一篇文档读懂一个业务；人机共读，新人、领导不看代码也能看懂（中文优先、零代码命名）。骨架由 skill 首次使用时自举创建，不预写种子；也被 日报采集共写 / 改动影响面与回归 / 改动记录 / 方案锁定 / 生成提交 在收尾时挂载调用。只沉淀，不改业务源码。
 
 ### 文档输出位置
 
