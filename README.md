@@ -55,14 +55,14 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 
 ### 只想装一部分
 
-`./install.sh` 不带参数会装**全部 24 个技能**。只想要一组就点名分组，不用逐个列技能名：
+`./install.sh` 不带参数会装**全部 23 个技能**。只想要一组就点名分组，不用逐个列技能名：
 
 ```bash
 ./install.sh --group report  ~/.claude/skills    # 日报三件套
 ./install.sh --group query   ~/.claude/skills    # 数据源核查（CNB 推送 / TAPD 待办）
 ./install.sh --group tapd    ~/.claude/skills    # TAPD 需求（写需求 / 待办核查）
 ./install.sh --group plan    ~/.claude/skills    # 方案讨论→执行→锁定
-./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/测试/分支/提交/服务）
+./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/测试/分支/提交）
 ./install.sh --group journal ~/.claude/skills    # 记录与沉淀（变更日志 / 开发博客）
 ./install.sh --list                              # 看有哪些技能和分组，不安装
 ```
@@ -136,8 +136,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 🔧 **执行** | `plan-execution` | 按方案逐阶段实施开发，产出执行结果文档 |
 | 🔒 **锁定** | `plan-lock` | 锁定前核对方案/结果/遗留清单，确认闭环后归档 |
 | 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
-| 🌿 **分支** | `create-requirement-branch` | 建 `{id后4位}-{标题截取}（{id}）` 分支与 worktree 目录，建完即跑 `pnpm install`（速度优先，无报错不加检测），随即由 `本地服务` 起服务，产出物是**一行 `cd` 进入路径** |
-| 🖥️ **本地服务** | `local-dev-server` | pm2 托管本地 dev server：名字 `=分支前缀`、**端口 = 仓库位+需求id后4位**（如 F-2962→22962）固定可推导；「服务器地址 / 关服务」口令即答，用户随时 `pm2 ls` 自查、`pm2 stop` 自关 |
+| 🌿 **分支** | `create-requirement-branch` | 建 `{id后4位}-{标题截取}（{id}）` 分支与 worktree 目录，建完即跑 `pnpm install`（速度优先，无报错不加检测），随即起本地服务（pm2 托管、端口=仓库位+需求id后4位，细则见技能内 `references/本地服务.md`），产出物是**一行 `cd` 进入路径** |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
 | 🔍 **代码审查** | `full-code-review` | 智能分级审查（L0–L3）：小改快审、按类型定向、提 MR 前六维全量；只审不代改（6 维标准内置） |
 | 🧪 **类人测试** | `human-like-testing` | 有头浏览器像人一样自测验收：看页面→取证→定位→最小修复→重测；读工作区「测试环境卡」，证据链交付 |
@@ -177,8 +176,7 @@ agent-skills/
 ├── plan-execution/               # 方案执行
 ├── plan-lock/                    # 方案锁定
 ├── generate-commit/              # 生成 commit
-├── create-requirement-branch/    # 创建分支
-├── local-dev-server/             # 本地服务（pm2 托管、端口=仓库位+id后4位）
+├── create-requirement-branch/    # 创建分支（内附 references/本地服务.md：pm2 起服务细则）
 ├── knowledge-precipitation/      # 知识沉淀（Knowledge/ 开发知识库）
 ├── resolve-merge-conflict/       # 手动解决合并冲突（禁止覆盖）
 ├── record-change-log/            # 改动/问题沉淀：短记 Logs/ + 长记 Blogs/
@@ -379,7 +377,7 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 **开发规范：任务完成即推送。** 在需求分支上，每个任务/阶段开发完成后 `git commit` → **直接 `git push` 到该分支的远程同名分支**（上游就是它自己），不用每次问。**不推主分支、不 `--force`、不开 PR**（除非用户要求）。落地在 `playbook`（开发规范）、`plan-execution`（逐阶段收尾）、`generate-commit`（推送规则）、`create-requirement-branch`（分支用途）。
 
-**本地服务默认不启动**——技能只给路径，要跑由你点名；点名时才做依赖检查、换端口避开原窗口、后台起服务那一套。
+**本地服务随分支走**：需求分支建完即由 agent 用 pm2 起服务（端口 = 仓库位+需求id后4位，如 F-2962→22962；细则见 `create-requirement-branch/references/本地服务.md`）——「服务器地址 / 关服务」随时说一声即可，你也能 `pm2 ls` 自查。
 
 #### 6. 手动解决合并冲突（resolve-merge-conflict）
 
