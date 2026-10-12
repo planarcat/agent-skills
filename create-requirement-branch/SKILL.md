@@ -40,7 +40,7 @@ description: "当用户说「创建分支」「创建新需求分支」「开需
 - 不做任何完成检测：不校验上游、不用 `git status` / `git worktree list` 复核、不确认 node_modules
 - `pnpm install` 不预检：不查 pnpm 版本、不看锁文件、不判断是不是 Node 项目、不共享 node_modules
 - `pnpm install` 正常结束即算完成，装完不验证（不跑 `pnpm ls`、不 build、不追加装包）
-- 不找启动命令、不读 `package.json`（起服务按 `references/本地服务.md`：默认 `pnpm dev`，起不来才看 scripts）
+- 不找启动命令、不读 `package.json`（起服务照 `references/本地服务.md` 模板抄，怎么启动不由 agent 判断，起不来报错问用户）
 - 撞名不预查（既有口径：直接建，失败即复用）
 
 **`pnpm install` 报错才介入**：读清报错，做最小修复并重试一次；仍失败就如实汇报，不循环重试、不自行换包管理器。
@@ -299,7 +299,7 @@ pnpm install   # 不预检、装完不验证
 
 ## 起本地服务（需求分支默认动作 · 细则见 `references/本地服务.md`）
 
-需求分支建完 `pnpm install` 后**随即起服务**：pm2 托管，进程名 `{U|F|D|S}-{id后4位}`，**端口 = 仓库位 + 需求 id 后 4 位**（U=1 / F=2 / D=3 / S=4，如 F-2962 → 22962）——从端口一眼看出哪个仓库的哪个需求，且对每个需求固定。快捷两步（算端口 → pm2 start 一条命令起服务+取 IP，pm2/pnpm 写绝对路径 `~/Library/pnpm/…`；不预先验占用，报错才处理），不做多余检查；端口规则、汇报格式、三个口令、node_modules 共享与坑**全部见本技能内附模块 `references/本地服务.md`**。
+需求分支建完 `pnpm install` 后**随即起服务**：pm2 托管，进程名 `{U|F|D|S}-{id后4位}`，**端口 = 仓库位 + 需求 id 后 4 位**（U=1 / F=2 / D=3 / S=4，如 F-2962 → 22962）——从端口一眼看出哪个仓库的哪个需求，且对每个需求固定。快捷两步（算端口 → cd 到 worktree 根照模板一条命令起服务+取 IP，pm2/pnpm 写绝对路径 `~/Library/pnpm/…`；启动命令照模板抄、不由 agent 判断；不预先验占用，报错才处理），不做多余检查；端口规则、汇报格式、三个口令、node_modules 共享与坑**全部见本技能内附模块 `references/本地服务.md`**。
 
 **合并分支不起服务**（To-test 用于合入解冲突，不本地调试；要起由用户点名，名字带 `-To-test` 后缀，端口规则同）。
 
