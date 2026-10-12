@@ -55,7 +55,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 
 ### 只想装一部分
 
-`./install.sh` 不带参数会装**全部 28 个技能**。只想要一组就点名分组，不用逐个列技能名：
+`./install.sh` 不带参数会装**全部 29 个技能**。只想要一组就点名分组，不用逐个列技能名：
 
 ```bash
 ./install.sh --group report  ~/.claude/skills    # 日报三件套
@@ -63,7 +63,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 ./install.sh --group tapd    ~/.claude/skills    # TAPD 需求（写需求 / 待办核查）
 ./install.sh --group plan    ~/.claude/skills    # 方案讨论→执行→锁定
 ./install.sh --group pm      ~/.claude/skills    # 产品经理常用
-./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/测试/分支/提交）
+./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/测试/分支/提交/服务）
 ./install.sh --group journal ~/.claude/skills    # 记录与沉淀（变更日志 / 开发博客）
 ./install.sh --list                              # 看有哪些技能和分组，不安装
 ```
@@ -137,7 +137,8 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 🔧 **执行** | `plan-execution` | 按方案逐阶段实施开发，产出执行结果文档 |
 | 🔒 **锁定** | `plan-lock` | 锁定前核对方案/结果/遗留清单，确认闭环后归档 |
 | 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
-| 🌿 **分支** | `create-requirement-branch` | 建 `{id后4位}-{标题截取}（{id}）` 分支与 worktree 目录，建完即跑 `pnpm install`（速度优先，无报错不加检测），产出物是**一行 `cd` 进入路径**；默认不起服务（要起由你点名） |
+| 🌿 **分支** | `create-requirement-branch` | 建 `{id后4位}-{标题截取}（{id}）` 分支与 worktree 目录，建完即跑 `pnpm install`（速度优先，无报错不加检测），随即由 `本地服务` 起服务，产出物是**一行 `cd` 进入路径** |
+| 🖥️ **本地服务** | `local-dev-server` | pm2 托管本地 dev server：名字 `=分支前缀`、**端口 = 仓库位+需求id后4位**（如 F-2962→22962）固定可推导；「服务器地址 / 关服务」口令即答，用户随时 `pm2 ls` 自查、`pm2 stop` 自关 |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
 | 🔍 **代码审查** | `full-code-review` | 智能分级审查（L0–L3）：小改快审、按类型定向、提 MR 前六维全量；只审不代改（6 维标准内置） |
 | 📋 **PRD** | `prd-authoring` | 按固定结构写 PRD，落盘 Docs/ 或 Plans/ |
@@ -184,6 +185,7 @@ agent-skills/
 ├── plan-lock/                    # 方案锁定
 ├── generate-commit/              # 生成 commit
 ├── create-requirement-branch/    # 创建分支
+├── local-dev-server/             # 本地服务（pm2 托管、端口=仓库位+id后4位）
 ├── knowledge-precipitation/      # 知识沉淀（Knowledge/ 开发知识库）
 ├── requirement-breakdown/        # 开发前需求拆解（日报②栏素材）
 ├── resolve-merge-conflict/       # 手动解决合并冲突（禁止覆盖）
