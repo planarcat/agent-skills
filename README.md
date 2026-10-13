@@ -55,7 +55,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 
 ### 只想装一部分
 
-`./install.sh` 不带参数会装**全部 21 个技能**。只想要一组就点名分组，不用逐个列技能名：
+`./install.sh` 不带参数会装**全部 20 个技能**。只想要一组就点名分组，不用逐个列技能名：
 
 ```bash
 ./install.sh --group report  ~/.claude/skills    # 日报三件套
@@ -136,7 +136,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
 | 🌿 **分支** | `create-requirement-branch` | 一条龙脚本 `scripts/create-branch.sh` 一次跑完：建 `{id后4位}-{标题截取}` 分支与 worktree（原仓旁边同级）→ 装依赖 → 起本地服务（pm2 托管、端口=仓库位+需求id后4位），agent 只调用不判断，产出物是**一行 `cd` 进入路径**；细则见技能内 `references/本地服务.md` |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
-| 🔍 **代码审查** | `full-code-review` | 智能分级审查（L0–L3）：小改快审、按类型定向、提 MR 前六维全量；只审不代改（6 维标准内置） |
+| 🔍 **代码审查** | `full-code-review` | 智能分级审查（L0–L3）+ 改后收尾（影响面清单与回归方法）；只审不代改（7 维标准内置） |
 | 🧪 **类人测试** | `human-like-testing` | 有头浏览器像人一样自测验收：看页面→取证→定位→最小修复→重测；读工作区「测试环境卡」，证据链交付 |
 | 🎯 **TAPD 需求** | `tapd-requirement-writing` | 在 TAPD 写/重整需求：五段式文案（问题/需求/功能变更/验收标准/备注）、按功能拆粒度、处理人规则、作废并入旧需求、正文内嵌图片 |
 
@@ -178,12 +178,11 @@ agent-skills/
 ├── record-change-log/            # 改动/问题沉淀：短记 Logs/ + 长记 Blogs/
 ├── record-development-blog/      # 兼容壳：已并入 record-change-log
 ├── development-guardrails/       # 开发中规范
-├── change-impact-regression/     # 影响面与回归
 ├── change-advice/                # 修改建议（不改代码）
 ├── test-case-authoring/          # 测试 Part A/B/C
 ├── human-like-testing/           # 类人测试：像人一样自测验收（环境卡 + 证据链）
 ├── impact-surface-audit/         # 最终影响面审计（强触发词）
-├── full-code-review/             # 代码审查：智能分级 L0–L3（6 维标准内置）
+├── full-code-review/             # 代码审查：智能分级 L0–L3 + 影响面与回归（7 维标准内置）
 ├── report-pipeline/              # 日报：共享日报采集与共写
 ├── report-draft-filter/          # 日报：工作小结去噪分拣
 ├── report-writer/                # 日报：收口（内附规范源文档）
@@ -395,25 +394,14 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 - **Part A 代码注释守卫**：任何代码修改
 - **Part B 问题调试控制台埋点**：问题未完整解决或缺少运行时证据时，复现全程静默采集，完成后统一输出一份诊断报告
 
-#### 8. 改动影响面与回归（change-impact-regression）
+#### 8. 代码审查与改后收尾（full-code-review）
 
-**改完代码、向用户说「好了」之前**，列出受影响的功能/组件/模块，并给出必测与建议测的回归方法。影响面检索**优先调用 GitNexus MCP**（`detect_changes`、`impact`、`api_impact`）。与 guardrails **分工**：guardrails 管改中与调试；本 skill 管改后防间接漂移。
+说出以下任一关键词即可触发：
 
-- 可与 `development-guardrails` 同轮使用：先 Read guardrails 再改代码，收尾 Read 本 skill 或按其模板交付
-- 触发词示例：「影响面」「回归测试」「改动涉及哪些模块」
+- **审查**："审查一下"、"全面审查"、"快速看一下"、"提交前检查"、"full review"——智能分级 L0–L3，7 个维度标准内置（通用 / 静默失败 / 注释 / 类型 / 测试 / 简化 / 影响面回归）
+- **改后收尾**："影响面"、"回归测试"、"测什么"、"改动范围"——非 trivial 源码改动完成后也会**默认附带**交付影响面清单与必测/建议测回归方法（GitNexus MCP 优先）；原 `change-impact-regression` 已并入本技能（2026-10-13）
 
-安装（与 guardrails 相同目录策略）：
-
-```powershell
-Copy-Item -Recurse change-impact-regression $env:USERPROFILE\.agents\skills\change-impact-regression
-Copy-Item -Recurse change-impact-regression $env:USERPROFILE\.cursor\skills\change-impact-regression
-```
-
-可选 User Rules 补充一行：
-
-```text
-非 trivial 源码改动完成后：Read change-impact-regression，交付影响面清单与回归测试方法。
-```
+与 guardrails **分工**：guardrails 管改中与调试；本技能影响面回归维管改后防间接漂移。
 
 #### 9. 测试用例编写（test-case-authoring）
 
@@ -501,7 +489,7 @@ Copy-Item -Recurse human-like-testing $env:USERPROFILE\.cursor\skills\human-like
 
 - "沉淀一下"、"沉淀知识"、"记进知识库"、"更新业务文档"
 
-把开发过程中对项目的分析与理解，以**需求为单位**增量沉淀进**工作区根**的 `Knowledge/` 开发知识库（与 Docs/、Logs/、Reports/ 同级，不进业务仓）。**业务逻辑文档是第一公民**：一篇文档读懂一个业务；人机共读，新人、领导不看代码也能看懂（中文优先、零代码命名）。骨架由 skill 首次使用时自举创建，不预写种子；也被 日报采集共写 / 改动影响面与回归 / 改动记录 / 方案（锁定阶段）/ 生成提交 在收尾时挂载调用。只沉淀，不改业务源码。
+把开发过程中对项目的分析与理解，以**需求为单位**增量沉淀进**工作区根**的 `Knowledge/` 开发知识库（与 Docs/、Logs/、Reports/ 同级，不进业务仓）。**业务逻辑文档是第一公民**：一篇文档读懂一个业务；人机共读，新人、领导不看代码也能看懂（中文优先、零代码命名）。骨架由 skill 首次使用时自举创建，不预写种子；也被 日报采集共写 / 代码审查（影响面与回归）/ 改动记录 / 方案（锁定阶段）/ 生成提交 在收尾时挂载调用。只沉淀，不改业务源码。
 
 ### 文档输出位置
 

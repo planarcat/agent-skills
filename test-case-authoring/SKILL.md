@@ -42,7 +42,7 @@ description: "Tests workflow in three parts—pick by user intent. Part A: add/w
 | `改动建议` | 用户说「先别改」时，同样**不改产品代码**；本 skill 额外约束「写完测试也不修产品」 |
 | `开发中规范` Part A | 改测试代码时按需补注释 |
 | `开发中规范` Part B | **手工复现**且无 spec 时用手动 collector + `[DEBUG:slug] REPORT`；**已有/可写 spec 时优先 Part C**。与 `[E2E-DIAG]` / `[TEST-DIAG]` 勿混 slug |
-| `改动影响面与回归` | 本 skill 管「写测试这一轮」；改产品后的影响面清单仍用 改动影响面与回归 |
+| `代码审查`（影响面与回归） | 本 skill 管「写测试这一轮」；改产品后的影响面清单仍用 代码审查 的影响面与回归维 |
 
 ## 何时必须 Part A
 
@@ -248,7 +248,7 @@ function e2eDiag(step: string, data: Record<string, unknown>) {
   → 4. 证据够？否 → 加 harness 采集（Part B 若 E2E）或 [TEST-DIAG] / network 摘要 hook
   → 5. 再跑 → 生成 [TEST-DEBUG-REPORT]（Agent 从终端/attach 自行读取，勿要求用户复制）
   → 6. 据 REPORT 最小修复（产品或测试）
-  → 7. 重跑 spec 验证；清理临时 DIAG；改产品后适用 改动影响面与回归
+  → 7. 重跑 spec 验证；清理临时 DIAG；改产品后适用 代码审查（影响面与回归）
 ```
 
 ## 主动加哪些调试信息（按需）
@@ -342,4 +342,4 @@ test.afterEach(async ({}, testInfo) => {
 - [ ] Agent 已自行跑 spec，未要求用户零散贴 log  
 - [ ] 改产品前已有 `[TEST-DEBUG-REPORT]`（E2E 含 console）  
 - [ ] 未与 Part A 混淆（写用例轮次未擅自修产品）  
-- [ ] 验证后已清理临时 DIAG；修产品后按需 改动影响面与回归  
+- [ ] 验证后已清理临时 DIAG；修产品后按需 代码审查（影响面与回归）  

@@ -1,4 +1,4 @@
-﻿<#
+<#
   技能安装 / 更新工具（Windows · PowerShell 版）
   与仓库根的 install.sh 行为一致：装一次 → 记住路径 → 以后不带参数一键更新所有记住的路径。
 
@@ -56,7 +56,7 @@ function Get-GroupSkills([string] $name) {
     { $_ -in 'query','查询' }   { return 'cnb-push-audit tapd-todo-query' }
     { $_ -in 'tapd','需求' }    { return 'tapd-requirement-writing tapd-todo-query' }
     { $_ -in 'plan','方案' }    { return 'plan' }
-    { $_ -in 'dev','开发' }     { return 'development-guardrails change-advice change-impact-regression impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring create-requirement-branch generate-commit' }
+    { $_ -in 'dev','开发' }     { return 'development-guardrails change-advice impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring create-requirement-branch generate-commit' }
     { $_ -in 'journal','记录' } { return 'record-change-log record-development-blog' }
     default { return $null }
   }
