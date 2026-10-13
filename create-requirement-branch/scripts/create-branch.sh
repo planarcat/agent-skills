@@ -25,7 +25,7 @@ case "$POS" in
   *) die "端位必须是 U/F/D/S（U=用户端 F=工厂端 D=设计器 S=ShopAgent）" ;;
 esac
 
-# ---------- 短 id 推导：纯数字长 id（>10 位）剥前 10 位再去前导 0；非纯数字用完整 id ----------
+# ---------- 短 id 推导：纯数字 → id 段=后 4 位（长 id 先剥前 10 位再去前导 0）；非纯数字 → 完整 id ----------
 case "$ID" in
   *[!0-9]*)
     PREFIXSEG="$ID"
@@ -40,8 +40,8 @@ case "$ID" in
     else
       TAIL="$ID"
     fi
-    PREFIXSEG="$TAIL"
     LAST4=$(last4 "$TAIL")
+    PREFIXSEG="$LAST4"   # 分支名 id 段 = 后 4 位，与 pm2 名/端口同源（2026-10-13 修正：原来短 id 整段进分支名，与文档口径分裂）
     ;;
 esac
 
