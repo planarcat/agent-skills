@@ -134,7 +134,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 🧭 **入口** | `playbook` | **技能地图 + 流程路由**：按当前流程与状态把你指到执行技能；找不着北先读它 |
 | 🧠 **方案** | `plan` | 方案全生命周期一个入口：讨论落盘 `Plans/` 生成待执行方案 → 逐 Phase 执行开发 → 核对闭环后归档；三阶段细则在技能内 `references/讨论·执行·锁定.md` |
 | 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
-| 🌿 **分支** | `create-requirement-branch` | 建 `{id后4位}-{标题截取}（{id}）` 分支与 worktree 目录，建完即跑 `pnpm install`（速度优先，无报错不加检测），随即起本地服务（pm2 托管、端口=仓库位+需求id后4位，细则见技能内 `references/本地服务.md`），产出物是**一行 `cd` 进入路径** |
+| 🌿 **分支** | `create-requirement-branch` | 一条龙脚本 `scripts/create-branch.sh` 一次跑完：建 `{id后4位}-{标题截取}` 分支与 worktree（原仓旁边同级）→ 装依赖 → 起本地服务（pm2 托管、端口=仓库位+需求id后4位），agent 只调用不判断，产出物是**一行 `cd` 进入路径**；细则见技能内 `references/本地服务.md` |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
 | 🔍 **代码审查** | `full-code-review` | 智能分级审查（L0–L3）：小改快审、按类型定向、提 MR 前六维全量；只审不代改（6 维标准内置） |
 | 🧪 **类人测试** | `human-like-testing` | 有头浏览器像人一样自测验收：看页面→取证→定位→最小修复→重测；读工作区「测试环境卡」，证据链交付 |
