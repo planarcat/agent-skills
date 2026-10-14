@@ -3,6 +3,7 @@
 # 默认 dry-run：只打印清单，什么都不动；加 --yes 才真删。
 # 用法（在目标业务仓内运行，且必须沙箱外执行）：
 #   bash cleanup-branch.sh <U|F|D|S> <需求id> [--yes] [--keep-remote] [--allow-shell-suspect]
+# 分支命中：优先 {端}{id后4位}-… / {端}-{id后4位}-…；找不到时兜底老命名 {id后4位}-…（须唯一命中）。
 # 设计原则：规则固化在脚本内，agent 只调用、不判断；规则与技能正文一致，改口径两处同改。
 #
 # 清理范围（五项 + worktree 目录）：
@@ -80,8 +81,11 @@ DEFAULT=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/r
 PROD=$(pick "$DEFAULT" main2 main master develop) || die "判不出生产分支——问用户生产分支叫什么"
 TEST=$(pick main-test main_test test) || TEST=""
 
-# ---------- 定位本需求的开发分支 / 合并分支（只认当前规范命名 {端}{id后4位}-…；老命名分支不在范围）----------
-DEV=""; TT=""
+# ---------- 定位本需求的开发分支 / 合并分支 ----------
+# 优先当前规范命名：{端}{id后4位}-… 或 {端}-{id后4位}-…
+# 找不到时兜底老命名（不带端前缀，如 `2996-【刊登属性异常】处理异常`）：端位由「当前仓」确定，
+# 只在本仓内找、且必须唯一命中；多命中一律停下列候选，人工确认，不自动挑。
+DEV=""; TT=""; MATCH_MODE="端前缀命名"
 for b in $(git for-each-ref --format='%(refname:short)' refs/heads); do
   case "$b" in
     "${POS}${LAST4}-To-test"|"${POS}-${LAST4}-To-test") TT="$b"; continue ;;
@@ -90,8 +94,30 @@ for b in $(git for-each-ref --format='%(refname:short)' refs/heads); do
     "${POS}${LAST4}-"*|"${POS}-${LAST4}-"*) if [ -z "$DEV" ]; then DEV="$b"; fi ;;
   esac
 done
-[ -n "$DEV" ] || die "本仓找不到 ${POS}${LAST4}-* 的本地开发分支（老命名分支如 dev/hcb/… 不在清理范围，请人工确认）"
-[ "$DEV" = "${POS}${LAST4}-To-test" ] && die "匹配到的只有 To-test 分支，缺开发分支——人工确认"
+
+if [ -z "$DEV" ]; then
+  CAND=""
+  for b in $(git for-each-ref --format='%(refname:short)' refs/heads); do
+    case "$b" in
+      "${LAST4}-To-test") if [ -z "$TT" ]; then TT="$b"; fi; continue ;;
+    esac
+    case "$b" in
+      "${LAST4}-"*) CAND="${CAND}${b}
+" ;;
+    esac
+  done
+  N=$(printf '%s' "$CAND" | sed '/^[[:space:]]*$/d' | wc -l | tr -d ' ')
+  if [ "$N" = "0" ]; then
+    die "本仓找不到 ${POS}${LAST4}-* 或 ${LAST4}-* 的本地开发分支（更老的 dev/hcb/… 命名不在清理范围，请人工确认）"
+  fi
+  if [ "$N" != "1" ]; then
+    printf '❌ 无端前缀兜底命中 %s 条，无法确定对象——请人工确认后手走：\n' "$N" >&2
+    printf '%s' "$CAND" | sed 's/^/   /' >&2
+    exit 1
+  fi
+  DEV=$(printf '%s' "$CAND" | sed '/^[[:space:]]*$/d' | head -1)
+  MATCH_MODE="无端前缀兜底（老命名，端位按本仓 = ${POS}）"
+fi
 
 # ---------- 硬门槛①：已进生产 ----------
 A=$(git rev-list --count "origin/$PROD..$DEV")
@@ -171,6 +197,7 @@ if [ -n "$TT" ] && printf '%s\n' "$BRANCHES" | grep -qx "$TT"; then REMOTE_TT=1;
 note ""
 note "清理清单（$REPO）："
 note "  需求:       ${POS}${LAST4}（id=$ID）"
+note "  分支命名:   $MATCH_MODE"
 note "  依据:       已进生产 $PROD（未进生产 0 个提交）$( [ "$SUSPECT" = "1" ] && printf '｜⚠️ 疑似空壳但已 --allow-shell-suspect 放行' )"
 note "  worktree:   ${WT:-（无）}"
 note "  本地分支:   $DEV (tip $TIPS)"
