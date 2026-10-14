@@ -61,7 +61,7 @@ group_skills() {
     query|查询)   echo "cnb-push-audit tapd-todo-query" ;;
     tapd|需求)    echo "tapd-requirement-writing tapd-todo-query" ;;
     plan|方案)    echo "plan" ;;
-    dev|开发)     echo "development-guardrails change-advice impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring human-like-testing create-requirement-branch generate-commit" ;;
+    dev|开发)     echo "development-guardrails change-advice impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring human-like-testing create-requirement-branch requirement-breakdown generate-commit" ;;
     journal|记录) echo "record-change-log record-development-blog" ;;
     *) return 1 ;;
   esac

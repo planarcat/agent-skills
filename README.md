@@ -62,7 +62,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 ./install.sh --group query   ~/.claude/skills    # 数据源核查（CNB 推送 / TAPD 待办）
 ./install.sh --group tapd    ~/.claude/skills    # TAPD 需求（写需求 / 待办核查）
 ./install.sh --group plan    ~/.claude/skills    # 方案（讨论→执行→锁定）
-./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/测试/分支/提交）
+./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/测试/分支/拆解/提交）
 ./install.sh --group journal ~/.claude/skills    # 记录与沉淀（变更日志 / 开发博客）
 ./install.sh --list                              # 看有哪些技能和分组，不安装
 ```
@@ -133,10 +133,11 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 |:---|:---|:---|
 | 🧭 **入口** | `playbook` | **技能地图 + 流程路由**：按当前流程与状态把你指到执行技能；找不着北先读它 |
 | 🧠 **方案** | `plan` | 方案全生命周期一个入口：讨论落盘 `Plans/` 生成待执行方案 → 逐 Phase 执行开发 → 核对闭环后归档；三阶段细则在技能内 `references/讨论·执行·锁定.md` |
-| 📝 **提交** | `generate-commit` | 根据暂存区或对话上下文生成中文 commit message |
+| 📝 **提交** | `generate-commit` | 生成中文 commit message，**提交后先做「推送前核验」再推送**（核验四项：测试 / 变异 / 影响面 / 跳过清单；细则见技能内 `references/门禁核验.md`） |
 | 🌿 **分支** | `create-requirement-branch` | 一条龙脚本 `scripts/create-branch.sh` 一次跑完：建 `{id后4位}-{标题截取}` 分支与 worktree（原仓旁边同级）→ 装依赖 → 起本地服务（pm2 托管、端口=仓库位+需求id后4位），agent 只调用不判断，产出物是**一行 `cd` 进入路径**；细则见技能内 `references/本地服务.md` |
+| 🧩 **需求拆解** | `requirement-breakdown` | 开发前的需求理解 + **开工定级**：功能点 + 边界/歧义/待确认/验收标准，并按硬规则算出**档位 + 门禁清单 + 缺口清单**（六维评分 + 一票升级清单）；不改代码；细则见技能内 `references/定级规则.md` |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
-| 🔍 **代码审查** | `full-code-review` | 智能分级审查（L0–L3）+ 改后收尾（影响面清单与回归方法）；只审不代改（7 维标准内置） |
+| 🔍 **代码审查** | `full-code-review` | 智能分级审查（L0–L3）+ 改后收尾（影响面清单与回归方法）；只审不代改（**5 维标准内置**，L3 派 5 个子代理，重档 6 个） |
 | 🧪 **类人测试** | `human-like-testing` | 有头浏览器像人一样自测验收：看页面→取证→定位→最小修复→重测；读工作区「测试环境卡」，证据链交付 |
 | 🎯 **TAPD 需求** | `tapd-requirement-writing` | 在 TAPD 写/重整需求：五段式文案（问题/需求/功能变更/验收标准/备注）、按功能拆粒度、处理人规则、作废并入旧需求、正文内嵌图片 |
 
@@ -173,6 +174,7 @@ agent-skills/
 ├── plan/                         # 方案：讨论→执行→锁定（三阶段细则在 references/）
 ├── generate-commit/              # 生成 commit
 ├── create-requirement-branch/    # 创建分支（内附 references/本地服务.md：pm2 起服务细则）
+├── requirement-breakdown/        # 需求拆解 + 开工定级（六维评分→档位→门禁清单→缺口清单）
 ├── knowledge-precipitation/      # 知识沉淀（Knowledge/ 开发知识库）
 ├── resolve-merge-conflict/       # 手动解决合并冲突（禁止覆盖）
 ├── record-change-log/            # 改动/问题沉淀：短记 Logs/ + 长记 Blogs/
@@ -182,7 +184,7 @@ agent-skills/
 ├── test-case-authoring/          # 测试 Part A/B/C
 ├── human-like-testing/           # 类人测试：像人一样自测验收（环境卡 + 证据链）
 ├── impact-surface-audit/         # 最终影响面审计（强触发词）
-├── full-code-review/             # 代码审查：智能分级 L0–L3 + 影响面与回归（7 维标准内置）
+├── full-code-review/             # 代码审查：智能分级 L0–L3 + 影响面与回归（5 维标准内置）
 ├── report-pipeline/              # 日报：共享日报采集与共写
 ├── report-draft-filter/          # 日报：工作小结去噪分拣
 ├── report-writer/                # 日报：收口（内附规范源文档）
@@ -370,6 +372,8 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 **开发规范：任务完成即推送。** 在需求分支上，每个任务/阶段开发完成后 `git commit` → **直接 `git push` 到该分支的远程同名分支**（上游就是它自己），不用每次问。**不推主分支、不 `--force`、不开 PR**（除非用户要求）。落地在 `playbook`（开发规范）、`plan`（执行阶段收尾）、`generate-commit`（推送规则）、`create-requirement-branch`（分支用途）。
 
+**建完下一步：需求拆解（`requirement-breakdown`）。** 拆功能点 + 边界/歧义/待确认/验收标准，并**按硬规则算出开工档位**（六维评分 + 一票升级清单 → 档位 + 门禁清单 + **缺口清单**），一次端给你过目放行；不改代码。建完分支也可顺手给**已有**测试目录上锁（`scripts/lock-tests.sh`，仓里没有 `__tests__/` 就不锁）。
+
 **本地服务随分支走**：需求分支建完即由 agent 用 pm2 起服务（端口 = 仓库位+需求id后4位，如 F2962→22962；细则见 `create-requirement-branch/references/本地服务.md`）——「服务器地址 / 关服务」随时说一声即可，你也能 `pm2 ls` 自查。
 
 #### 6. 手动解决合并冲突（resolve-merge-conflict）
@@ -398,7 +402,7 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 说出以下任一关键词即可触发：
 
-- **审查**："审查一下"、"全面审查"、"快速看一下"、"提交前检查"、"full review"——智能分级 L0–L3，7 个维度标准内置（通用 / 静默失败 / 注释 / 类型 / 测试 / 简化 / 影响面回归）
+- **审查**："审查一下"、"全面审查"、"快速看一下"、"提交前检查"、"full review"——智能分级 L0–L3，**5 个维度标准内置**（通用 / 静默失败 / 类型契约 / **测试质量** / 影响面与回归）；通用代理另带**注释、简化**两份附加清单（不再单独占子代理）。**L3 派 5 个子代理**（重档把「测试质量」拆成覆盖 / 变异两个 → 6 个）
 - **改后收尾**："影响面"、"回归测试"、"测什么"、"改动范围"——非 trivial 源码改动完成后也会**默认附带**交付影响面清单与必测/建议测回归方法（GitNexus MCP 优先）；原 `change-impact-regression` 已并入本技能（2026-10-13）
 
 与 guardrails **分工**：guardrails 管改中与调试；本技能影响面回归维管改后防间接漂移。
