@@ -21,7 +21,7 @@ last4() { # $1=数字串
 POS="$1"; ID="$2"; TITLE="$3"; TO_TEST="${4:-}"
 [ -n "$POS" ] && [ -n "$ID" ] && [ -n "$TITLE" ] || die "用法：create-branch.sh <U|F|D|S> <需求id> \"<标题>\" [--to-test]"
 case "$POS" in
-  U) REPO_DIGIT=1 ;; F) REPO_DIGIT=2 ;; D) REPO_DIGIT=3 ;; S) REPO_DIGIT=4 ;;
+  U|F|D|S) ;;
   *) die "端位必须是 U/F/D/S（U=用户端 F=工厂端 D=设计器 S=ShopAgent）" ;;
 esac
 
@@ -109,8 +109,8 @@ if [ "$TO_TEST" != "--to-test" ]; then
   PM2="$HOME/Library/pnpm/pm2"; [ -x "$PM2" ] || PM2=$(command -v pm2 || true)
   [ -n "$PM2" ] || die "找不到 pm2（~/Library/pnpm/pm2 与 PATH 都没有）"
   NAME="${POS}${LAST4}"   # pm2 进程名 = 端位+id后4位，无连字符（2026-10-14 口径，如 F2962）
-  # 端口 = 仓库位 + id 后 4 位（固定可推导）
-  PORT="${REPO_DIGIT}${LAST4}"
+  # 端口 = id 后 4 位（2026-10-14 口径：去掉仓库位前缀数字，固定可推导）
+  PORT="${LAST4}"
   # 启动方式配置表（改口径只改这里；新仓库首次起服务报错就补一行）
   #   U（用户端）：端口走 VITE_PORT 环境变量（该仓 vite 配置读取），host 走参数
   #   F（工厂端）/ D / S：端口与 host 都走命令行参数
