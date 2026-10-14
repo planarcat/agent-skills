@@ -128,8 +128,8 @@ if [ "$TO_TEST" != "--to-test" ]; then
   WS_ROOT="$(dirname "$(dirname "$REPO")")"   # 业务仓 → Apps/ → 工作区根（ops.sh 所在）
   OPS="$WS_ROOT/ops.sh"
   [ -f "$OPS" ] || die "工作区根没有 ops.sh（$OPS），dev 指令无从调用——原样报给用户"
-  # dev（实现源 ops/svc.sh）：按分支名定位 worktree → 缺依赖自动 install → 端口=需求号后4位 → pm2 bash 包装启动 → 多 IP 汇报
+  # dev（实现源 ops/svc.sh）：按 id 后 4 位定位 worktree → 缺依赖自动 install → 端口=需求号后4位 → pm2 bash 包装启动 → 多 IP 汇报
   # 铁律（2026-10-13 口径）：dev 报错原样上报用户，不检索不排查不修复——svc.sh 由用户优化
   echo ""
-  zsh -c "source '$OPS' >/dev/null 2>&1; dev '$BRANCH'" || die "dev 指令退出非零——把上方原始输出原样转述给用户，不要自行处理"
+  zsh -c "source '$OPS' >/dev/null 2>&1; dev '$LAST4'" || die "dev 指令退出非零——把上方原始输出原样转述给用户，不要自行处理"
 fi
