@@ -129,7 +129,9 @@ if [ "$TO_TEST" != "--to-test" ]; then
     # 在 worktree 根目录执行（cd 进去再跑 pm2，服务工作目录=当前目录，不用 --cwd 中转）
     (cd "$WT" && env ${START_ENV} "$PM2" start "$PNPM" --name "$NAME" -- "${START_ARGS[@]}")
   fi
-  IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo 127.0.0.1)
+  # 多网卡机器可能有多个局域网地址，全部枚举逐行报——只取 en* 物理网卡的 IPv4（排除回环/链路本地/utun/代理虚拟网卡）
+  IPS=$(ifconfig 2>/dev/null | awk '/^[a-zA-Z0-9]+:/{is_en=($1~/^en[0-9]+:$/);next} is_en && $1=="inet" && $2!~/^(127\.|169\.254\.)/{print $2}')
+  [ -n "$IPS" ] || IPS=127.0.0.1
 fi
 
 # ---------- 打印汇报块（agent 原样转述即可）----------
@@ -149,9 +151,9 @@ if [ "$TO_TEST" = "--to-test" ]; then
   echo "  next:      合并开发分支改动与解冲突按技能正文「合并分支」节手走（本脚本不起服务）"
 else
   if [ "$ONLINE" = "1" ]; then
-    echo "  server:    http://$IP:$PORT（pm2 $NAME 已在跑，未重启）"
+    for ip in $IPS; do echo "  server:    http://$ip:$PORT（pm2 $NAME 已在跑，未重启）"; done
   else
-    echo "  server:    http://$IP:$PORT（pm2 name=$NAME；起中，约几秒后可访问）"
+    for ip in $IPS; do echo "  server:    http://$ip:$PORT（pm2 name=$NAME；起中，约几秒后可访问）"; done
   fi
   echo "  日志:      pm2 logs $NAME"
 fi
