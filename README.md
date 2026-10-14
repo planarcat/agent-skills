@@ -134,7 +134,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 🧭 **入口** | `playbook` | **技能地图 + 流程路由**：按当前流程与状态把你指到执行技能；找不着北先读它 |
 | 🧠 **方案** | `plan` | 方案全生命周期一个入口：讨论落盘 `Plans/` 生成待执行方案 → 逐 Phase 执行开发 → 核对闭环后归档；三阶段细则在技能内 `references/讨论·执行·锁定.md` |
 | 📝 **提交** | `generate-commit` | 生成中文 commit message，**提交后先做「推送前核验」再推送**（核验四项：测试 / 变异 / 影响面 / 跳过清单；细则见技能内 `references/门禁核验.md`） |
-| 🌿 **分支** | `create-requirement-branch` | 一条龙脚本 `scripts/create-branch.sh` 一次跑完：建 `{id后4位}-{标题截取}` 分支与 worktree（原仓旁边同级）→ 装依赖 → 起本地服务（pm2 托管、端口=仓库位+需求id后4位），agent 只调用不判断，产出物是**一行 `cd` 进入路径**；细则见技能内 `references/本地服务.md` |
+| 🌿 **分支** | `create-requirement-branch` | 一条龙脚本 `scripts/create-branch.sh` 一次跑完：建 `{id后4位}-{标题截取}` 分支与 worktree（原仓旁边同级）→ 装依赖 → 起本地服务（调工作区 `dev` 指令托管，端口=需求id后4位），agent 只调用不判断，产出物是**一行 `cd` 进入路径**；细则见技能内 `references/本地服务.md` |
 | 🌿 **分支收尾** | `branch-merge-status` / `cleanup-requirement-branch` | 先**只读**盘点分支合入四类状态（已进生产 / 只进测试线 / 未合入 / **空壳分支**），再**只清「已进生产且非空壳」**的分支：本地开发分支 + 本地 To-test + 远程两者 + pm2 服务 + worktree 目录；清理脚本默认 dry-run，先列清单等你确认 |
 | 🧩 **需求拆解** | `requirement-breakdown` | 开发前的需求理解 + **开工定级**：功能点 + 边界/歧义/待确认/验收标准，并按硬规则算出**档位 + 门禁清单 + 缺口清单**（六维评分 + 一票升级清单）；不改代码；细则见技能内 `references/定级规则.md` |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
@@ -377,7 +377,7 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 **建完下一步：需求拆解（`requirement-breakdown`）。** 拆功能点 + 边界/歧义/待确认/验收标准，并**按硬规则算出开工档位**（六维评分 + 一票升级清单 → 档位 + 门禁清单 + **缺口清单**），一次端给你过目放行；不改代码。建完分支也可顺手给**已有**测试目录上锁（`scripts/lock-tests.sh`，仓里没有 `__tests__/` 就不锁）。
 
-**本地服务随分支走**：需求分支建完即由 agent 用 pm2 起服务（端口 = 仓库位+需求id后4位，如 F2962→22962；细则见 `create-requirement-branch/references/本地服务.md`）——「服务器地址 / 关服务」随时说一声即可，你也能 `pm2 ls` 自查。
+**本地服务随分支走**：需求分支建完即由工作区 `dev` 指令托管启动（实现源 `ops/svc.sh`，端口 = 需求id后4位，如 U-2998 → 2998；细则见 `create-requirement-branch/references/本地服务.md`）——「服务器地址 / 关服务」随时说一声即可（`dev` / `stop` / `del` / `list`），你也能 `pm2 ls` 自查。
 
 **分支用完了要回收**——说「检查分支合入情况」进 `branch-merge-status`（**只读**）：逐条判定**已进生产 / 只进测试线 / 未合入 / 空壳分支**四类（空壳 = 从基线拉下来后一行没改，"未进生产 = 0"容易把空壳误当成已合入），顺带报双向分叉、worktree↔分支、pm2、开放 MR。说「清理 <需求号>」进 `cleanup-requirement-branch`：**只清已进生产且非空壳的分支**，范围含本地开发分支、本地 To-test、远程两者、pm2 服务与 worktree 目录；脚本默认 **dry-run**，先列清单、确认范围（默认问一句"含不含远程分支"）才真删，脏 worktree / 删不掉 / 远程报错一律停下问。
 

@@ -104,36 +104,6 @@ if [ "${REUSED:-0}" != "1" ]; then
   cp -f "$REPO"/.env* "$WT"/ 2>/dev/null || true
 fi
 
-# ---------- 起本地服务（合并分支不起；启动方式按端位查配置表，agent 不判断）----------
-if [ "$TO_TEST" != "--to-test" ]; then
-  PM2="$HOME/Library/pnpm/pm2"; [ -x "$PM2" ] || PM2=$(command -v pm2 || true)
-  [ -n "$PM2" ] || die "找不到 pm2（~/Library/pnpm/pm2 与 PATH 都没有）"
-  NAME="${POS}${LAST4}"   # pm2 进程名 = 端位+id后4位，无连字符（2026-10-14 口径，如 F2962）
-  # 端口 = id 后 4 位（2026-10-14 口径：去掉仓库位前缀数字，固定可推导）
-  PORT="${LAST4}"
-  # 启动方式配置表（改口径只改这里；新仓库首次起服务报错就补一行）
-  #   U（用户端）：端口走 VITE_PORT 环境变量（该仓 vite 配置读取），host 走参数
-  #   F（工厂端）/ D / S：端口与 host 都走命令行参数
-  case "$POS" in
-    U) START_ENV="VITE_PORT=${PORT}"; START_ARGS=(dev --host 0.0.0.0) ;;
-    *) START_ENV="";                  START_ARGS=(dev --host 0.0.0.0 --port "${PORT}") ;;
-  esac
-  # 同名 pm2 在跑 → 只报地址不重启；同名残留（非 online）→ 删掉原端口重启
-  ONLINE=0
-  if "$PM2" describe "$NAME" >/dev/null 2>&1; then
-    STATUS=$("$PM2" describe "$NAME" 2>/dev/null | grep -m1 -oE 'online|launching|stopped|errored' || true)
-    if [ "$STATUS" = "online" ]; then ONLINE=1
-    else "$PM2" delete "$NAME" >/dev/null 2>&1 || true; fi
-  fi
-  if [ "$ONLINE" != "1" ]; then
-    # 在 worktree 根目录执行（cd 进去再跑 pm2，服务工作目录=当前目录，不用 --cwd 中转）
-    (cd "$WT" && env ${START_ENV} "$PM2" start "$PNPM" --name "$NAME" -- "${START_ARGS[@]}")
-  fi
-  # 多网卡机器可能有多个局域网地址，全部枚举逐行报——只取 en* 物理网卡的 IPv4（排除回环/链路本地/utun/代理虚拟网卡）
-  IPS=$(ifconfig 2>/dev/null | awk '/^[a-zA-Z0-9]+:/{is_en=($1~/^en[0-9]+:$/);next} is_en && $1=="inet" && $2!~/^(127\.|169\.254\.)/{print $2}')
-  [ -n "$IPS" ] || IPS=127.0.0.1
-fi
-
 # ---------- 打印汇报块（agent 原样转述即可）----------
 echo ""
 echo "已创建需求分支（一条龙脚本）："
@@ -150,10 +120,16 @@ echo "  install:   pnpm install 已在工作目录执行"
 if [ "$TO_TEST" = "--to-test" ]; then
   echo "  next:      合并开发分支改动与解冲突按技能正文「合并分支」节手走（本脚本不起服务）"
 else
-  if [ "$ONLINE" = "1" ]; then
-    for ip in $IPS; do echo "  server:    http://$ip:$PORT（pm2 $NAME 已在跑，未重启）"; done
-  else
-    for ip in $IPS; do echo "  server:    http://$ip:$PORT（pm2 name=$NAME；起中，约几秒后可访问）"; done
-  fi
-  echo "  日志:      pm2 logs $NAME"
+  echo "  server:    见下方 dev 指令输出（地址 / 日志 / 管理口令全套自带）"
+fi
+
+# ---------- 起本地服务（合并分支不起；统一调工作区 dev 指令——pm2/端口/多 IP 单一实现，本脚本不再自养模板，2026-10-14 口径）----------
+if [ "$TO_TEST" != "--to-test" ]; then
+  WS_ROOT="$(dirname "$(dirname "$REPO")")"   # 业务仓 → Apps/ → 工作区根（ops.sh 所在）
+  OPS="$WS_ROOT/ops.sh"
+  [ -f "$OPS" ] || die "工作区根没有 ops.sh（$OPS），dev 指令无从调用——原样报给用户"
+  # dev（实现源 ops/svc.sh）：按分支名定位 worktree → 缺依赖自动 install → 端口=需求号后4位 → pm2 bash 包装启动 → 多 IP 汇报
+  # 铁律（2026-10-13 口径）：dev 报错原样上报用户，不检索不排查不修复——svc.sh 由用户优化
+  echo ""
+  zsh -c "source '$OPS' >/dev/null 2>&1; dev '$BRANCH'" || die "dev 指令退出非零——把上方原始输出原样转述给用户，不要自行处理"
 fi
