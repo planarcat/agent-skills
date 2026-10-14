@@ -13,7 +13,7 @@ module:                          # 覆盖的代码路径数组 → 防腐烂比�
   - src/components/TransferList
 tags: [效果图, 用户端]
 updated: 2026-10-09              # 最后验证时间；超 60 天由审计标「陈旧」
-source: U-2792                   # 来源（需求/commit/讨论主题），无来源不落盘
+source: U2792                   # 来源（需求/commit/讨论主题），无来源不落盘
 confidence: 高
 ---
 # 模块名

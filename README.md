@@ -370,7 +370,7 @@ Claude Code 会自动发现并加载 `SKILL.md` 文件中定义的技能。技�
 
 **开发规范：任务完成即推送。** 在需求分支上，每个任务/阶段开发完成后 `git commit` → **直接 `git push` 到该分支的远程同名分支**（上游就是它自己），不用每次问。**不推主分支、不 `--force`、不开 PR**（除非用户要求）。落地在 `playbook`（开发规范）、`plan`（执行阶段收尾）、`generate-commit`（推送规则）、`create-requirement-branch`（分支用途）。
 
-**本地服务随分支走**：需求分支建完即由 agent 用 pm2 起服务（端口 = 仓库位+需求id后4位，如 F-2962→22962；细则见 `create-requirement-branch/references/本地服务.md`）——「服务器地址 / 关服务」随时说一声即可，你也能 `pm2 ls` 自查。
+**本地服务随分支走**：需求分支建完即由 agent 用 pm2 起服务（端口 = 仓库位+需求id后4位，如 F2962→22962；细则见 `create-requirement-branch/references/本地服务.md`）——「服务器地址 / 关服务」随时说一声即可，你也能 `pm2 ls` 自查。
 
 #### 6. 手动解决合并冲突（resolve-merge-conflict）
 

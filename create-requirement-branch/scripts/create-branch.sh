@@ -52,11 +52,11 @@ TRUNCATED=""
 if [ ${#TITLE_SEG} -gt 24 ]; then TITLE_SEG="${TITLE_SEG:0:24}"; TRUNCATED="（标题已截断）"; fi
 [ -n "$TITLE_SEG" ] || die "标题截取后为空，需要有效标题"
 
-# ---------- 分支名 = worktree 目录名；合并分支无标题段 ----------
+# ---------- 分支名 = worktree 目录名（端位与 id 段无连字符，2026-10-14 口径，如 F2962-标题）；合并分支无标题段 ----------
 if [ "$TO_TEST" = "--to-test" ]; then
-  BRANCH="${POS}-${PREFIXSEG}-To-test"
+  BRANCH="${POS}${PREFIXSEG}-To-test"
 else
-  BRANCH="${POS}-${PREFIXSEG}-${TITLE_SEG}"
+  BRANCH="${POS}${PREFIXSEG}-${TITLE_SEG}"
 fi
 
 # ---------- 定位 git 仓根（agent 在目标业务仓内运行即可，子目录也行）----------
@@ -108,7 +108,7 @@ fi
 if [ "$TO_TEST" != "--to-test" ]; then
   PM2="$HOME/Library/pnpm/pm2"; [ -x "$PM2" ] || PM2=$(command -v pm2 || true)
   [ -n "$PM2" ] || die "找不到 pm2（~/Library/pnpm/pm2 与 PATH 都没有）"
-  NAME="${POS}-${LAST4}"
+  NAME="${POS}${LAST4}"   # pm2 进程名 = 端位+id后4位，无连字符（2026-10-14 口径，如 F2962）
   # 端口 = 仓库位 + id 后 4 位（固定可推导）
   PORT="${REPO_DIGIT}${LAST4}"
   # 启动方式配置表（改口径只改这里；新仓库首次起服务报错就补一行）
