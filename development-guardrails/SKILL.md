@@ -1,6 +1,6 @@
 ---
 name: 开发中规范
-description: "Mandatory guardrails before editing source code. ALWAYS read this entire SKILL.md before the first Write/Edit/StrReplace on application source in the conversation if not already loaded. Part A applies to every code change (comments). Part B applies when debugging is needed: bug unresolved, fix incomplete, missing runtime evidence, user says still broken, or investigating errors. Use for 修改代码, 写代码, 实现, 修复, bug, 报错, 调试, 埋点, 重构, refactor, fix, patch, implement, 开发中规范, 开发中规范, @开发中规范. Listing in available_skills does not count as compliance; must Read file."
+description: "Mandatory guardrails before editing source code. ALWAYS read this entire SKILL.md before the first Write/Edit/StrReplace on application source in the conversation if not already loaded. Part A applies to every code change (comments). Part B applies when debugging is needed: bug unresolved, fix incomplete, missing runtime evidence, user says still broken, or investigating errors. Use for 修改代码, 写代码, 实现, 修复, bug, 报错, 调试, 埋点, 重构, refactor, fix, patch, implement, 开发中规范, 开发中规范, @开发中规范. Part C（身份守卫）applies when 多会话并行——写共享面（Docs/ Knowledge/ Reports/ commit/ push/ pm2）前先核对本会话需求 id。 Listing in available_skills does not count as compliance; must Read file."
 ---
 
 # 开发中规范
@@ -67,6 +67,22 @@ Skill 出现在 `available_skills` **不等于**已遵守。必须按下列顺�
 | 3 | **测试目录默认禁改** | `__tests__/`、`e2e/`、`*.spec.*`、`*.test.*` 默认只读（可用 `chflags -R uchg` 上锁）。改测试是一次**需要留痕的显式动作**，不是顺手的事 |
 
 **例外与留痕**：确需新增 / 修改测试 → 先解锁 → 在 commit message 里写清**解锁了哪个目录、为什么、改了什么口径** → 提交后再锁回。
+
+---
+
+## 身份守卫（多会话并行 · 2026-10-16 用户口径，与三条禁令并列、任何时候生效）
+
+同一工作区可能同时有多个会话在开发**不同需求**，而共享面上全是两个需求的痕迹。**身份取本会话自己的锚**（`创建分支` 的「会话身份锚」三源：本会话首条素材 / 用户点名的分支 / 自己 cwd 所在 worktree）；写任何**共享面**前先核对目标是否属于自己，**不符就停手问用户，不硬写、不"顺手"代改**：
+
+| 动作 | 核对什么（消歧**用完整 7 位 id**，短 4 位会撞车） |
+| :-- | :-- |
+| `git commit` / `git push` | 当前分支名含本会话需求 id；**不是自己的分支不提交、不推送** |
+| `dev` / pm2 起停 | 端口 = 本会话 id 后 4 位；**不动别人的端口与进程** |
+| 写 `Docs/`（含 `需求拆解/`） | 目标目录 / 文件名含自己的 id |
+| 写 `Knowledge/` | 只写与本会话需求对应的业务文档 / 模块卡 |
+| 写 `Reports/daily_work/` | 只写 `【自己id_标题】.md` 里自己的会话块（见 `日报采集共写`） |
+
+**读不受限**：任何需求的东西都可以读（相关需求的拆解、别人的分支状态、他人的日报），读了当参考；**写只写自己的**。发现自己在做的事与身份锚对不上 → 停手问用户，别自行"纠正"成别人的需求。
 
 ---
 
