@@ -45,8 +45,8 @@ case "$ID" in
     ;;
 esac
 
-# ---------- 标题截取：第一个（/( 之前 → 去首尾空白 → 空白转 - → 剔 git 非法字符 → ≤24 字 ----------
-TITLE_SEG=$(printf '%s' "$TITLE" | sed 's/[（(].*//; s/^[[:space:]]*//; s/[[:space:]]*$//; s/[[:space:]]\{1,\}/-/g; s/-\{2,\}/-/g; s/^-*//; s/-*$//')
+# ---------- 标题截取：第一个（/( 之前 → 去首尾空白 → 路径分隔符 / 与空白转 - → 剔 git 非法字符 → ≤24 字 ----------
+TITLE_SEG=$(printf '%s' "$TITLE" | sed 's/[（(].*//; s|/|-|g; s/^[[:space:]]*//; s/[[:space:]]*$//; s/[[:space:]]\{1,\}/-/g; s/-\{2,\}/-/g; s/^-*//; s/-*$//')
 TITLE_SEG=$(printf '%s' "$TITLE_SEG" | tr -d '~^:?*[]\\')
 TRUNCATED=""
 if [ ${#TITLE_SEG} -gt 24 ]; then TITLE_SEG="${TITLE_SEG:0:24}"; TRUNCATED="（标题已截断）"; fi

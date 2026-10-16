@@ -4,7 +4,7 @@
 # 用法：
 #   ./install.sh <安装目录> [技能名…]   装到该目录，并**记住这个路径**
 #   ./install.sh                        不带参数：把仓库技能**更新到所有记住过的路径**
-#   ./install.sh <目录> --group report  只装某一组（report / query / tapd / plan / dev / journal）
+#   ./install.sh <目录> --group report  只装某一组（report / query / tapd / plan / dev / design / journal）
 #                                       分组安装会自动带上入口 playbook
 #   ./install.sh --targets              看记住了哪些安装目录（并逐个检查是否存在）
 #   ./install.sh --forget <目录>        忘掉一个安装目录（不删已装的文件）
@@ -62,6 +62,7 @@ group_skills() {
     tapd|需求)    echo "tapd-requirement-writing tapd-todo-query" ;;
     plan|方案)    echo "plan" ;;
     dev|开发)     echo "development-guardrails change-advice impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring human-like-testing create-requirement-branch branch-merge-status cleanup-requirement-branch requirement-breakdown generate-commit" ;;
+    design|设计)  echo "design-guardrails" ;;
     journal|记录) echo "record-change-log record-development-blog" ;;
     *) return 1 ;;
   esac
