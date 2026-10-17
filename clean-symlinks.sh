@@ -39,6 +39,29 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$REPO_DIR/install.config"
 
+# 两库并存：本脚本把「同父目录下、名字以 -skills 结尾的兄弟仓」也认作自家
+# （公司库 lingchuang-skills 就是 agent-skills 的兄弟仓）。没有兄弟仓时列表为空，行为不变。
+SIBLINGS=()
+for d in "$(dirname "$REPO_DIR")"/*-skills; do
+  [ -d "$d" ] || continue
+  if [ "$d" = "$REPO_DIR" ]; then continue; fi
+  SIBLINGS+=("$d")
+done
+
+# 判断一个链接目标是不是"自家仓库"（本仓或兄弟仓）
+is_ours() {
+  local t="$1" s
+  case "$t" in
+    "$REPO_DIR"/*) return 0 ;;
+  esac
+  for s in "${SIBLINGS[@]+"${SIBLINGS[@]}"}"; do
+    case "$t" in
+      "$s"/*) return 0 ;;
+    esac
+  done
+  return 1
+}
+
 ACT_PRUNE=0
 ACT_RMLINKS=0
 ACT_UNLINK=0
@@ -215,21 +238,33 @@ REAL=0       # 与仓库无关的真实文件 / 目录（不碰）
 REMOVED=0    # 本次删掉的软链接数
 RMCOPIES=0   # 本次删掉的物理拷贝数
 
-# 判断某条目是否是"本仓库某个技能的物理拷贝"，并处理
+# 给出承载该技能的仓库根（本仓优先，其次兄弟库）；都不含则输出空
+skill_repo_of() {
+  local name="$1" s
+  if [ -f "$REPO_DIR/$name/SKILL.md" ]; then printf '%s' "$REPO_DIR"; return 0; fi
+  for s in "${SIBLINGS[@]+"${SIBLINGS[@]}"}"; do
+    if [ -f "$s/$name/SKILL.md" ]; then printf '%s' "$s"; return 0; fi
+  done
+  return 0
+}
+
+# 判断某条目是否是"自家仓库某个技能的物理拷贝"，并处理
 # $1=所在目录 $2=条目路径 $3=条目名（可能是 <技能> 或 <技能>.bak-<时间戳>）
 handle_real() {
-  local tdir="$1" p="$2" base="$3" skill
-  if [ -f "$REPO_DIR/$base/SKILL.md" ]; then
+  local tdir="$1" p="$2" base="$3" skill repodir
+  repodir="$(skill_repo_of "$base")"
+  if [ -n "$repodir" ]; then
     skill="$base"
   else
     case "$base" in
       *.bak-*) skill="${base%%.bak-*}" ;;
       *)       skill="" ;;
     esac
-    [ -n "$skill" ] && [ -f "$REPO_DIR/$skill/SKILL.md" ] || { REAL=$((REAL + 1)); return 0; }
+    if [ -n "$skill" ]; then repodir="$(skill_repo_of "$skill")"; fi
+    if [ -z "$repodir" ]; then REAL=$((REAL + 1)); return 0; fi
   fi
 
-  if [ -d "$p" ] && diff -rq "$REPO_DIR/$skill" "$p" >/dev/null 2>&1; then
+  if [ -d "$p" ] && diff -rq "$repodir/$skill" "$p" >/dev/null 2>&1; then
     COPY_SAME=$((COPY_SAME + 1))
     if [ "$ACT_RMCOPIES" -eq 1 ]; then
       rm -rf "$p"; RMCOPIES=$((RMCOPIES + 1))
@@ -272,22 +307,19 @@ scan_dir() {
       continue
     fi
 
-    case "$target" in
-      "$REPO_DIR"/*)
-        # ②③ 指向本仓库现存技能的**有效**链接
-        OK=$((OK + 1))
-        if [ "$ACT_RMLINKS" -eq 1 ] || [ "$ACT_UNLINK" -eq 1 ]; then
-          rm -f "$p"; REMOVED=$((REMOVED + 1))
-          echo "  ✂ 已删链接 ${base}（指向本仓库）"
-        else
-          echo "  ✅ 有效：${base} → 本仓库"
-        fi
-        ;;
-      *)
-        OTHER=$((OTHER + 1))
-        echo "  ⚪ 指向别处（不动，不归本仓库管）：${base} → ${target}"
-        ;;
-    esac
+    if is_ours "$target"; then
+      # ②③ 指向自家仓库（本仓 / 兄弟库）现存技能的**有效**链接
+      OK=$((OK + 1))
+      if [ "$ACT_RMLINKS" -eq 1 ] || [ "$ACT_UNLINK" -eq 1 ]; then
+        rm -f "$p"; REMOVED=$((REMOVED + 1))
+        echo "  ✂ 已删链接 ${base}（指向自家仓库）"
+      else
+        echo "  ✅ 有效：${base} → 自家仓库"
+      fi
+    else
+      OTHER=$((OTHER + 1))
+      echo "  ⚪ 指向别处（不动，不归本仓库管）：${base} → ${target}"
+    fi
   done
   echo
 }

@@ -4,8 +4,8 @@
 # 用法：
 #   ./install.sh <安装目录> [技能名…]   装到该目录，并**记住这个路径**
 #   ./install.sh                        不带参数：把仓库技能**更新到所有记住过的路径**
-#   ./install.sh <目录> --group report  只装某一组（report / query / tapd / plan / dev / design / journal）
-#                                       分组安装会自动带上入口 playbook
+#   ./install.sh <目录> --group dev     只装某一组（plan / dev / design / journal）
+#                                       入口 playbook 随分组自动带上；**公司技能在另一个仓库** `lingchuang-skills`
 #   ./install.sh --targets              看记住了哪些安装目录（并逐个检查是否存在）
 #   ./install.sh --forget <目录>        忘掉一个安装目录（不删已装的文件）
 #   ./install.sh --copy <目录>          用拷贝代替软链接（默认软链接）
@@ -29,6 +29,8 @@
 #
 # 入口技能：playbook —— agent 找不着北时先读它，它按流程与状态把请求路由到执行技能。
 # 它属于"入口"，**名字不要改**（改名 = agent 从原来的位置进不来）。
+# 公司技能（TAPD / CNB / 日报 / 需求拆解 / 分支流水线）**不在这里**，在 `lingchuang-skills`
+# 仓库；两库装进同一个技能目录，入口统一由本库的 playbook 带路。
 #
 # Windows 用户：PowerShell 不认 .sh。用同目录的 `install.ps1`（推荐），
 #   或者在 Git Bash 里跑 `bash install.sh`。
@@ -57,11 +59,8 @@ ENTRY_SKILL="playbook"   # 入口技能：分组安装时自动带上
 # 为什么用 case 而不是关联数组：macOS 自带 bash 3.2 不支持 declare -A。
 group_skills() {
   case "$1" in
-    report|日报)  echo "report-pipeline report-draft-filter report-writer" ;;
-    query|查询)   echo "cnb-push-audit tapd-todo-query" ;;
-    tapd|需求)    echo "tapd-requirement-writing tapd-todo-query" ;;
     plan|方案)    echo "plan" ;;
-    dev|开发)     echo "development-guardrails change-advice impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring human-like-testing create-requirement-branch branch-merge-status cleanup-requirement-branch requirement-breakdown generate-commit" ;;
+    dev|开发)     echo "development-guardrails change-advice impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring human-like-testing generate-commit" ;;
     design|设计)  echo "design-guardrails" ;;
     journal|记录) echo "record-change-log record-development-blog" ;;
     *) return 1 ;;
@@ -183,7 +182,7 @@ while [ $# -gt 0 ]; do
     --forget) FORGET="${2:-}"; shift $(( $# > 1 ? 2 : 1 )) ;;
     --group)
       if [ $# -lt 2 ]; then
-        echo "错误：--group 需要跟一个分组名（report / query / tapd / plan / dev / journal）" >&2
+        echo "错误：--group 需要跟一个分组名（plan / dev / design / journal）" >&2
         exit 1
       fi
       GROUP="$2"; shift 2 ;;
@@ -292,12 +291,12 @@ if [ "$LIST_ONLY" -eq 1 ]; then
   echo "入口：${ENTRY_SKILL}（技能地图 + 流程路由；找不着北先读它）"
   echo
   echo "分组（--group <名>）："
-  echo "  report  日报三件套         $(group_skills report)"
-  echo "  query   数据源核查         $(group_skills query)"
-  echo "  tapd    TAPD 需求          $(group_skills tapd)"
   echo "  plan    方案讨论→执行→锁定  $(group_skills plan)"
   echo "  dev     开发与质量          $(group_skills dev)"
+  echo "  design  界面设计            $(group_skills design)"
   echo "  journal 记录与沉淀          $(group_skills journal)"
+  echo
+  echo "公司技能（TAPD / CNB / 日报 / 需求拆解 / 分支流水线）在另一个仓库 lingchuang-skills，本库不装。"
   echo
   echo "记住的安装目标："
   if [ -f "$CONFIG_FILE" ]; then
@@ -312,7 +311,7 @@ fi
 
 if [ -n "$GROUP" ]; then
   if ! grp="$(group_skills "$GROUP")"; then
-    echo "错误：未知分组「${GROUP}」。可用分组：report / query / tapd / plan / dev / journal" >&2
+    echo "错误：未知分组「${GROUP}」。可用分组：plan / dev / design / journal" >&2
     exit 1
   fi
   # shellcheck disable=SC2206

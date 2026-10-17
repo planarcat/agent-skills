@@ -5,7 +5,7 @@
   用法（在仓库根目录）：
     .\install.ps1 <安装目录> [技能名…]   装到该目录（默认用「目录联接」）并记住这个路径
     .\install.ps1                         不带参数：更新到所有记住过的目录
-    .\install.ps1 <目录> -Group report    只装某一组（report / query / tapd / plan / dev / journal，自动带入口）
+    .\install.ps1 <目录> -Group dev       只装某一组（plan / dev / design / journal；公司技能在另一个仓库 lingchuang-skills）
     .\install.ps1 -Targets                看记住哪些目录（含存在性与模式）
     .\install.ps1 -Forget <目录>          忘掉一个目录（已装的文件不动）
     .\install.ps1 -List                   列技能、分组与记住的目录
@@ -22,6 +22,8 @@
        该文件是本机状态，不要提交到 git。
 
   入口技能：playbook —— agent 找不着北时先读它，它按流程与状态把请求路由到执行技能。名字不要改。
+  公司技能（TAPD / CNB / 日报 / 需求拆解 / 分支流水线）不在这里，在 lingchuang-skills 仓库；
+  两库装进同一个技能目录，入口统一由本库的 playbook 带路。
 #>
 
 [CmdletBinding()]
@@ -52,11 +54,9 @@ $UseCopy    = [bool]$Copy              # 默认用「目录联接」（不需要
 
 function Get-GroupSkills([string] $name) {
   switch ($name) {
-    { $_ -in 'report','日报' }  { return 'report-pipeline report-draft-filter report-writer' }
-    { $_ -in 'query','查询' }   { return 'cnb-push-audit tapd-todo-query' }
-    { $_ -in 'tapd','需求' }    { return 'tapd-requirement-writing tapd-todo-query' }
     { $_ -in 'plan','方案' }    { return 'plan' }
-    { $_ -in 'dev','开发' }     { return 'development-guardrails change-advice impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring create-requirement-branch requirement-breakdown generate-commit' }
+    { $_ -in 'dev','开发' }     { return 'development-guardrails change-advice impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring human-like-testing generate-commit' }
+    { $_ -in 'design','设计' }  { return 'design-guardrails' }
     { $_ -in 'journal','记录' } { return 'record-change-log record-development-blog' }
     default { return $null }
   }
@@ -231,7 +231,8 @@ if ($List) {
   Write-Host "入口：$EntrySkill（技能地图 + 流程路由；找不着北先读它）"
   Write-Host ''
   Write-Host '分组（-Group <名>）：'
-  foreach ($g in 'report','query','tapd','plan','dev','journal') { Write-Host ("  {0,-8}{1}" -f $g, (Get-GroupSkills $g)) }
+  foreach ($g in 'plan','dev','design','journal') { Write-Host ("  {0,-8}{1}" -f $g, (Get-GroupSkills $g)) }
+  Write-Host '  公司技能（TAPD / CNB / 日报 / 需求拆解 / 分支流水线）在另一个仓库 lingchuang-skills，本库不装。'
   Write-Host ''
   Write-Host '记住的安装目标：'
   $lines = @(Read-Config)
@@ -249,7 +250,7 @@ if ($pos.Count -ge 2) { $SkillNames = $pos[1..($pos.Count - 1)] }
 $Skills = @()
 if ($Group) {
   $grp = Get-GroupSkills $Group
-  if (-not $grp) { Write-Host '错误：未知分组。可用分组：report / query / tapd / plan / dev / journal'; exit 1 }
+  if (-not $grp) { Write-Host '错误：未知分组。可用分组：plan / dev / design / journal'; exit 1 }
   $Skills = @($grp -split '\s+')
   if (-not $NoEntry) { $Skills += $EntrySkill }
 } elseif ($SkillNames.Count -gt 0) {

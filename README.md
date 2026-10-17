@@ -1,6 +1,8 @@
-# Agent Skills
+# Agent Skills（通用库）
 
-> 面向 AI 辅助软件开发的 Skills 集合：方案（讨论—执行—锁定），以及开发质量、日报等工作流
+> 面向 AI 辅助软件开发的**通用** Skills 集合：方案（讨论—执行—锁定）、开发质量、测试、知识沉淀、改动记录、提交。
+>
+> **公司专有技能不在本库** —— 灵创那套（TAPD / CNB / 日报 / 需求拆解 / 分支流水线）在另一个仓库 **`lingchuang-skills`**（cnb.cool）。两库装进**同一个**工具技能目录，入口统一由本库的 `playbook` 带路。
 
 ## 最短路径（先看这个）
 
@@ -14,6 +16,10 @@
 git clone https://github.com/planarcat/agent-skills ~/agent-skills
 cd ~/agent-skills
 ./install.sh ~/.claude/skills        # 或 ~/.workbuddy/skills，看你用哪个工具
+
+# 公司技能在另一个仓库，另装一边（它不带入口，playbook 由本库提供）
+git clone https://cnb.cool/planarcat/lingchuang-skills ~/lingchuang-skills
+cd ~/lingchuang-skills && ./install.sh ~/.claude/skills
 ```
 
 **Windows**（PowerShell 不认 `.sh`，用 `install.ps1`，行为一致、默认用目录联接）：
@@ -55,19 +61,19 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 
 ### 只想装一部分
 
-`./install.sh` 不带参数会装**全部 22 个技能**。只想要一组就点名分组，不用逐个列技能名：
+`./install.sh` 不带参数会装**本库全部 14 个技能**。只想要一组就点名分组，不用逐个列技能名：
 
 ```bash
-./install.sh --group report  ~/.claude/skills    # 日报三件套
-./install.sh --group query   ~/.claude/skills    # 数据源核查（CNB 推送 / TAPD 待办）
-./install.sh --group tapd    ~/.claude/skills    # TAPD 需求（写需求 / 待办核查）
 ./install.sh --group plan    ~/.claude/skills    # 方案（讨论→执行→锁定）
-./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/测试/分支/分支合入检查与清理/拆解/提交）
-./install.sh --group journal ~/.claude/skills    # 记录与沉淀（变更日志 / 开发博客）
+./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/审查/测试/提交）
+./install.sh --group design  ~/.claude/skills    # 界面设计规范
+./install.sh --group journal ~/.claude/skills    # 记录与沉淀（改动记录 / 开发博客）
 ./install.sh --list                              # 看有哪些技能和分组，不安装
 ```
 
-**分组安装会自动带上入口 `playbook`**（它只有一个文件，不占地方，但能让 agent 找到北）。`report` 组的取数搭档是 `query` 组：一个查代码推送、一个查 TAPD 待办。
+**分组安装会自动带上入口 `playbook`**（它只有一个文件，不占地方，但能让 agent 找到北）。
+
+**公司技能在另一个仓库**（`lingchuang-skills`）：分组是 `report`（日报三件套）/ `tapd`（TAPD 需求与拆解）/ `query`（CNB 推送、TAPD 待办核查）/ `branch`（分支创建、合入检查、清理）——它**不带入口**，装进同一个技能目录后由本库的 `playbook` 带路。
 
 ### 安装 / 更新
 
