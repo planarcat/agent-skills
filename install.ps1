@@ -5,7 +5,7 @@
   用法（在仓库根目录）：
     .\install.ps1 <安装目录> [技能名…]   装到该目录（默认用「目录联接」）并记住这个路径
     .\install.ps1                         不带参数：更新到所有记住过的目录
-    .\install.ps1 <目录> -Group dev       只装某一组（plan / dev / design / journal；公司技能在另一个仓库 lingchuang-skills）
+    .\install.ps1 <目录> -Group dev       只装某一组（plan / dev / design / journal，自动带入口 playbook）
     .\install.ps1 -Targets                看记住哪些目录（含存在性与模式）
     .\install.ps1 -Forget <目录>          忘掉一个目录（已装的文件不动）
     .\install.ps1 -List                   列技能、分组与记住的目录
@@ -22,8 +22,6 @@
        该文件是本机状态，不要提交到 git。
 
   入口技能：playbook —— agent 找不着北时先读它，它按流程与状态把请求路由到执行技能。名字不要改。
-  公司技能（TAPD / CNB / 日报 / 需求拆解 / 分支流水线）不在这里，在 lingchuang-skills 仓库；
-  两库装进同一个技能目录，入口统一由本库的 playbook 带路。
 #>
 
 [CmdletBinding()]
@@ -232,7 +230,6 @@ if ($List) {
   Write-Host ''
   Write-Host '分组（-Group <名>）：'
   foreach ($g in 'plan','dev','design','journal') { Write-Host ("  {0,-8}{1}" -f $g, (Get-GroupSkills $g)) }
-  Write-Host '  公司技能（TAPD / CNB / 日报 / 需求拆解 / 分支流水线）在另一个仓库 lingchuang-skills，本库不装。'
   Write-Host ''
   Write-Host '记住的安装目标：'
   $lines = @(Read-Config)

@@ -2,7 +2,7 @@
 
 > 面向 AI 辅助软件开发的**通用** Skills 集合：方案（讨论—执行—锁定）、开发质量、测试、知识沉淀、改动记录、提交。
 >
-> **公司专有技能不在本库** —— 灵创那套（TAPD / CNB / 日报 / 需求拆解 / 分支流水线）在另一个仓库 **`lingchuang-skills`**（cnb.cool）。两库装进**同一个**工具技能目录，入口统一由本库的 `playbook` 带路。
+> **公司专有技能不在本库** —— 灵创那套（TAPD / CNB / 日报 / 需求拆解 / 分支流水线）在另一个仓库 **`lingchuang-skills`**（cnb.cool）。两库装进**同一个**工具技能目录，但**各有各的入口**：本库的 `playbook`（`技能地图`）只路由本库技能，公司库有它自己的 `lc-playbook`（`灵创入口`）。
 
 ## 最短路径（先看这个）
 
@@ -17,7 +17,7 @@ git clone https://github.com/planarcat/agent-skills ~/agent-skills
 cd ~/agent-skills
 ./install.sh ~/.claude/skills        # 或 ~/.workbuddy/skills，看你用哪个工具
 
-# 公司技能在另一个仓库，另装一边（它不带入口，playbook 由本库提供）
+# 公司技能在另一个仓库，另装一边（它有自己的入口 `灵创入口`）
 git clone https://cnb.cool/planarcat/lingchuang-skills ~/lingchuang-skills
 cd ~/lingchuang-skills && ./install.sh ~/.claude/skills
 ```
@@ -73,7 +73,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 
 **分组安装会自动带上入口 `playbook`**（它只有一个文件，不占地方，但能让 agent 找到北）。
 
-**公司技能在另一个仓库**（`lingchuang-skills`）：分组是 `report`（日报三件套）/ `tapd`（TAPD 需求与拆解）/ `query`（CNB 推送、TAPD 待办核查）/ `branch`（分支创建、合入检查、清理）——它**不带入口**，装进同一个技能目录后由本库的 `playbook` 带路。
+**公司技能在另一个仓库**（`lingchuang-skills`）：分组是 `report`（日报三件套）/ `tapd`（TAPD 需求与拆解）/ `query`（CNB 推送、TAPD 待办核查）/ `branch`（分支创建、合入检查、清理）——它有**自己的入口** `灵创入口`（目录 `lc-playbook`），装进同一个技能目录即可；两库的入口名**必须不同**，同名目录会在安装时互相覆盖。
 
 ### 安装 / 更新
 
