@@ -86,9 +86,16 @@ WT="$(dirname "$REPO")/$BRANCH"
 if [ -d "$WT" ]; then
   REUSED=1
   echo "↩︎ 目录已存在，直接复用：$WT"
+  # 复用的分支若没记过 baseRef（旧流程建的）→ 顺手补记，让它也走事实判定
+  if [ -z "$(git -C "$WT" config --get "branch.$BRANCH.baseRef" 2>/dev/null || true)" ]; then
+    git -C "$WT" config "branch.$BRANCH.baseRef" "origin/$MAIN"
+    echo "   已补记 baseRef=origin/$MAIN（lint 基线出身判定的事实依据）"
+  fi
 else
   git fetch origin "$MAIN"
   git worktree add "$WT" -b "$BRANCH" "origin/$MAIN" --no-track
+  # 记「从哪拉的」：lint 基线出身判定的事实依据（--no-track 不留 upstream、push -u 也不会覆盖它）
+  git -C "$WT" config "branch.$BRANCH.baseRef" "origin/$MAIN"
   git -C "$WT" push -u origin HEAD
 fi
 
@@ -115,6 +122,7 @@ else
   echo "  worktree:  $WT"
 fi
 echo "  upstream:  origin/$BRANCH（自己，不是主分支）"
+echo "  baseRef:   origin/$MAIN（记「从哪拉的」——lint 基线出身判定的事实依据，push -u 不会覆盖）"
 echo "  进入:      cd $WT"
 echo "  install:   pnpm install 已在工作目录执行"
 if [ "$TO_TEST" = "--to-test" ]; then
