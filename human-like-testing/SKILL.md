@@ -50,8 +50,8 @@ description: "Human-like testing ONLY (no fixes): Agent operates a headed browse
 
 ## 测试账号从哪来（一个文件，多身份 · 2026-10-19 用户口径）
 
-**从哪取**：唯一来源 = 工作区根的 **`Docs/testing/test-accounts.json`**（环境卡的「账号表」项只写这个路径，不写账号本身）。
-**存哪**：`<工作区根>/Docs/testing/`，**进 `.gitignore`**——只在本机 / 团队内流通，不进仓库。
+**从哪取**：唯一来源 = 工作区根的**账号表文件**（默认 `Docs/testing/test-accounts.json`；**实际路径以环境卡的「账号表」项为准**——卡里只写路径，不写账号本身）。
+**存哪**：`<工作区根>/Docs/` 下（默认 `testing/` 子目录，也可与 `测试环境卡.md` 同目录），**不进 git**。
 **怎么存**：一份 JSON 数组，**一条 = 一个身份**：
 
 ```json
