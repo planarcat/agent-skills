@@ -1,6 +1,6 @@
 ---
 name: 类人测试
-description: "Human-like testing ONLY (no fixes): Agent operates a headed browser like a real user (look-snapshot → decide → click/type), explores and exercises the app, collects evidence (console/network/DOM), judges each scenario pass/fail, locates the failing layer, and delivers an evidence-chain test report with suspected root causes and fix directions — but never modifies any code. **Test accounts: take them from the workspace test-accounts file (`Docs/testing/test-accounts.json`, gitignored) — one entry per role; never ask the user to paste a password / OTP into chat, and never write credentials into reports.** Use when user says 类人测试, 像人一样测试, 测一下, 自测, 点一遍验收, 测试报告, 验收一下, human-like testing, exploratory testing. Bootstrap rule: read the workspace 测试环境卡 first; if absent, bootstrap one interactively. Works for pure-web SPAs and hybrid shells (Tauri/Electron) via layer-descending. Not for writing test cases (use 测试用例编写), impact audits (use 影响面终审), or code fixes (user decides next step after the report)."
+description: "Human-like testing ONLY (no fixes): Agent operates a headed browser like a real user (look-snapshot → decide → click/type), explores and exercises the app, collects evidence (console/network/DOM), judges each scenario pass/fail, locates the failing layer, and delivers an evidence-chain test report with suspected root causes and fix directions — but never modifies any code. **Test accounts (lazy-init): read the workspace test-accounts file first (path from the env-card; e.g. `Docs/test-accounts.json`, gitignored); if the needed role is missing, ask the user for it, save it back into the file immediately, and reuse it next time — never guess or self-register an account, never echo credentials into reports.** Use when user says 类人测试, 像人一样测试, 测一下, 自测, 点一遍验收, 测试报告, 验收一下, human-like testing, exploratory testing. Bootstrap rule: read the workspace 测试环境卡 first; if absent, bootstrap one interactively. Works for pure-web SPAs and hybrid shells (Tauri/Electron) via layer-descending. Not for writing test cases (use 测试用例编写), impact audits (use 影响面终审), or code fixes (user decides next step after the report)."
 ---
 
 # 类人测试（有头浏览器实时操作 + 证据链测试报告，只测不修）
@@ -40,7 +40,7 @@ description: "Human-like testing ONLY (no fixes): Agent operates a headed browse
 - 地址：<dev URL / 应用启动方式>
 - 登录与凭据：
   - 方式：<表单 / SSO / 短信验证码 / 扫码>
-  - 账号表：<工作区根 `Docs/testing/test-accounts.json`>   ← 只写路径，不写账号本身
+  - 账号表：<路径，如 `Docs/test-accounts.json`>   ← 只写路径；**表里没有就问用户要，要到存进去，下次直接用**
   - 验证码：<交还用户手输 ｜ 测试环境固定码 ｜ 关闭校验>
 - 页面形态：纯 Web / Tauri / Electron / 其他混合壳
 - 桥接 mock：<如 @tauri-apps/api/mocks 的 mockIPC；无则写"无">
@@ -48,27 +48,29 @@ description: "Human-like testing ONLY (no fixes): Agent operates a headed browse
 - 沉淀：<踩坑记录落点>
 ```
 
-## 测试账号从哪来（一个文件，多身份 · 2026-10-19 用户口径）
+## 测试账号从哪来（懒初始化：缺了才问，问到就存 · 2026-10-19 用户口径）
 
-**从哪取**：唯一来源 = 工作区根的**账号表文件**（默认 `Docs/testing/test-accounts.json`；**实际路径以环境卡的「账号表」项为准**——卡里只写路径，不写账号本身）。
-**存哪**：`<工作区根>/Docs/` 下（默认 `testing/` 子目录，也可与 `测试环境卡.md` 同目录），**不进 git**。
-**怎么存**：一份 JSON 数组，**一条 = 一个身份**：
+| 问题 | 答案 |
+|---|---|
+| **从哪取** | 工作区根的**账号表文件**（默认 `Docs/testing/test-accounts.json`；实际路径以环境卡「账号表」项为准） |
+| **存哪** | `<工作区根>/Docs/` 下（可与 `测试环境卡.md` 同目录）；**不进 git** |
+| **怎么存** | 一份 JSON 数组，**一条 = 一个身份**（下面是**格式样例，不预置任何身份**） |
 
 ```json
 [
-  { "role": "factory-admin",  "username": "<账号>", "password": "<密码>", "desc": "工厂端管理员，能审批" },
-  { "role": "factory-worker", "username": "<账号>", "password": "<密码>", "desc": "工厂端操作员，只能看自己车间" },
-  { "role": "user-operator",  "username": "<账号>", "password": "<密码>", "desc": "用户端运营" },
-  { "role": "designer",       "username": "<账号>", "password": "<密码>", "desc": "设计器" }
+  { "role": "factory-worker", "username": "<账号>", "password": "<密码>", "desc": "工厂端操作员，只看自己车间" }
 ]
 ```
 
-覆盖**各端 × 各角色 / 权限档**——要测「低权身份看不到导出按钮」，就必须用低权那条，别拿管理员账号糊弄。
+**流程（懒初始化，一步不多）**：
 
-**怎么用**：按场景需要的 `role` 从文件里取 → 填登录表单 → **不回显、不进报告与截图**；验证码那步交还用户手输。
-**没有这个文件**：问一句"测试账号表在哪，要不要我建一份"——用户给了就记进环境卡；**别自己猜账号、别走注册流程造账号**。
+1. 开测前先读账号表 —— **表里有需要的身份就直接用**，不再问
+2. **表里没有（或压根没有这个文件）→ 问用户一句**："这次要测 <场景>，需要 <某身份> 的账号，给我一个"——**只问当前需要的那条**
+3. 用户给了 → **立刻写进账号表**（下次直接读，不用再问）→ 当次就用
+4. **不做的事**：不预置身份清单、不猜账号、不走注册流程造账号、不在报告与截图里复述密码
 
-**两条底线**：① 账号表只收**测试环境**的号，**生产 / 真实个人账号不入册**；② 密码别粘进对话——用户已经粘贴过就提醒改密，且不写进任何文档与报告。
+**为什么按 `role` 分**：权限差异类 bug（如「操作员不该看到批量下载按钮」）必须用低权身份测——所以**一个身份一条，用到哪个补哪个**，不预先规划。
+**一条底线**：只收**测试环境**的号，生产 / 真实个人账号不入表。
 
 ---
 
