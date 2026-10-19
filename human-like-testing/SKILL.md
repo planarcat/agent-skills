@@ -1,6 +1,6 @@
 ---
 name: 类人测试
-description: "Human-like testing ONLY (no fixes): Agent operates a headed browser like a real user (look-snapshot → decide → click/type), explores and exercises the app, collects evidence (console/network/DOM), judges each scenario pass/fail, locates the failing layer, and delivers an evidence-chain test report with suspected root causes and fix directions — but never modifies any code. **Credentials rule: never ask the user to paste a password / OTP into chat — take them from the env-card sources (reused logged-in session first, then env vars, then OS keychain; OTP = hand control back to the user).** Use when user says 类人测试, 像人一样测试, 测一下, 自测, 点一遍验收, 测试报告, 验收一下, human-like testing, exploratory testing. Bootstrap rule: read the workspace 测试环境卡 first; if absent, bootstrap one interactively. Works for pure-web SPAs and hybrid shells (Tauri/Electron) via layer-descending. Not for writing test cases (use 测试用例编写), impact audits (use 影响面终审), or code fixes (user decides next step after the report)."
+description: "Human-like testing ONLY (no fixes): Agent operates a headed browser like a real user (look-snapshot → decide → click/type), explores and exercises the app, collects evidence (console/network/DOM), judges each scenario pass/fail, locates the failing layer, and delivers an evidence-chain test report with suspected root causes and fix directions — but never modifies any code. **Test accounts: take them from the workspace test-accounts file (`Docs/testing/test-accounts.json`, gitignored) — one entry per role; never ask the user to paste a password / OTP into chat, and never write credentials into reports.** Use when user says 类人测试, 像人一样测试, 测一下, 自测, 点一遍验收, 测试报告, 验收一下, human-like testing, exploratory testing. Bootstrap rule: read the workspace 测试环境卡 first; if absent, bootstrap one interactively. Works for pure-web SPAs and hybrid shells (Tauri/Electron) via layer-descending. Not for writing test cases (use 测试用例编写), impact audits (use 影响面终审), or code fixes (user decides next step after the report)."
 ---
 
 # 类人测试（有头浏览器实时操作 + 证据链测试报告，只测不修）
@@ -40,9 +40,7 @@ description: "Human-like testing ONLY (no fixes): Agent operates a headed browse
 - 地址：<dev URL / 应用启动方式>
 - 登录与凭据：
   - 方式：<表单 / SSO / 短信验证码 / 扫码>
-  - 账号来源：<环境变量 TEST_USER ｜ 钥匙串服务名 <名> ｜ 存储态文件 <路径>>   ← 只写来源
-  - 密码来源：<同上>；**agent 不得把明文写进任何文件 / 日志 / 报告**
-  - 会话复用：<storageState 路径 ｜ 持久化 profile 目录>（有则优先，免密）
+  - 账号表：<工作区根 `Docs/testing/test-accounts.json`>   ← 只写路径，不写账号本身
   - 验证码：<交还用户手输 ｜ 测试环境固定码 ｜ 关闭校验>
 - 页面形态：纯 Web / Tauri / Electron / 其他混合壳
 - 桥接 mock：<如 @tauri-apps/api/mocks 的 mockIPC；无则写"无">
@@ -50,23 +48,27 @@ description: "Human-like testing ONLY (no fixes): Agent operates a headed browse
 - 沉淀：<踩坑记录落点>
 ```
 
-## 凭据怎么拿（2026-10-19 用户口径：**不许把密码粘进对话**）
+## 测试账号从哪来（一个文件，多身份 · 2026-10-19 用户口径）
 
-环境卡只写**来源**，取用按优先级：
+**从哪取**：唯一来源 = 工作区根的 **`Docs/testing/test-accounts.json`**（环境卡的「账号表」项只写这个路径，不写账号本身）。
+**存哪**：`<工作区根>/Docs/testing/`，**进 `.gitignore`**——只在本机 / 团队内流通，不进仓库。
+**怎么存**：一份 JSON 数组，**一条 = 一个身份**：
 
-| 档 | 做法 | 适用 |
-|:--|:--|:--|
-| ① **复用已登录会话**（首选） | 让用户在浏览器里**自己登一次**，agent 复用会话——Playwright `storageState` 文件，或直接复用同一持久化 profile 目录（两者都放 gitignore 里） | 常规表单登录；有验证码 / SSO 的也走这条 |
-| ② **环境变量 / 本地 .env** | `TEST_USER` / `TEST_PASSWORD` 从环境变量或 `.env.local`（gitignore）读，注入登录表单；**不回显、不写日志、不进报告** | 自动化跑、CI |
-| ③ **系统钥匙串** | macOS：`security find-generic-password -s <服务名> -w`；Windows：凭据管理器 | 想集中管理凭据 |
-| ④ **验证码 / 一次性口令** | **停下交还控制权**让用户手输（浏览器交还 / 用户点完再继续） | 短信 / 邮箱验证码、扫码登录 |
+```json
+[
+  { "role": "factory-admin",  "username": "<账号>", "password": "<密码>", "desc": "工厂端管理员，能审批" },
+  { "role": "factory-worker", "username": "<账号>", "password": "<密码>", "desc": "工厂端操作员，只能看自己车间" },
+  { "role": "user-operator",  "username": "<账号>", "password": "<密码>", "desc": "用户端运营" },
+  { "role": "designer",       "username": "<账号>", "password": "<密码>", "desc": "设计器" }
+]
+```
 
-**四条红线**：
+覆盖**各端 × 各角色 / 权限档**——要测「低权身份看不到导出按钮」，就必须用低权那条，别拿管理员账号糊弄。
 
-1. **密码 / 验证码不进对话**——用户若已粘贴：用完**提醒改密**，且不写进任何文档、日志、报告
-2. **明文不进文件**——环境卡、测试报告、截图里都不许出现；截图含凭据 → 打码后再交付
-3. **只用专用测试账号**——不拿真实个人 / 生产账号测；生产环境只读、不做写操作
-4. **取不到就问**——环境卡没写来源、用户也没给 → 问一句"测试账号怎么取"，**不猜、不靠注册流程造账号**
+**怎么用**：按场景需要的 `role` 从文件里取 → 填登录表单 → **不回显、不进报告与截图**；验证码那步交还用户手输。
+**没有这个文件**：问一句"测试账号表在哪，要不要我建一份"——用户给了就记进环境卡；**别自己猜账号、别走注册流程造账号**。
+
+**两条底线**：① 账号表只收**测试环境**的号，**生产 / 真实个人账号不入册**；② 密码别粘进对话——用户已经粘贴过就提醒改密，且不写进任何文档与报告。
 
 ---
 

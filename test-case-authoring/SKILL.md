@@ -21,7 +21,7 @@ description: "Tests workflow in three parts—pick by user intent. Part A: add/w
 | **C 测试驱动调试** | 用测试查 bug、跑 failing spec、测试失败帮我查 | **是**（有 REPORT 后再最小修复） |
 
 > 原 `e2e-console-monitoring` 已并入 Part B。
-> **Part B / C 跑 E2E 需要登录**时，凭据取用与红线见 `类人测试` 的「凭据怎么拿」——环境卡只写来源，**密码 / 验证码不进对话、不进文件**。
+> **Part B / C 跑 E2E 需要登录**时，账号从工作区 `Docs/testing/test-accounts.json` 按身份取（见 `类人测试`「测试账号从哪来」）；**密码不进对话、不进报告**。
 
 ---
 
