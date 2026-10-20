@@ -58,7 +58,7 @@ ENTRY_SKILL="playbook"   # 入口技能：分组安装时自动带上
 group_skills() {
   case "$1" in
     plan|方案)    echo "plan" ;;
-    dev|开发)     echo "development-guardrails change-advice impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring human-like-testing generate-commit" ;;
+    dev|开发)     echo "development-guardrails workspace-config change-advice impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring human-like-testing generate-commit" ;;
     design|设计)  echo "design-guardrails" ;;
     journal|记录) echo "record-change-log record-development-blog" ;;
     *) return 1 ;;
