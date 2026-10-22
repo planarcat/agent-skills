@@ -21,7 +21,7 @@ description: "Tests workflow in three parts—pick by user intent. Part A: add/w
 | **C 测试驱动调试** | 用测试查 bug、跑 failing spec、测试失败帮我查 | **是**（有 REPORT 后再最小修复） |
 
 > 原 `e2e-console-monitoring` 已并入 Part B。
-> **Part B / C 跑 E2E 需要登录**时，账号取 `工作区配置` 的「测试」节；**缺哪条问用户要哪条**，要到立刻写回配置（见 `类人测试`「测试账号」）；报告里不复述密码。
+> **Part B / C 跑 E2E 需要登录**时，账号取 `工作区配置.json` 的 `testAccounts`（按 `role` / `end` 选）；**缺哪条问用户要哪条**，要到立刻追加进数组（保持合法 JSON，见 `类人测试`「测试账号」）；报告里不复述密码。
 
 ---
 

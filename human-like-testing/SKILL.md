@@ -1,6 +1,6 @@
 ---
 name: 类人测试
-description: "Human-like testing ONLY (no fixes): Agent operates a headed browser like a real user (look-snapshot → decide → click/type), explores and exercises the app, collects evidence (console/network/DOM), judges each scenario pass/fail, locates the failing layer, and delivers an evidence-chain test report with suspected root causes and fix directions — but never modifies any code. **Test accounts (lazy-init): read the 「测试」section of the workspace config (`Docs/工作区配置.md`) first; if the needed role is missing, ask the user for it, save it back into that section immediately, and reuse it next time — never guess or self-register an account, never echo credentials into reports.** Use when user says 类人测试, 像人一样测试, 测一下, 自测, 点一遍验收, 测试报告, 验收一下, human-like testing, exploratory testing. Bootstrap rule: read the workspace 测试环境卡 first; if absent, bootstrap one interactively. Works for pure-web SPAs and hybrid shells (Tauri/Electron) via layer-descending. Not for writing test cases (use 测试用例编写), impact audits (use 影响面终审), or code fixes (user decides next step after the report)."
+description: "Human-like testing ONLY (no fixes): Agent operates a headed browser like a real user (look-snapshot → decide → click/type), explores and exercises the app, collects evidence (console/network/DOM), judges each scenario pass/fail, locates the failing layer, and delivers an evidence-chain test report with suspected root causes and fix directions — but never modifies any code. **Test accounts (lazy-init): read the `testAccounts` array in `Docs/工作区配置.json` first; if the needed role is missing, ask the user for it, append it to that array (keep valid JSON) immediately, and reuse it next time — never guess or self-register an account, never echo credentials into reports.** Use when user says 类人测试, 像人一样测试, 测一下, 自测, 点一遍验收, 测试报告, 验收一下, human-like testing, exploratory testing. Bootstrap rule: read the workspace 测试环境卡 first; if absent, bootstrap one interactively. Works for pure-web SPAs and hybrid shells (Tauri/Electron) via layer-descending. Not for writing test cases (use 测试用例编写), impact audits (use 影响面终审), or code fixes (user decides next step after the report)."
 ---
 
 # 类人测试（有头浏览器实时操作 + 证据链测试报告，只测不修）
@@ -40,7 +40,7 @@ description: "Human-like testing ONLY (no fixes): Agent operates a headed browse
 - 地址：<dev URL / 应用启动方式>
 - 登录与凭据：
   - 方式：<表单 / SSO / 短信验证码 / 扫码>
-  - 账号：见 `工作区配置` 的「测试」节（**缺哪条问用户要哪条**，要到写回配置，下次直接用）
+  - 账号：读 `工作区配置.json` 的 `testAccounts`，按 `role` / `end` 选（**缺哪条问用户要哪条**，要到写回 json，下次直接用）
   - 验证码：<交还用户手输 ｜ 测试环境固定码 ｜ 关闭校验>
 - 页面形态：纯 Web / Tauri / Electron / 其他混合壳
 - 桥接 mock：<如 @tauri-apps/api/mocks 的 mockIPC；无则写"无">
@@ -48,23 +48,21 @@ description: "Human-like testing ONLY (no fixes): Agent operates a headed browse
 - 沉淀：<踩坑记录落点>
 ```
 
-## 测试账号（写在「工作区配置」里 · 懒初始化 · 2026-10-20 用户口径）
+## 测试账号（读 `工作区配置.json` 的 `testAccounts` · 懒初始化 · 2026-10-20 用户口径 / 10-22 改）
 
-**账号是 `工作区配置.md` 的「测试」节的一部分**，不再单开文件（一份配置管所有工作区特定内容）：
+**账号是 `工作区配置.json` 的 `testAccounts` 数组的一部分**（2026-10-22 起配置拆成 json 存值 + md 存规矩）——**一条 = 一个身份**：
 
-```markdown
-## 测试
-- 测试账号（一个身份一行；缺哪条问用户要哪条）：
-  | role | 账号 | 密码 | 说明 |
-  | --- | --- | --- | --- |
-  | factory-worker | <账号> | <密码> | 工厂端操作员，只看自己车间 |
+```json
+"testAccounts": [
+  { "role": "factory-worker", "end": "F", "username": "<账号>", "password": "<密码>", "desc": "工厂端操作员，只看自己车间", "since": "YYYY-MM-DD" }
+]
 ```
 
 **流程（懒初始化，一步不多）**：
 
-1. 开测前先读配置的「测试」节 —— **里面已有需要的身份就直接用**，不再问
+1. 开测前先读 `testAccounts` —— **里面已有需要的身份就直接用**，不再问
 2. **没有这条身份 → 问用户一句**："这次要测 <场景>，需要 <某身份> 的账号，给我一个"——**只问当前需要的那条**
-3. 用户给了 → **立刻写回配置**（下次直接读，不用再问）→ 当次就用
+3. 用户给了 → **立刻追加进 `testAccounts` 数组**（保持合法 JSON，写完自检一次可解析；下次直接读，不用再问）→ 当次就用
    （**缺项铁律同样适用**：可以建议，不许自己拍值先写后干——见 `工作区配置`）
 4. **不做的事**：不预置身份清单、不猜账号、不走注册流程造账号、不在报告与截图里复述密码
 
