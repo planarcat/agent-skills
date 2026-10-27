@@ -1,6 +1,6 @@
 ---
 name: 开发中规范
-description: "Mandatory guardrails before editing source code. ALWAYS read this entire SKILL.md before the first Write/Edit/StrReplace on application source in the conversation if not already loaded. Part A applies to every code change (comments). Part B applies when debugging is needed: bug unresolved, fix incomplete, missing runtime evidence, user says still broken, or investigating errors. Use for 修改代码, 写代码, 实现, 修复, bug, 报错, 调试, 埋点, 重构, refactor, fix, patch, implement, 开发中规范, 开发中规范, @开发中规范. Part C（身份守卫）applies when 多会话并行——写共享面（Docs/ Knowledge/ Reports/ commit/ push/ pm2）前先核对本会话需求 id。 Listing in available_skills does not count as compliance; must Read file."
+description: "Mandatory guardrails before editing source code. ALWAYS read this entire SKILL.md before the first Write/Edit/StrReplace on application source in the conversation if not already loaded. Part A applies to every code change (comments). Part B applies when debugging is needed: bug unresolved, fix incomplete, missing runtime evidence, user says still broken, or investigating errors. Use for 修改代码, 写代码, 实现, 修复, bug, 报错, 调试, 埋点, 重构, refactor, fix, patch, implement, 开发中规范, 开发中规范, @开发中规范. 新文件后缀（TS 仓一律 .ts/.tsx）、平台边界、Part C（身份守卫）在写共享面前核对本会话需求 id。 Listing in available_skills does not count as compliance; must Read file."
 ---
 
 # 开发中规范
@@ -56,9 +56,20 @@ Skill 出现在 `available_skills` **不等于**已遵守。必须按下列顺�
 
 ---
 
-## 三条禁令（写实现时必须守）
+## 改代码前硬约束（6 条 · 写实现时必须守）
 
-这三条是**角色与测试边界**的硬约束，与 Part A / Part B **并列、任何时候都生效**：
+> 与 Part A / Part B **并列、任何时候都生效**。原「三条禁令」「平台边界」「语言与文件类型」「身份守卫」四节已合并于此，细则依次在下面各小节。每轮动手前先过这条索引：
+
+| # | 约束 | 一句话 | 什么时候用 |
+|:--|:--|:--|:--|
+| **1-3** | 角色与测试边界 | 测试与实现分离 / 不为过测改测试 / 测试目录默认禁改 | 写测试、动测试目录时 |
+| **4** | 平台边界 | 按拆解的平台结论落改动，不顺手兼容、不硬编码单平台判断 | 需求涉及平台差异时 |
+| **5** | 语言与文件类型 | 有 TS 基建的仓，新文件一律 `.ts` / `.tsx` | 每次新增文件时 |
+| **6** | 身份守卫 | 写任何共享面前，先核对目标是否属于本会话的需求 id | 多会话并行、写共享面时 |
+
+### 1-3 角色与测试边界（写实现时必须守）
+
+这三条是**角色与测试边界**的硬约束：
 
 | # | 禁令 | 为什么 |
 |:--|:--|:--|
@@ -68,9 +79,7 @@ Skill 出现在 `available_skills` **不等于**已遵守。必须按下列顺�
 
 **例外与留痕**：确需新增 / 修改测试 → 先解锁 → 在 commit message 里写清**解锁了哪个目录、为什么、改了什么口径** → 提交后再锁回。
 
----
-
-## 平台边界（2026-10-26 用户口径，与三条禁令并列）
+### 4 平台边界（2026-10-26 用户口径）
 
 动手前先读需求拆解的「涉及平台」结论（单平台 / 多平台 / 全平台），按结论落改动：
 
@@ -84,9 +93,21 @@ Skill 出现在 `available_skills` **不等于**已遵守。必须按下列顺�
 - 拆解没写平台、或代码里看不出平台边界 → **停下来问用户**，不猜、不默认全平台（与「禁止私自加兜底」同源）。
 - 收尾自检：diff 里每处平台判断都能对应到拆解结论；单平台需求若改到了共用模块，必须说明对其它平台的影响。
 
----
+### 5 语言与文件类型（新文件统一 TS · 2026-10-27 用户口径）
 
-## 身份守卫（多会话并行 · 2026-10-16 用户口径，与三条禁令并列、任何时候生效）
+**先判仓、再定后缀**，不许凭习惯挑语言：
+
+| 仓内现状（怎么判） | 新增文件用什么 |
+| :-- | :-- |
+| **已有 TS 基建**——`tsconfig.json` / `jsconfig.json`、`package.json` 有 `typescript` 依赖、仓内已有 `.ts` / `.tsx` / `<script lang="ts">` | **一律 `.ts` / `.tsx`**（Vue 单文件组件用 `<script lang="ts">`）；**不新增 `.js` 业务文件** |
+| **没有 TS 基建**（纯 JS 仓） | 按仓内既有语言写 `.js`；**不擅自引入 TS**——不装 `typescript`、不加 `tsconfig`，需要转 TS 先问用户 |
+
+- **改旧文件不顺手改名**：既有 `.js` 文件按最小改动原则继续改，**不为"统一 TS"去重命名 / 重构无关文件**（改名属于独立改动，需用户点头）。
+- **豁免项**：`.d.ts` 声明文件按需新增；工具链强制要求后缀的配置文件（仓内本来就是 `.js` 的 `*.config.js`、`.eslintrc.js` 等）沿用既有后缀。
+- **收尾自检**：diff 里每个新增源码文件的后缀都与仓内基建一致；**若出现了新增 `.js`，必须能说出属于上表第二行或豁免项的理由**，否则补一个 `.ts` 版本替换掉。
+- 本仓无 TS 基建却按需求该上 TS → **只报不修**（写进收尾说明让用户决定），与「仓缺能力只报不修」同源。
+
+### 6 身份守卫（多会话并行 · 2026-10-16 用户口径）
 
 同一工作区可能同时有多个会话在开发**不同需求**，而共享面上全是两个需求的痕迹。**身份取本会话自己的锚**（**公司库** `lingchuang-skills` 里 `创建分支` 的「会话身份锚」三源：本会话首条素材 / 用户点名的分支 / 自己 cwd 所在 worktree；没装就按本节"读只读、写只写自己"的通用原则执行）；写任何**共享面**前先核对目标是否属于自己，**不符就停手问用户，不硬写、不"顺手"代改**：
 
@@ -452,11 +473,23 @@ function flushDebugReport(reason) {
 - 持久注释与临时埋点是否区分清楚
 - 埋点修复后是否已全部删除，注释是否按 Part A 合理保留
 
-**三条禁令（角色与测试边界）：**
+**硬约束 1-3（角色与测试边界）：**
 
 - 本轮是否由同一角色同时产出了测试与实现
 - 是否出现过"为通过测试而改测试"，是否留痕（哪条断言 / 为什么 / 依据口径）
 - 是否动了测试目录；动了是否已解锁 + 留痕 + 锁回
+
+**硬约束 5（语言与文件类型）：**
+
+- 新增源码文件的后缀是否与仓内基建一致（TS 仓一律 `.ts` / `.tsx`，Vue 用 `<script lang="ts">`）
+- 出现新增 `.js` 是否属于「纯 JS 仓」或豁免项，理由是否写明
+- 是否为了"统一 TS"去改名 / 重构无关旧文件（不该做）
+- 无 TS 基建的仓是否被擅自引入依赖或配置（不该做，应只报不修）
+
+**硬约束 4 / 6（平台边界 / 身份守卫）：**
+
+- 平台判断是否与拆解结论一一对应；单平台需求是否误改了共用模块
+- 写共享面前是否核对了本会话需求 id；发现目标不属于自己是否已停手问用户
 
 **源码改动收尾（与 `代码审查` 影响面与回归维）：**
 
