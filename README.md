@@ -66,7 +66,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 ```bash
 ./install.sh --group plan    ~/.claude/skills    # 方案（讨论→执行→锁定）
 ./install.sh --group dev     ~/.claude/skills    # 开发与质量（护栏/影响面/冲突/审查/测试/提交）
-./install.sh --group design  ~/.claude/skills    # 界面设计规范
+./install.sh --group design  ~/.claude/skills    # 界面设计规范 + 界面优化设计
 ./install.sh --group journal ~/.claude/skills    # 记录与沉淀（改动记录 / 开发博客）
 ./install.sh --list                              # 看有哪些技能和分组，不安装
 ```
@@ -189,6 +189,7 @@ agent-skills/
 ├── record-change-log/            # 改动/问题沉淀：短记 Logs/ + 长记 Blogs/
 ├── record-development-blog/      # 兼容壳：已并入 record-change-log
 ├── development-guardrails/       # 开发中规范
+├── ui-ux-redesign/               # 界面优化设计：UI/UX 诊断 → 方案 → 可视化原型（单文件 HTML）
 ├── change-advice/                # 修改建议（不改代码）
 ├── test-case-authoring/          # 测试 Part A/B/C
 ├── human-like-testing/           # 类人测试：像人一样自测验收（环境卡 + 证据链）
