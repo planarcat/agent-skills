@@ -29,7 +29,7 @@ description: "工作区特定内容的唯一出处 + 懒初始化流程。工作
 |---|---|---|
 | `repos` | **仓前缀**（可多字母，如 `UF`/`UB`/`MF`/`MB`）→ 仓库 / 前端 / 后端 / 仓前缀 / 生产分支 / 测试分支（`null`＝未确认） | 创建分支、分支合入检查、清理分支、需求拆解落盘 |
 | `tapdWorkspaces`（或对应需求系统的项目键） | 项目别名 → 项目 id | TAPD 待办查询、TAPD 需求撰写、需求拆解、日报撰写 |
-| `paths` | 各类产物路径：需求拆解、日报、知识库、方案、改动记录 | 需求拆解、日报三件套、知识沉淀、改动记录、方案 |
+| `paths` | 各类产物路径：需求拆解、日报、知识库、方案、改动记录、**接口快照**（`apiSnapshots`） | 需求拆解、日报三件套、知识沉淀、改动记录、方案、接口快照 |
 | `devPorts` | 端口段位 / 分配规则（可带 `_note` 写明未定端） | 创建分支（起服务）、类人测试 |
 | `testAccounts` | 数组，**一条＝一个身份**：`role` / `end` / `username` / `password` / `desc` / `since` | 类人测试、测试用例编写、需求拆解（接口查证） |
 | `testEnv` | **端前缀** → 测试环境访问地址（`web`；`null`＝未提供）+ `desc` | 类人测试、自测验收、需求拆解与审查（需要提测试地址时） |
@@ -103,6 +103,7 @@ description: "工作区特定内容的唯一出处 + 懒初始化流程。工作
   "paths": {
     "dailyReport": "Reports/daily_work/",
     "requirementBreakdown": "Docs/需求拆解/",
+    "apiSnapshots": "Docs/API快照/",
     "knowledge": "Knowledge/",
     "plans": "Plans/",
     "logs": "Logs/",

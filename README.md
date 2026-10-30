@@ -191,6 +191,7 @@ agent-skills/
 ├── development-guardrails/       # 开发中规范
 ├── ui-ux-redesign/               # 界面优化设计：UI/UX 诊断 → 方案 → 可视化原型（单文件 HTML）
 ├── change-advice/                # 修改建议（不改代码）
+├── api-snapshot/                 # 接口快照：请求/响应落盘，供回归 diff 与 mock
 ├── test-case-authoring/          # 测试 Part A/B/C
 ├── human-like-testing/           # 类人测试：像人一样自测验收（环境卡 + 证据链）
 ├── impact-surface-audit/         # 最终影响面审计（强触发词）

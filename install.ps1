@@ -53,7 +53,7 @@ $UseCopy    = [bool]$Copy              # 默认用「目录联接」（不需要
 function Get-GroupSkills([string] $name) {
   switch ($name) {
     { $_ -in 'plan','方案' }    { return 'plan' }
-    { $_ -in 'dev','开发' }     { return 'development-guardrails workspace-config change-advice impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring human-like-testing generate-commit' }
+    { $_ -in 'dev','开发' }     { return 'development-guardrails workspace-config change-advice impact-surface-audit full-code-review resolve-merge-conflict test-case-authoring human-like-testing generate-commit api-snapshot' }
     { $_ -in 'design','设计' }  { return 'design-guardrails ui-ux-redesign' }
     { $_ -in 'journal','记录' } { return 'record-change-log record-development-blog' }
     default { return $null }

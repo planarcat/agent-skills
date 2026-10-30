@@ -21,6 +21,7 @@ description: "Human-like testing ONLY (no fixes): Agent operates a headed browse
 | 改完代码出影响面与回归清单 | 代码审查（影响面与回归） |
 | 看完报告后要改：原因分析、修改方案 | 改动建议 / 方案（讨论阶段） |
 | **像人一样操作页面，测试并出报告** | **本 skill** |
+| 测试中调到的接口要留证 / 以后做 mock | `接口快照`（`api-snapshot`）：按它落盘请求+响应（脱敏、追加版本） |
 
 ---
 

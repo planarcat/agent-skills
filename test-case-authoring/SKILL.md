@@ -44,6 +44,7 @@ description: "Tests workflow in three parts—pick by user intent. Part A: add/w
 | `开发中规范` Part A | 改测试代码时按需补注释 |
 | `开发中规范` Part B | **手工复现**且无 spec 时用手动 collector + `[DEBUG:slug] REPORT`；**已有/可写 spec 时优先 Part C**。与 `[E2E-DIAG]` / `[TEST-DIAG]` 勿混 slug |
 | `需求拆解`（开工定级节） | 档位决定本技能要不要上、上到多严 |
+| `接口快照` | 做 mock / fixture 时从它取**真实的请求与响应**（含失败响应）；回归对比也用它，不凭记忆造数据 |
 | `代码审查` 测试质量维（覆盖 + 变异） | 覆盖问"测到了吗"、变异问"测得硬吗"；存活变异体 → 反推"哪条断言太弱" → 回来补断言 |
 | `代码审查`（影响面与回归） | 本 skill 管「写测试这一轮」；改产品后的影响面清单仍用 代码审查 的影响面与回归维 |
 
