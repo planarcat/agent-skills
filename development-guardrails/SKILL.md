@@ -1,5 +1,5 @@
 ---
-name: 开发中规范
+name: development-guardrails
 description: "Mandatory guardrails before editing source code. ALWAYS read this entire SKILL.md before the first Write/Edit/StrReplace on application source in the conversation if not already loaded. Part A applies to every code change (comments). Part B applies when debugging is needed: bug unresolved, fix incomplete, missing runtime evidence, user says still broken, or investigating errors. Use for 修改代码, 写代码, 实现, 修复, bug, 报错, 调试, 埋点, 重构, refactor, fix, patch, implement, 开发中规范, 开发中规范, @开发中规范. 新文件后缀（TS 仓一律 .ts/.tsx）、平台边界、Part C（身份守卫）在写共享面前核对本会话需求 id。 Listing in available_skills does not count as compliance; must Read file."
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: 界面设计规范
+name: design-guardrails
 description: "Mandatory design guardrails for any UI work, in any project. ALWAYS read this file before the first Write/Edit on UI files (HTML / CSS / Vue / React / JSX / 组件 / 样式文件) in the conversation if not already loaded. Covers: 界面对齐设计规范、场景基调判定、禁止项自查、设置页/仪表盘/空态结构、样式 lint、新旧项目的规范起手与现状盘点。Use for 设计界面, 改界面, 做页面, 写样式, UI, UX, 布局, 排版, 配色, 组件, 美化, 界面不好看, 设计规范, design, UI work, @界面设计规范. Listing in available_skills does not count as compliance; must Read file."
 ---
 

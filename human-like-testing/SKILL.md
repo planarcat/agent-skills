@@ -1,5 +1,5 @@
 ---
-name: 类人测试
+name: human-like-testing
 description: "Human-like testing ONLY (no fixes): Agent operates a headed browser like a real user (look-snapshot → decide → click/type), explores and exercises the app, collects evidence (console/network/DOM), judges each scenario pass/fail, locates the failing layer, and delivers an evidence-chain test report with suspected root causes and fix directions — but never modifies any code. **Test accounts (lazy-init): read the `testAccounts` array in `Docs/工作区配置.json` first; if the needed role is missing, ask the user for it, append it to that array (keep valid JSON) immediately, and reuse it next time — never guess or self-register an account, never echo credentials into reports.** Use when user says 类人测试, 像人一样测试, 测一下, 自测, 点一遍验收, 测试报告, 验收一下, human-like testing, exploratory testing. Bootstrap rule: read the workspace 测试环境卡 first; if absent, bootstrap one interactively. Not for writing test cases (use 测试用例编写), impact audits (use 影响面终审), or code fixes (user decides next step after the report)."
 ---
 

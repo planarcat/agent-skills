@@ -1,5 +1,5 @@
 ---
-name: 测试用例编写
+name: test-case-authoring
 description: "Tests workflow in three parts—pick by user intent. Part A: add/write test cases (编写测试, 增加测试, 测试用例)—expect red on current code, do not fix product after authoring unless user asks. Part B: E2E console/pageerror monitoring when writing or improving browser tests. Part C: test-driven debugging (测试驱动调试, 用测试查, 跑 spec 调试, 测试失败排查, debug with test, failing spec)—Agent runs tests, adds harness diagnostics and console capture as needed, reads [TEST-DEBUG-REPORT] from terminal/attach before fixing product. Read entire SKILL.md. Aliases: e2e-console-monitoring (merged into Part B)."
 ---
 
