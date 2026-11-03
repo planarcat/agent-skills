@@ -49,7 +49,7 @@ description: "技能总入口：技能地图 + 流程路由 + 状态判定。**�
 - 体检命令：仓库根 `./install.sh --lint`（检查每个技能是否自包含、列出文档级跨技能指针、检测**同名参考文件漂移**——同一份文档在多个技能里各留一份时内容必须一致）。
 - 移植命令：`./install.sh --copy <目标目录> <技能名…>`；整组用 `--copy --no-entry --group <组名> <目标目录>`（`--no-entry` 不带入口）。**公司库同理**，只是它的分组是 `report` / `tapd` / `query` / `branch`，入口是它自己的 `lc-playbook`（`灵创入口`）。
 
-## 技能地图 · 通用库（17 个，含本入口）
+## 技能地图 · 通用库（22 个，含本入口）
 
 | 分组 | 技能 | 干什么 | 何时读它 |
 |---|---|---|---|
@@ -68,9 +68,15 @@ description: "技能总入口：技能地图 + 流程路由 + 状态判定。**�
 | `dev` | `类人测试`（`human-like-testing`） | **只测不修**：agent 开有头浏览器像真人一样用产品，采集证据（console / network / DOM），逐场景判通过/失败并定位失败点 | 说"类人测试 / 像真人一样跑一遍"；要验证改动在真实界面上的表现 |
 | `dev` | `生成提交`（`generate-commit`） | 生成通俗易懂的 commit message，**提交后先做「推送前核验」，通过才推到需求分支同名上游**；用户说"只提交/先别推"才止步 | 说"生成 commit" |
 | `dev` | `接口快照`（`api-snapshot`） | **接口调用 / 用户直供的数据落盘**：一接口一文件，含完整请求 + 响应 + 环境 / 角色 / 来源，追加版本不覆盖历史，易变字段剔除，鉴权头脱敏；供回归 diff 与 mock；原始快照不进 git | 说「把这个接口存下来 / 留份返回数据 / 以后回归要用 / 做个 mock / 接口数据留档」；测试、类人测试、需求查证时自动触发 |
-| `dev` | `知识沉淀`（`knowledge-precipitation`） | **开发知识库**：业务理解/坑/决策以需求为单位增量沉淀进工作区根 Knowledge/（业务文档第一公民，一篇读懂一个业务，人机共读） | 说"沉淀一下"；日报/改动记录收尾自动挂载 |
+| `dev` | `知识沉淀`（`knowledge-precipitation`） | **知识沉淀总入口（底层 kb-skills 体系）**：知识库在全局 `~/kb/<slug>/`（独立 git + wiki：overview/entities/sources/analyses），按意图路由到 6 个子 skill（建库 / 外部素材 ingest / 对话结论捞取 / 更新受影响页 / 以 wiki 答问 / lint 体检）；收尾挂载走 `capturing-takeaways`（提议 → 查重 → 用户点头落盘）；依赖全局 `kb` CLI | 说「沉淀一下 / 记进知识库 / 记住这个 / 建知识库 / 把这份资料沉淀进去 / 检查知识库」；日报 / 审查 / 改动记录 / 生成提交收尾挂载 |
 | `journal` | `改动记录`（`record-change-log`） | **沉淀改动/问题**：短记（`Logs/`，≤100 字）+ 长记（`Blogs/`，第一人称） | 说"编成日志""记录这个问题/编成博客" |
 | `journal` | `开发博客`（`record-development-blog`） | **兼容壳**：已并入 `改动记录`（`record-change-log`） 的长记模式 | 老触发词照旧命中这里，读到它就转去执行 `改动记录` |
+| `dev` | `initializing-kb` | 建知识库：`~/kb/<slug>/` + AGENTS.md 运行契约 + wiki 骨架（kb-skills 体系） | 说「建个知识库 / 把这类资料长期管起来」 |
+| `dev` | `ingesting-sources` | 外部素材（文章 / PDF / 链接）首次落库：来源页 + 待更新清单 | 说「把这份资料沉淀进去 / ingest 一下」 |
+| `dev` | `capturing-takeaways` | 对话结论捞取：主动提议（≤3 条）→ 查重 → 用户点头落盘 | 说「记住这个 / 这个结论存一下」；各技能收尾挂载 |
+| `dev` | `updating-related-pages` | ingest 后更新受影响的实体页 / 综述页 / 交叉链接 | 通常跟在 ingesting-sources 后面 |
+| `dev` | `querying-the-wiki` | 以维护后的 wiki 为主要知识层回答问题 | 说「基于知识库回答 / 查一下知识库」 |
+| `dev` | `linting-the-wiki` | 知识库体检：坏链 / orphan 页 / 缺索引 / 维护债务 | 说「检查一下知识库」或定期跑 |
 
 ## 流程路由（按你现在在哪一步）
 
@@ -107,7 +113,7 @@ description: "技能总入口：技能地图 + 流程路由 + 状态判定。**�
 
 | 类型 | 技能 | 说明 |
 |---|---|---|
-| 会写盘 | `方案`（`Plans/`）、`改动记录`（`Logs/` `Blogs/`）、`知识沉淀`（`Knowledge/`）、`界面优化设计`（`Docs/设计稿/`，落点读 json `paths.uiPrototype`）、`接口快照`（`Docs/API快照/`，落点读 json `paths.apiSnapshots`，**不进 git**） | 落点遵守各技能正文 |
+| 会写盘 | `方案`（`Plans/`）、`改动记录`（`Logs/` `Blogs/`）、`知识沉淀` 体系（全局 `~/kb/<slug>/`，独立 git，不进业务仓与工作区）、`界面优化设计`（`Docs/设计稿/`，落点读 json `paths.uiPrototype`）、`接口快照`（`Docs/API快照/`，落点读 json `paths.apiSnapshots`，**不进 git**） | 落点遵守各技能正文 |
 | 只读 / 只分析 | `改动建议`、`影响面终审`、`开发中规范`、`代码审查` | 不产出业务代码改动 |
 | 需要外部连接器 | **公司库**的 `CNB推送审计`（cnb）、`TAPD待办查询` / `TAPD需求撰写`（tapd） | 装了 `lingchuang-skills` 才有 |
 

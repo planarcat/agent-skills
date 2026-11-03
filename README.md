@@ -186,7 +186,13 @@ agent-skills/
 ├── branch-merge-status/          # 分支合入检查（只读：已进生产 / 只进测试 / 未合入 / 空壳分支四类）
 ├── cleanup-requirement-branch/   # 清理分支（只清已进生产且非空壳；脚本默认 dry-run）
 ├── requirement-breakdown/        # 需求拆解 + 开工定级（六维评分→档位→门禁清单→缺口清单）
-├── knowledge-precipitation/      # 知识沉淀（Knowledge/ 开发知识库）
+├── knowledge-precipitation/      # 知识沉淀总入口（kb-skills 体系：~/kb/<slug>/ wiki）
+├── initializing-kb/              # kb-skills：建知识库
+├── ingesting-sources/            # kb-skills：外部素材落库
+├── updating-related-pages/       # kb-skills：更新受影响页面
+├── querying-the-wiki/            # kb-skills：以 wiki 答问
+├── linting-the-wiki/             # kb-skills：知识库体检
+├── capturing-takeaways/          # kb-skills：对话结论捞取（提议→查重→点头落盘）
 ├── resolve-merge-conflict/       # 手动解决合并冲突（禁止覆盖）
 ├── record-change-log/            # 改动/问题沉淀：短记 Logs/ + 长记 Blogs/
 ├── record-development-blog/      # 兼容壳：已并入 record-change-log

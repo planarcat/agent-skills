@@ -104,6 +104,7 @@ description: "工作区特定内容的唯一出处 + 懒初始化流程。工作
     "dailyReport": "Reports/daily_work/",
     "requirementBreakdown": "Docs/需求拆解/",
     "apiSnapshots": "Docs/API快照/",
+    "_note_knowledge": "知识库已切换为 kb-skills 体系：全局 ~/kb/<slug>/，不走工作区 paths.knowledge；Knowledge/ 仅为存量只读",
     "knowledge": "Knowledge/",
     "plans": "Plans/",
     "logs": "Logs/",
