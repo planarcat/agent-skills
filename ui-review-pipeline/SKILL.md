@@ -90,7 +90,7 @@ description: "界面 UI&UX 审查，两段式（审查出清单 ⏸ 用户批准
 
 - **截图**：ZCode 用 `browser-use:control-browser`（多视口、多状态遍历）；其他工具用各自的浏览器 / Playwright 能力；都没有 → 向用户要截图，收到后照常跑 Run A。
 - **判图**：终验（阶段 4）可调 visual-judge 类子代理（有就调，独立判官）；没有 → 主代理按 `visual-acceptance` 判据自己判。
-- 🔴 `references/proof-of-fix/bin/` 是**第三方脚本**，首次运行前先通读一遍再用（来源见 `references/SOURCES.md`）。
+- 🔴 `references/proof-of-fix/bin/` 是**第三方脚本**，首次运行前先通读一遍再用（来源见 `references/收编来源-界面审查.md`）。
 
 ## 原子 skill 的路径换算
 
@@ -108,7 +108,7 @@ description: "界面 UI&UX 审查，两段式（审查出清单 ⏸ 用户批准
 - 语言与用户一致（默认中文）；专有名词保留原文。
 - 用户说「不用审查 / 跳过」→ 不跑，一句话确认。
 
-## 来源（详见 references/SOURCES.md）
+## 来源（详见 references/收编来源-界面审查.md）
 
 | 原子 skill | 上游 |
 |---|---|

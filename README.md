@@ -145,6 +145,8 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 $env:USERPROFILE\.claude\
 | 🧩 **需求拆解** | `requirement-breakdown` | 开发前的需求理解 + **开工定级**：功能点 + 边界/歧义/待确认/验收标准，并按硬规则算出**档位 + 门禁清单 + 缺口清单**（六维评分 + 一票升级清单）；不改代码；细则见技能内 `references/定级规则.md` |
 | 🔀 **冲突** | `resolve-merge-conflict` | 本地与远程冲突时：fetch 对照 + 手改修改分支；禁止合入对方/测试分支，禁止整树覆盖 |
 | 🔍 **代码审查** | `full-code-review` | 智能分级审查（L0–L3）+ 改后收尾（影响面清单与回归方法，**用户提出才做**）；只审不代改（**5 维标准内置**，L3 派 5 个子代理，重档 6 个）；**独立按需动作，默认不主动跑**（第 33 轮） |
+| 🖥️ **界面审查** | `ui-review-pipeline` | 界面 UI&UX 审查，**两段式**：审查段产出**可视化优化清单**（有哪些问题 / file:line 定位 / 怎样改进）后**必停**；用户审查通过才进修复段（按批准范围修复 → 前后像素证据 → 逐页终验，改进后结果如何；4 个社区 skill 收编内置）；**清单与修复之间必然断连，未经批准不修** |
+| 🧰 **HTML工具集** | `agent-html-skills` | 单文件 HTML 产物工具集（19 子技能，f-labs-io 收编，MIT）：原型 / 多方案对比 / 交互 playground / 脑图 / 架构图·ER 图·SVG / 数据浏览器 / 研究报告 / 幻灯片 / 时间线 / 测试清单 / 双向反馈（页面操作回传 agent，需 Node） |
 | 🧪 **类人测试** | `human-like-testing` | 有头浏览器像人一样自测验收：看页面→取证→定位→最小修复→重测；读工作区「测试环境卡」，证据链交付 |
 | 🎯 **TAPD 需求** | `tapd-requirement-writing` | 在 TAPD 写/重整需求：五段式文案（问题/需求/功能变更/验收标准/备注）、按功能拆粒度、处理人规则、作废并入旧需求、正文内嵌图片 |
 
@@ -196,6 +198,8 @@ agent-skills/
 ├── human-like-testing/           # 类人测试：像人一样自测验收（环境卡 + 证据链）
 ├── impact-surface-audit/         # 最终影响面审计（强触发词）
 ├── full-code-review/             # 代码审查：智能分级 L0–L3 + 影响面与回归（5 维标准内置）
+├── ui-review-pipeline/           # 界面审查：四阶段流水线（4 个社区 skill 收编内置）
+├── agent-html-skills/            # HTML工具集：19 个单文件 HTML 子技能（f-labs-io 收编）
 ├── report-pipeline/              # 日报：共享日报采集与共写
 ├── report-draft-filter/          # 日报：工作小结去噪分拣
 ├── report-writer/                # 日报：收口（内附规范源文档）
